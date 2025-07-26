@@ -1,0 +1,14 @@
+spring:
+  profiles:
+    active: dev
+  application:
+    name: EasyKan
+  datasource:
+    url: jdbc:mariadb://localhost:3306/easykan?useSSL=false&serverTimezone=UTC
+    username: easykan
+    password: ""
+    driver-class-name: org.mariadb.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true

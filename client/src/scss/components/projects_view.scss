@@ -1,0 +1,22 @@
+@use "../mixins" as *;
+
+.projects-view {
+  .projects-view-grid {
+    .projects-view-card {
+      &::before {
+        @include theme(background-image,
+                (linear-gradient(rgba(255, 255, 255, 0.0), rgba(255, 255, 255, 0.0)),
+                url("https://picsum.photos/1920/1082")),
+                (linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.2)),
+                url("https://picsum.photos/1920/1082"))
+        );
+        background-size: cover;
+        opacity: 0.3;
+      }
+    }
+  }
+}
+
+.projects-view-card-title {
+  color: var(--accent-12);
+}

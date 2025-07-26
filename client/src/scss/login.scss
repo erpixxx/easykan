@@ -1,0 +1,188 @@
+@use "sass:color";
+@use "variables" as vars;
+@use "mixins" as *;
+
+
+.login-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  @include theme(background,
+    radial-gradient(circle at center bottom, var(--accent-3) 0%, var(--color-background) 100%),
+    radial-gradient(circle at center bottom, var(--accent-3) 0%, var(--color-background) 100%)
+  );
+
+  .login-card {
+    width: 400px;
+    padding: var(--space-5);
+    @include theme(box-shadow,
+            1px 1px 4px var(--black-a2),
+            1px 1px 4px var(--black-a8)
+    );
+
+    .login-form-root {
+
+      .login-form-field {
+        .login-form-field__label {
+          font-weight: 500;
+        }
+        .login-form-field__message {
+          font-size: var(--font-size-n11);
+          color: var(--accent-a11)
+        }
+      }
+
+    }
+  }
+}
+
+
+
+//.login-page {
+//  --box-alpha-factor: 0.1;
+//  --form-border-radius: 10px;
+//
+//  width: 100%;
+//  height: 100%;
+//  display: grid;
+//  place-items: center;
+//
+//  background: #3F5EFB;
+//  background-position: 0 50%;
+//  background: radial-gradient(circle at center bottom, rgb(28, 24, 96) 0%, rgb(20, 20, 20) 100%);
+//
+//  .login-form {
+//    width: 400px;
+//    padding: 20px;
+//    background-color: rgba(255, 255, 255,
+//            calc(var(--box-alpha-factor) * 0.5));
+//    backdrop-filter: blur(10px);
+//    border: 1px solid rgba(255, 255, 255, var(--box-alpha-factor));
+//    border-radius: var(--form-border-radius);
+//    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+//
+//    .login-form-input {
+//      background-color: rgba(0, 0, 0,
+//              calc(var(--box-alpha-factor) * 2));
+//      border: 1px solid rgba(255, 255, 255, var(--box-alpha-factor));
+//      border-radius: var(--form-border-radius);
+//      color: vars.$color-light;
+//
+//      &:focus {
+//        background-color: rgba(0, 0, 0,
+//                calc(var(--box-alpha-factor) * 3));
+//        border-color: rgba(255, 255, 255,
+//                calc(var(--box-alpha-factor) * 2));
+//        outline: none;
+//      }
+//    }
+//
+//    .login-form-header {
+//      margin-bottom: 1rem;
+//    }
+//
+//    .login-form-fields {
+//      .login-form-field {
+//        display: flex;
+//        flex-direction: column;
+//        margin: 1rem 0;
+//        gap: 4px;
+//
+//        .login-form-input-wrapper {
+//          position: relative;
+//
+//          .login-form-input--username,
+//          .login-form-input--password {
+//            padding: 0.5rem;
+//            width: 100%;
+//          }
+//
+//          .login-form-input--password {
+//            padding-right: 35px; // Space for the icon
+//          }
+//
+//          .login-form-input-icon {
+//            user-select: none;
+//            position: absolute;
+//            right: 10px;
+//            transform: translateY(-50%);
+//            top: 50%;
+//            color: vars.$color-light;
+//            cursor: pointer;
+//            font-size: 20px;
+//            transition: color 0.3s ease;
+//
+//            &:hover {
+//              color: vars.$color-primary;
+//            }
+//          }
+//        }
+//      }
+//    }
+//
+//    .login-form-footer {
+//      display: flex;
+//      justify-content: space-between;
+//      align-items: center;
+//      margin-top: 1.5rem;
+//
+//      .login-form-login-btn {
+//        padding: 4px 8px;
+//
+//        &:hover {
+//          background-color: rgba(255, 255, 255, var(--box-alpha-factor));
+//          border-color: rgba(255, 255, 255,
+//                  calc(var(--box-alpha-factor) * 2));
+//        }
+//
+//        &:active {
+//          background-color: rgba(255, 255, 255,
+//                  calc(var(--box-alpha-factor) * 2));
+//          border-color: rgba(255, 255, 255,
+//                  calc(var(--box-alpha-factor) * 3));
+//        }
+//      }
+//
+//      .login-form-remember {
+//        user-select: none;
+//        display: flex;
+//        align-items: center;
+//        gap: 4px;
+//
+//        input[type="checkbox"] {
+//          accent-color: vars.$color-primary;
+//          appearance: none;
+//          border-radius: 4px;
+//          width: 16px;
+//          height: 16px;
+//          display: grid;
+//          place-content: center;
+//
+//          &:checked {
+//            background-color: vars.$color-primary;
+//          }
+//        }
+//
+//        label {
+//          color: vars.$color-light;
+//          font-size: 0.9rem;
+//        }
+//      }
+//    }
+//  }
+//
+//  .login-form-error {
+//    display: none;
+//    width: 400px;
+//    margin-top: 1rem;
+//    padding: 20px;
+//    background-color: rgba(255, 64, 64,
+//            calc(var(--box-alpha-factor) * 1));
+//    backdrop-filter: blur(10px);
+//    border: 1px solid rgba(255, 64, 64, var(--box-alpha-factor));
+//    border-radius: var(--form-border-radius);
+//    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+//  }
+//}

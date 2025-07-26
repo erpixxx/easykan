@@ -1,0 +1,6 @@
+easykan:
+  use-https: true
+  jwt:
+    secret: kittycat
+    access-token-expire: 900
+    refresh-token-expire: 604800

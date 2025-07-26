@@ -1,0 +1,14 @@
+@use "variables" as vars;
+@use "mixins" as *;
+
+.background {
+  @include theme(background,
+          radial-gradient(circle at center bottom, var(--accent-6) 0%, var(--accent-4) 100%),
+          radial-gradient(circle at center bottom, var(--accent-3) 0%, var(--color-background) 100%)
+  );
+}
+
+.projects-page {
+  width: 100%;
+  height: 100%;
+}

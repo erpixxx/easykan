@@ -1,0 +1,20 @@
+@use "../variables" as vars;
+
+.icon-btn {
+  display: flex;
+  margin-left: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  border-radius: vars.$border-radius-md;
+  color: inherit;
+  font-size: inherit;
+
+  &:hover {
+    background-color: rgb(255, 255, 255, 0.2);
+  }
+
+  .icon-btn--icon {
+    font-size: inherit;
+  }
+}

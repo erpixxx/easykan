@@ -1,0 +1,15 @@
+@use "../mixins" as *;
+
+.user-nav-container {
+
+  .user-nav {
+    background-color: var(--color-panel);
+    border-bottom: 1px solid var(--gray-4);
+
+    .user-nav-item {
+      @include theme(filter,
+        brightness(0%),
+        brightness(100%));
+    }
+  }
+}

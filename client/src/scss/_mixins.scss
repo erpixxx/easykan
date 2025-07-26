@@ -1,0 +1,21 @@
+@use "sass:color";
+@use "variables" as vars;
+
+@mixin theme($property, $light-value, $dark-value) {
+  #{$property}: #{$light-value};
+
+  html.dark & {
+    #{$property}: #{$dark-value};
+  }
+}
+
+
+@mixin respond($breakpoint) {
+  @if $breakpoint == sm {
+    @media (max-width: 576px) { @content; }
+  } @else if $breakpoint == md {
+    @media (max-width: 768px) { @content; }
+  } @else if $breakpoint == lg {
+    @media (max-width: 992px) { @content; }
+  }
+}
