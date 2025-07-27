@@ -8,7 +8,7 @@ import java.util.UUID;
 
 @Getter @Setter
 @AllArgsConstructor
-public class ProjectResponseDTO {
+public class ProjectResponseDto {
 
     private UUID id;
     private String name;

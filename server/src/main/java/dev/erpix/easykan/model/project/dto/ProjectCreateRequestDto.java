@@ -11,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
 @Getter
 @ToString
 @RequiredArgsConstructor
-public class ProjectCreateRequestDTO {
+public class ProjectCreateRequestDto {
 
     private final String name;
 
