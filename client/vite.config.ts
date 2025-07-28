@@ -5,8 +5,15 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
-    allowedHosts: ['unless-sell-pop-raleigh.trycloudflare.com'],
+    host: true,
     port: 5173,
-    open: true,
+    open: false,
+    watch: {
+      usePolling: true
+    },
+    hmr: {
+      host: 'localhost',
+      port: 5173,
+    }
   },
 })

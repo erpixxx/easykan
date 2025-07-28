@@ -28,7 +28,9 @@ dependencies {
     implementation("com.github.ben-manes.caffeine:caffeine:3.2.2")
     implementation("io.jsonwebtoken:jjwt-api:0.12.6")
     implementation("org.jetbrains:annotations:26.0.2")
-    implementation("org.mariadb.jdbc:mariadb-java-client:3.5.3")
+    implementation("org.flywaydb:flyway-core:11.10.4")
+    runtimeOnly("org.flywaydb:flyway-database-postgresql:11.10.4")
+    implementation("org.postgresql:postgresql:42.7.7")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
     implementation("org.springframework.boot:spring-boot-starter-actuator:3.5.3")
     implementation("org.springframework.boot:spring-boot-starter-cache:3.5.3")
@@ -45,10 +47,18 @@ dependencies {
     testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc:3.0.4")
     testImplementation("org.springframework.security:spring-security-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+    testImplementation("org.testcontainers:postgresql")
+    testImplementation("org.testcontainers:junit-jupiter")
+
 }
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+tasks.bootJar {
+    archiveFileName.set("easykan-server.jar")
 }
 
 

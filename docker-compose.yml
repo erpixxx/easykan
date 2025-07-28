@@ -1,0 +1,51 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: easykan-db
+    environment:
+      - POSTGRES_USER=easykan
+      - POSTGRES_PASSWORD=passwd
+      - POSTGRES_DB=easykan
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U easykan -d easykan"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  easykan-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: easykan-server
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./server/src:/app/src
+      - ./server/build/classes:/app/build/classes
+      - ./server/build/resources:/app/build/resources
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/easykan
+    depends_on:
+      - postgres
+
+  easykan-client:
+    build:
+      context: .
+      dockerfile: ./client/Dockerfile.dev
+    container_name: easykan-client
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    environment:
+      - REACT_APP_API_URL=http://localhost:8080/api
+    depends_on:
+      - easykan-server
+
+volumes:
+  db_data:
