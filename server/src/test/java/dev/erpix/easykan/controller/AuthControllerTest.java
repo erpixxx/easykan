@@ -10,6 +10,7 @@ import dev.erpix.easykan.model.token.dto.CreateRefreshTokenDto;
 import dev.erpix.easykan.model.token.dto.RotatedTokensDto;
 import dev.erpix.easykan.model.user.EKUser;
 import dev.erpix.easykan.security.JwtService;
+import dev.erpix.easykan.service.JpaUserDetailsService;
 import dev.erpix.easykan.service.TokenService;
 import dev.erpix.easykan.service.UserService;
 import jakarta.servlet.http.Cookie;
@@ -55,6 +56,9 @@ public class AuthControllerTest {
 
     @MockitoBean
     private JwtService jwtService;
+
+    @MockitoBean
+    private JpaUserDetailsService jpaUserDetailsService;
 
     @Test
     void login_shouldReturnOkAndTokens_whenCredentialsAreValid() throws Exception {
