@@ -17,7 +17,7 @@ import java.util.Date;
 
 @Component
 @RequiredArgsConstructor
-public class JwtService {
+public class JwtProvider {
 
     private final EasyKanConfig config;
     private SecretKey key;
