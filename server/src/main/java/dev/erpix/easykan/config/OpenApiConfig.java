@@ -1,8 +1,12 @@
 package dev.erpix.easykan.config;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -14,11 +18,18 @@ import org.springframework.context.annotation.Configuration;
                 description = "API documentation for EasyKan."
         )
 )
+@SecurityScheme(
+        name = "cookieAuth",
+        type = SecuritySchemeType.APIKEY,
+        in = SecuritySchemeIn.COOKIE,
+        paramName = "access_token"
+)
 public class OpenApiConfig {
 
     @Bean
     public OpenAPI openApi() {
-        return new OpenAPI();
+        return new OpenAPI()
+                .addSecurityItem(new SecurityRequirement().addList("cookieAuth"));
     }
 
 }

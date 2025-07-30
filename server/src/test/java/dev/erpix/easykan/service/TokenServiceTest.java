@@ -1,5 +1,6 @@
 package dev.erpix.easykan.service;
 
+import dev.erpix.easykan.exception.ResourceNotFoundException;
 import dev.erpix.easykan.model.token.RefreshToken;
 import dev.erpix.easykan.model.token.dto.RotatedTokensDto;
 import dev.erpix.easykan.model.user.EKUser;
@@ -52,7 +53,7 @@ public class TokenServiceTest {
         TokenParts tokenParts = new TokenParts("selector", "validator");
         String hashedValidator = "hashedValidator";
 
-        when(userService.getById(userId)).thenReturn(Optional.of(user));
+        when(userService.getById(userId)).thenReturn(user);
         when(tokenGenerator.generate()).thenReturn(tokenParts);
         when(passwordEncoder.encode(tokenParts.validator())).thenReturn(hashedValidator);
 
@@ -69,9 +70,10 @@ public class TokenServiceTest {
     void createRefreshToken_shouldThrowException_whenUserDoesNotExist() {
         UUID userId = UUID.randomUUID();
 
-        when(userService.getById(userId)).thenReturn(Optional.empty());
+        when(userService.getById(userId)).thenThrow(
+                new ResourceNotFoundException("User not found"));
 
-        assertThrows(IllegalArgumentException.class, () -> tokenService.createRefreshToken(userId));
+        assertThrows(ResourceNotFoundException.class, () -> tokenService.createRefreshToken(userId));
 
         // Verify that no token was saved
         verify(tokenRepository, never()).save(any(RefreshToken.class));
@@ -160,7 +162,7 @@ public class TokenServiceTest {
                 .thenReturn(Optional.of(oldToken));
         when(passwordEncoder.matches("validator", "hashedValidator")).thenReturn(true);
         when(jwtService.generate(any())).thenReturn("new-access-token");
-        when(userService.getById(userId)).thenReturn(Optional.of(user));
+        when(userService.getById(userId)).thenReturn(user);
         when(tokenGenerator.generate()).thenReturn(newParts);
 
         Optional<RotatedTokensDto> result = tokenService.rotateRefreshToken(rawOldToken);

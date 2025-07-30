@@ -9,6 +9,7 @@ import dev.erpix.easykan.repository.UserRepository;
 import dev.erpix.easykan.security.JwtService;
 import dev.erpix.easykan.security.TokenGenerator;
 import dev.erpix.easykan.security.TokenParts;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,7 +25,6 @@ import java.util.UUID;
 public class TokenService {
 
     private final TokenRepository tokenRepository;
-    private final UserRepository userRepository;
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
 
@@ -36,8 +36,7 @@ public class TokenService {
     }
 
     public @NotNull CreateRefreshTokenDto createRefreshToken(@NotNull UUID userId) {
-        EKUser user = userService.getById(userId).orElseThrow(
-                () -> new IllegalArgumentException("User not found: " + userId));
+        EKUser user = userService.getById(userId);
 
         TokenParts tokenParts = tokenGenerator.generate();
         String validatorHash = passwordEncoder.encode(tokenParts.validator());
@@ -59,6 +58,7 @@ public class TokenService {
         findAndVerifyToken(rawRefreshToken).ifPresent(this::revokeToken);
     }
 
+    @Transactional
     public void logoutAll(String rawRefreshToken) {
         findAndVerifyToken(rawRefreshToken).ifPresent(token -> {
             EKUser user = token.getUser();

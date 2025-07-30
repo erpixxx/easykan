@@ -1,7 +1,0 @@
-FROM openjdk:21-jdk-slim
-
-WORKDIR /app
-
-COPY server/build/libs/*.jar easykan-server.jar
-
-ENTRYPOINT ["java", "-jar", "easykan-server.jar"]

@@ -1,3 +1,5 @@
+import org.springframework.boot.gradle.tasks.bundling.BootJar
+
 plugins {
     java
     id("org.springframework.boot") version "3.5.3"
@@ -46,6 +48,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc:3.0.4")
     testImplementation("org.springframework.security:spring-security-test")
+    testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     testImplementation("org.testcontainers:postgresql")
@@ -57,8 +60,11 @@ tasks.withType<Test> {
     useJUnitPlatform()
 }
 
+tasks.jar {
+    enabled = false
+}
+
 tasks.bootJar {
     archiveFileName.set("easykan-server.jar")
 }
-
 

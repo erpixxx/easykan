@@ -11,12 +11,12 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor @NoArgsConstructor
 @Entity
-@Table(name = "easykan_user_tokens")
+@Table(name = "user_tokens")
 public class RefreshToken {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "token_id")
+    @Column(name = "id")
     private long id;
 
     @Column(name = "selector", nullable = false, unique = true)

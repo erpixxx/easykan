@@ -1,14 +1,15 @@
 package dev.erpix.easykan.service;
 
 import dev.erpix.easykan.CurrentUser;
-import dev.erpix.easykan.model.project.dto.ProjectResponseDTO;
+import dev.erpix.easykan.model.project.dto.ProjectCreateRequestDto;
+import dev.erpix.easykan.model.project.dto.ProjectResponseDto;
 import dev.erpix.easykan.model.project.EKProject;
-import dev.erpix.easykan.model.project.dto.ProjectCreateRequestDTO;
 import dev.erpix.easykan.model.user.EKUser;
 import dev.erpix.easykan.model.project.EKUserProject;
 import dev.erpix.easykan.repository.ProjectRepository;
 import dev.erpix.easykan.repository.UserProjectsRepository;
 import dev.erpix.easykan.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
@@ -26,17 +27,17 @@ public class ProjectService {
     private final UserProjectsRepository userProjectsRepository;
     private final CurrentUser currentUser;
 
-    public ProjectResponseDTO toDto(@NotNull EKProject project) {
-        return new ProjectResponseDTO(
+    public ProjectResponseDto toDto(@NotNull EKProject project) {
+        return new ProjectResponseDto(
                 project.getId(),
                 project.getName(),
                 project.getOwner().getId()
         );
     }
 
-    public @NotNull EKProject create(@NotNull UUID userId, @NotNull ProjectCreateRequestDTO dto) {
-        EKUser user = userService.getById(userId).orElseThrow(
-                () -> new IllegalArgumentException("User not found with ID: " + userId));
+    @Transactional
+    public @NotNull EKProject create(@NotNull UUID userId, @NotNull ProjectCreateRequestDto dto) {
+        EKUser user = userService.getById(userId);
         EKProject project = dto.toProject(user);
         projectRepository.save(project);
 
@@ -50,6 +51,7 @@ public class ProjectService {
         return project;
     }
 
+    @Transactional
     public boolean deleteProject(@NotNull UUID projectId) {
         EKProject project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("Project not found. ID: " + projectId));

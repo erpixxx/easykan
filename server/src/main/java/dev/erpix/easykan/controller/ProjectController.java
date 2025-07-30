@@ -1,8 +1,8 @@
 package dev.erpix.easykan.controller;
 
-import dev.erpix.easykan.model.project.dto.ProjectResponseDTO;
+import dev.erpix.easykan.model.project.dto.ProjectCreateRequestDto;
+import dev.erpix.easykan.model.project.dto.ProjectResponseDto;
 import dev.erpix.easykan.model.project.EKProject;
-import dev.erpix.easykan.model.project.dto.ProjectCreateRequestDTO;
 import dev.erpix.easykan.service.ProjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,7 +21,7 @@ public class ProjectController {
     private final ProjectService projectService;
 
     @PostMapping
-    public ResponseEntity<ProjectResponseDTO> createProject(Authentication auth, @RequestBody ProjectCreateRequestDTO request) {
+    public ResponseEntity<ProjectResponseDto> createProject(Authentication auth, @RequestBody ProjectCreateRequestDto request) {
         UUID userId = UUID.fromString((String) auth.getPrincipal());
         EKProject project = projectService.create(userId, request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
@@ -37,9 +37,9 @@ public class ProjectController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ProjectResponseDTO>> getUserProjects(Authentication auth) {
+    public ResponseEntity<List<ProjectResponseDto>> getUserProjects(Authentication auth) {
         UUID userId = UUID.fromString((String) auth.getPrincipal());
-        List<ProjectResponseDTO> projects = projectService.getUserProjects(userId).stream()
+        List<ProjectResponseDto> projects = projectService.getUserProjects(userId).stream()
                 .map(projectService::toDto)
                 .toList();
         return ResponseEntity.ok(projects);

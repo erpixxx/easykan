@@ -10,6 +10,7 @@
 <img src="https://img.shields.io/badge/Spring%20Boot-6DB33F?logo=springboot&logoColor=fff"/>
 <img src="https://img.shields.io/badge/Hibernate-59666C?logo=hibernate&logoColor=fff"/>
 <img src="https://img.shields.io/badge/Postgres-%23316192.svg?logo=postgresql&logoColor=white"/>
+<img src="https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=fff"/>
 <img src="https://img.shields.io/badge/React-%2320232a.svg?logo=react&logoColor=%2361DAFB"/>
 <img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=fff"/>
 <img src="https://img.shields.io/badge/Sass-C69?logo=sass&logoColor=fff"/>

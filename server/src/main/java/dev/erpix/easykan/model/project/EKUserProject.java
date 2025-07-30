@@ -11,21 +11,21 @@ import java.util.UUID;
 @Builder
 @AllArgsConstructor @NoArgsConstructor
 @Entity
-@Table(name = "easykan_user_projects")
+@Table(name = "project_members")
 public class EKUserProject {
 
     @EmbeddedId
     private Id id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("userId")
-    @JoinColumn(name = "user_uuid")
-    private EKUser user;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("projectId")
     @JoinColumn(name = "project_uuid")
     private EKProject project;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("userId")
+    @JoinColumn(name = "member_uuid")
+    private EKUser user;
 
     @Column(name = "permissions")
     private long permissions;
@@ -36,7 +36,7 @@ public class EKUserProject {
     @Embeddable
     public static class Id implements Serializable {
 
-        @Column(name = "user_uuid")
+        @Column(name = "member_uuid")
         private UUID userId;
 
         @Column(name = "project_uuid")

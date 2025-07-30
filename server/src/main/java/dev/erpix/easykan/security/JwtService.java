@@ -1,6 +1,6 @@
 package dev.erpix.easykan.security;
 
-import dev.erpix.easykan.config.EasyKanProperties;
+import dev.erpix.easykan.config.EasyKanConfig;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -19,7 +19,7 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class JwtService {
 
-    private final EasyKanProperties config;
+    private final EasyKanConfig config;
     private SecretKey key;
 
     @PostConstruct

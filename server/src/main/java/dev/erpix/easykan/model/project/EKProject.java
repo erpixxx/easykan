@@ -3,6 +3,8 @@ package dev.erpix.easykan.model.project;
 import dev.erpix.easykan.model.user.EKUser;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.util.List;
 import java.util.UUID;
@@ -12,19 +14,20 @@ import java.util.UUID;
 @Builder
 @AllArgsConstructor @NoArgsConstructor
 @Entity
-@Table(name = "easykan_projects")
+@Table(name = "projects")
 public class EKProject {
 
     @Id
-    @Column(name = "project_uuid")
+    @Column(name = "uuid")
     @GeneratedValue(strategy = GenerationType.UUID)
+    @JdbcTypeCode(SqlTypes.UUID)
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "project_owner_uuid", nullable = false)
+    @JoinColumn(name = "owner_uuid", nullable = false)
     private EKUser owner;
 
-    @Column(name = "project_name", nullable = false)
+    @Column(name = "name", nullable = false)
     private String name;
 
     @ToString.Exclude

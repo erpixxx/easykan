@@ -1,13 +1,14 @@
 package dev.erpix.easykan.service;
 
 import dev.erpix.easykan.CacheKey;
+import dev.erpix.easykan.exception.ResourceNotFoundException;
+import dev.erpix.easykan.exception.UserNotFoundException;
 import dev.erpix.easykan.model.user.EKUser;
 import dev.erpix.easykan.model.user.dto.UserCreateRequestDto;
 import dev.erpix.easykan.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Limit;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -22,44 +23,34 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public long count() {
-        return userRepository.count();
-    }
-
     public @NotNull EKUser create(@NotNull UserCreateRequestDto dto) {
         EKUser user = dto.toUser();
-        if (user.getPassword() != null)
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
+        if (user.getPasswordHash() != null)
+            user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
         return userRepository.save(user);
     }
 
-    public void delete(@NotNull UUID uuid) {
-        userRepository.deleteById(uuid);
+    public void deleteUser(@NotNull UUID userId) {
+        if (!userRepository.existsById(userId)) {
+            throw UserNotFoundException.byId(userId);
+        }
+        userRepository.deleteById(userId);
     }
 
-    public boolean exists(@NotNull UUID uuid) {
-        return userRepository.existsById(uuid);
+    @Cacheable(value = CacheKey.USERS, key = "#userId")
+    public @NotNull EKUser getById(@NotNull UUID userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> UserNotFoundException.byId(userId));
     }
 
-    @Cacheable(value = CacheKey.USERS, key = "#uuid")
-    public @NotNull Optional<EKUser> getById(@NotNull UUID uuid) {
-        return userRepository.findById(uuid);
+    public @NotNull EKUser getByLogin(@NotNull String login) {
+        return userRepository.findByLogin(login)
+                .orElseThrow(() -> UserNotFoundException.byLogin(login));
     }
 
-    public @NotNull Optional<EKUser> getByLogin(@NotNull String login) {
-        return userRepository.findByLogin(login);
-    }
-
-    public @NotNull List<EKUser> getByDisplayName(@NotNull String displayName) {
-        return userRepository.findByDisplayName(displayName);
-    }
-
-    public @NotNull List<EKUser> getByDisplayNameStartingWith(@NotNull String displayName) {
-        return userRepository.findByDisplayNameStartingWith(displayName);
-    }
-
-    public @NotNull Optional<EKUser> getByEmail(@NotNull String email) {
-        return userRepository.findByEmail(email);
+    public @NotNull EKUser getByEmail(@NotNull String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> UserNotFoundException.byEmail(email));
     }
 
 }
