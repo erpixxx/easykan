@@ -18,6 +18,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @Tag(name = "Users", description = "Endpoints for user management")
@@ -39,6 +40,21 @@ public class UserController {
     public ResponseEntity<UserResponseDto> getCurrentUser(@AuthenticationPrincipal EKUserDetails userDetails) {
         EKUser currentUser = userService.getById(userDetails.getUser().getId());
         return ResponseEntity.ok(UserResponseDto.fromUser(currentUser));
+    }
+
+    @Operation(summary = "Get all users",
+            description = "Returns a list of all users. Requires ADMIN role.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful operation"),
+            @ApiResponse(responseCode = "403", description = "Forbidden if the user is not an ADMIN")
+    })
+    @GetMapping
+    public ResponseEntity<List<UserResponseDto>> getAllUsers() {
+        List<EKUser> users = userService.getAllUsers();
+        List<UserResponseDto> userDtos = users.stream()
+                .map(UserResponseDto::fromUser)
+                .toList();
+        return ResponseEntity.ok(userDtos);
     }
 
     @Operation(summary = "Create a new user",

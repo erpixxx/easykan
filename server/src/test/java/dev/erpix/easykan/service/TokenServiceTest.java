@@ -5,7 +5,7 @@ import dev.erpix.easykan.model.token.RefreshToken;
 import dev.erpix.easykan.model.token.dto.RotatedTokensDto;
 import dev.erpix.easykan.model.user.EKUser;
 import dev.erpix.easykan.repository.TokenRepository;
-import dev.erpix.easykan.security.JwtService;
+import dev.erpix.easykan.security.JwtProvider;
 import dev.erpix.easykan.security.TokenGenerator;
 import dev.erpix.easykan.security.TokenParts;
 import org.junit.jupiter.api.Test;
@@ -38,7 +38,7 @@ public class TokenServiceTest {
     @Mock
     private TokenGenerator tokenGenerator;
     @Mock
-    private JwtService jwtService;
+    private JwtProvider jwtProvider;
 
     @InjectMocks
     private TokenService tokenService;
@@ -161,7 +161,7 @@ public class TokenServiceTest {
         when(tokenRepository.findBySelectorAndRevokedFalseAndExpiresAtAfter(any(), any()))
                 .thenReturn(Optional.of(oldToken));
         when(passwordEncoder.matches("validator", "hashedValidator")).thenReturn(true);
-        when(jwtService.generate(any())).thenReturn("new-access-token");
+        when(jwtProvider.generate(any())).thenReturn("new-access-token");
         when(userService.getById(userId)).thenReturn(user);
         when(tokenGenerator.generate()).thenReturn(newParts);
 

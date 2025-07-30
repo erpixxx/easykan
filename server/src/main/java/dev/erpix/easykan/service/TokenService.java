@@ -5,8 +5,7 @@ import dev.erpix.easykan.model.token.dto.CreateRefreshTokenDto;
 import dev.erpix.easykan.model.token.dto.RotatedTokensDto;
 import dev.erpix.easykan.model.user.EKUser;
 import dev.erpix.easykan.repository.TokenRepository;
-import dev.erpix.easykan.repository.UserRepository;
-import dev.erpix.easykan.security.JwtService;
+import dev.erpix.easykan.security.JwtProvider;
 import dev.erpix.easykan.security.TokenGenerator;
 import dev.erpix.easykan.security.TokenParts;
 import jakarta.transaction.Transactional;
@@ -29,10 +28,10 @@ public class TokenService {
     private final PasswordEncoder passwordEncoder;
 
     private final TokenGenerator tokenGenerator;
-    private final JwtService jwtService;
+    private final JwtProvider jwtProvider;
 
     public @NotNull String createAccessToken(@NotNull UUID userId) {
-        return jwtService.generate(userId.toString());
+        return jwtProvider.generate(userId.toString());
     }
 
     public @NotNull CreateRefreshTokenDto createRefreshToken(@NotNull UUID userId) {

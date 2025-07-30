@@ -9,7 +9,7 @@ import dev.erpix.easykan.model.auth.dto.AuthLoginRequest;
 import dev.erpix.easykan.model.token.dto.CreateRefreshTokenDto;
 import dev.erpix.easykan.model.token.dto.RotatedTokensDto;
 import dev.erpix.easykan.model.user.EKUser;
-import dev.erpix.easykan.security.JwtService;
+import dev.erpix.easykan.security.JwtProvider;
 import dev.erpix.easykan.service.JpaUserDetailsService;
 import dev.erpix.easykan.service.TokenService;
 import dev.erpix.easykan.service.UserService;
@@ -55,7 +55,7 @@ public class AuthControllerTest {
     private EasyKanConfig properties;
 
     @MockitoBean
-    private JwtService jwtService;
+    private JwtProvider jwtProvider;
 
     @MockitoBean
     private JpaUserDetailsService jpaUserDetailsService;

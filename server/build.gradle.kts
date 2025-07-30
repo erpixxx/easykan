@@ -1,4 +1,4 @@
-import org.springframework.boot.gradle.tasks.bundling.BootJar
+import org.springframework.boot.gradle.tasks.run.BootRun
 
 plugins {
     java
@@ -54,6 +54,11 @@ dependencies {
     testImplementation("org.testcontainers:postgresql")
     testImplementation("org.testcontainers:junit-jupiter")
 
+}
+
+tasks.withType<BootRun> {
+    systemProperties["spring.output.ansi.enabled"] = "ALWAYS"
+    sourceResources(sourceSets["main"])
 }
 
 tasks.withType<Test> {

@@ -1,7 +1,6 @@
 package dev.erpix.easykan.service;
 
 import dev.erpix.easykan.CacheKey;
-import dev.erpix.easykan.exception.ResourceNotFoundException;
 import dev.erpix.easykan.exception.UserNotFoundException;
 import dev.erpix.easykan.model.user.EKUser;
 import dev.erpix.easykan.model.user.dto.UserCreateRequestDto;
@@ -13,7 +12,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -35,6 +33,10 @@ public class UserService {
             throw UserNotFoundException.byId(userId);
         }
         userRepository.deleteById(userId);
+    }
+
+    public @NotNull List<EKUser> getAllUsers() {
+        return userRepository.findAll();
     }
 
     @Cacheable(value = CacheKey.USERS, key = "#userId")
