@@ -3,7 +3,6 @@ package dev.erpix.easykan.controller;
 import dev.erpix.easykan.TestcontainersConfig;
 import dev.erpix.easykan.model.user.EKUser;
 import dev.erpix.easykan.repository.UserRepository;
-import dev.erpix.easykan.service.JpaUserDetailsService;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,7 +11,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.test.context.support.TestExecutionEvent;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.context.support.WithUserDetails;
@@ -73,6 +71,12 @@ public class UserControllerTest {
     }
 
     @Test
+    void getCurrentUser_shouldReturnUnauthorized_whenNotAuthenticated() throws Exception {
+        mockMvc.perform(get("/api/v1/users/@me"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     @WithMockUser(authorities = "T(dev.erpix.easykan.model.Role).USER")
     void deleteUser_shouldReturnForbidden_whenUserIsNotAdmin() throws Exception {
         mockMvc.perform(delete("/api/v1/users/" + UUID.randomUUID()))
@@ -119,6 +123,25 @@ public class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(USER_JSON))
                 .andExpect(status().isCreated());
+    }
+
+    @Test
+    @WithMockUser(authorities = "T(dev.erpix.easykan.model.Role).ADMIN")
+    void createUser_shouldReturnBadRequest_whenDataIsInvalid() throws Exception {
+        String invalidUserJson = """
+                {
+                    "login": "",
+                    "displayName": "Invalid User",
+                    "email": "invalid@example.com",
+                    "password": "password123",
+                    "isAdmin": false
+                }
+                """;
+
+        mockMvc.perform(post("/api/v1/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalidUserJson))
+                .andExpect(status().isBadRequest());
     }
 
 }
