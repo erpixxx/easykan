@@ -71,9 +71,9 @@ public class UserControllerTest {
     }
 
     @Test
-    void getCurrentUser_shouldReturnUnauthorized_whenNotAuthenticated() throws Exception {
+    void getCurrentUser_shouldReturnForbidden_whenNotAuthenticated() throws Exception {
         mockMvc.perform(get("/api/v1/users/@me"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 
     @Test
