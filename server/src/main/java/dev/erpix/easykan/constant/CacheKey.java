@@ -1,4 +1,4 @@
-package dev.erpix.easykan;
+package dev.erpix.easykan.constant;
 
 
 public interface CacheKey {

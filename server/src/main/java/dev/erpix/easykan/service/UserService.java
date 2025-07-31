@@ -1,6 +1,6 @@
 package dev.erpix.easykan.service;
 
-import dev.erpix.easykan.CacheKey;
+import dev.erpix.easykan.constant.CacheKey;
 import dev.erpix.easykan.exception.UserNotFoundException;
 import dev.erpix.easykan.model.user.EKUser;
 import dev.erpix.easykan.model.user.dto.UserCreateRequestDto;
