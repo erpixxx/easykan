@@ -2,17 +2,29 @@ package dev.erpix.easykan.server.domain.project.model;
 
 import lombok.Getter;
 
+// The enum and its values may change in the final version
+
 @Getter
 public enum UserProjectPermission {
 
-    ADMIN(1L),
-    CREATE_PROJECT(1L << 1),
-    DELETE_PROJECT(1L << 2),
-    EDIT_PROJECT(1L << 3),
-    CREATE_USER(1L << 4),
-    DELETE_USER(1L << 5),
-    EDIT_USER(1L << 6),
-    ;
+    OWNER(1L),
+    MANAGE_PROJECT(1L << 1),
+    MANAGE_MEMBERS(1L << 2),
+    CREATE_BOARD(1L << 3),
+    DELETE_BOARD(1L << 4),
+    RENAME_BOARD(1L << 5),
+    CREATE_COLUMN(1L << 6),
+    DELETE_COLUMN(1L << 7),
+    RENAME_COLUMN(1L << 8),
+    MOVE_COLUMN(1L << 9),
+    CREATE_CARD(1L << 10),
+    DELETE_CARD(1L << 11),
+    RENAME_CARD(1L << 12),
+    MOVE_CARD(1L << 13),
+    ASSIGN_CARD(1L << 14),
+    COMMENT_CARD(1L << 15),
+    VIEW_ACTIVITY(1L << 16),
+    MANAGE_TAG(1L << 17);
 
     private final long value;
 
@@ -36,4 +48,5 @@ public enum UserProjectPermission {
         }
         return combined;
     }
+
 }
