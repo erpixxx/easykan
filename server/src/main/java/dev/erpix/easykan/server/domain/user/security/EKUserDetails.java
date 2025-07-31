@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @RequiredArgsConstructor
@@ -31,6 +32,10 @@ public class EKUserDetails implements UserDetails {
     @Override
     public String getUsername() {
         return user.getLogin();
+    }
+
+    public UUID getId() {
+        return user.getId();
     }
 
 }

@@ -8,6 +8,7 @@ import dev.erpix.easykan.server.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +22,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public @NotNull EKUser create(@NotNull UserCreateRequestDto dto) {
         EKUser user = dto.toUser();
         if (user.getPasswordHash() != null)
@@ -28,6 +30,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    @PreAuthorize("hasAuthority('ROLE_ADMIN') and #userId != authentication.principal.getId()")
     public void deleteUser(@NotNull UUID userId) {
         if (!userRepository.existsById(userId)) {
             throw UserNotFoundException.byId(userId);

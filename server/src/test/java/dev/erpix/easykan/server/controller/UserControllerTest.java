@@ -1,7 +1,9 @@
 package dev.erpix.easykan.server.controller;
 
 import dev.erpix.easykan.server.TestcontainersConfig;
+import dev.erpix.easykan.server.WithMockEKUser;
 import dev.erpix.easykan.server.domain.user.model.EKUser;
+import dev.erpix.easykan.server.domain.user.model.Role;
 import dev.erpix.easykan.server.domain.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,7 +14,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.TestExecutionEvent;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -77,14 +78,14 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = "ROLE_USER")
+    @WithMockEKUser
     void deleteUser_shouldReturnForbidden_whenUserIsNotAdmin() throws Exception {
         mockMvc.perform(delete("/api/v1/users/" + UUID.randomUUID()))
                 .andExpect(status().isForbidden());
     }
 
     @Test
-    @WithMockUser(authorities = "ROLE_ADMIN")
+    @WithMockEKUser(roles = Role.ROLE_ADMIN)
     void deleteUser_shouldReturnNoContent_whenUserIsAdmin() throws Exception {
         EKUser userToDelete = userRepository.save(EKUser.builder()
                 .login("todelete")
@@ -99,7 +100,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = "ROLE_ADMIN")
+    @WithMockEKUser(roles = Role.ROLE_ADMIN)
     void deleteUser_shouldReturnNotFound_whenUserDoesNotExist() throws Exception {
         UUID nonExistentUserId = UUID.randomUUID();
 
@@ -108,7 +109,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = "ROLE_USER")
+    @WithMockEKUser
     void createUser_shouldReturnForbidden_whenUserIsNotAdmin() throws Exception {
         mockMvc.perform(post("/api/v1/users")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -117,7 +118,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = "ROLE_ADMIN")
+    @WithMockEKUser(roles = Role.ROLE_ADMIN)
     void createUser_shouldReturnCreated_whenUserIsAdmin() throws Exception {
         mockMvc.perform(post("/api/v1/users")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -126,7 +127,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = "ROLE_ADMIN")
+    @WithMockEKUser(roles = Role.ROLE_ADMIN)
     void createUser_shouldReturnBadRequest_whenDataIsInvalid() throws Exception {
         String invalidUserJson = """
                 {

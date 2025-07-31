@@ -64,7 +64,6 @@ public class UserController {
             @ApiResponse(responseCode = "403", description = "The user is not an ADMIN")
     })
     @PostMapping
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<UserResponseDto> createUser(@RequestBody @Valid UserCreateRequestDto requestDto) {
         EKUser createdUser = userService.create(requestDto);
         return new ResponseEntity<>(UserResponseDto.fromUser(createdUser), HttpStatus.CREATED);
@@ -78,7 +77,6 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "The user with given ID does not exist")
     })
     @DeleteMapping("/{userId}")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteUser(@PathVariable UUID userId) {
         userService.deleteUser(userId);
