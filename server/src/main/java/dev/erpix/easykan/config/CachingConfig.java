@@ -1,7 +1,7 @@
 package dev.erpix.easykan.config;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
-import dev.erpix.easykan.CacheKey;
+import dev.erpix.easykan.constant.CacheKey;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.annotation.Bean;
