@@ -77,14 +77,14 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = "T(dev.erpix.easykan.model.Role).USER")
+    @WithMockUser(authorities = "ROLE_USER")
     void deleteUser_shouldReturnForbidden_whenUserIsNotAdmin() throws Exception {
         mockMvc.perform(delete("/api/v1/users/" + UUID.randomUUID()))
                 .andExpect(status().isForbidden());
     }
 
     @Test
-    @WithMockUser(authorities = "T(dev.erpix.easykan.model.Role).ADMIN")
+    @WithMockUser(authorities = "ROLE_ADMIN")
     void deleteUser_shouldReturnNoContent_whenUserIsAdmin() throws Exception {
         EKUser userToDelete = userRepository.save(EKUser.builder()
                 .login("todelete")
@@ -99,7 +99,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = "T(dev.erpix.easykan.model.Role).ADMIN")
+    @WithMockUser(authorities = "ROLE_ADMIN")
     void deleteUser_shouldReturnNotFound_whenUserDoesNotExist() throws Exception {
         UUID nonExistentUserId = UUID.randomUUID();
 
@@ -108,7 +108,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = "T(dev.erpix.easykan.model.Role).USER")
+    @WithMockUser(authorities = "ROLE_USER")
     void createUser_shouldReturnForbidden_whenUserIsNotAdmin() throws Exception {
         mockMvc.perform(post("/api/v1/users")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -117,7 +117,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = "T(dev.erpix.easykan.model.Role).ADMIN")
+    @WithMockUser(authorities = "ROLE_ADMIN")
     void createUser_shouldReturnCreated_whenUserIsAdmin() throws Exception {
         mockMvc.perform(post("/api/v1/users")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -126,7 +126,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = "T(dev.erpix.easykan.model.Role).ADMIN")
+    @WithMockUser(authorities = "ROLE_ADMIN")
     void createUser_shouldReturnBadRequest_whenDataIsInvalid() throws Exception {
         String invalidUserJson = """
                 {
