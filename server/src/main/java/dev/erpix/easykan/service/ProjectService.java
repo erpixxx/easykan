@@ -1,8 +1,9 @@
 package dev.erpix.easykan.service;
 
+import dev.erpix.easykan.constant.CacheKey;
 import dev.erpix.easykan.CurrentUser;
+import dev.erpix.easykan.exception.ProjectNotFoundException;
 import dev.erpix.easykan.model.project.dto.ProjectCreateRequestDto;
-import dev.erpix.easykan.model.project.dto.ProjectResponseDto;
 import dev.erpix.easykan.model.project.EKProject;
 import dev.erpix.easykan.model.user.EKUser;
 import dev.erpix.easykan.model.project.EKUserProject;
@@ -12,9 +13,12 @@ import dev.erpix.easykan.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -27,17 +31,20 @@ public class ProjectService {
     private final UserProjectsRepository userProjectsRepository;
     private final CurrentUser currentUser;
 
-    public ProjectResponseDto toDto(@NotNull EKProject project) {
-        return new ProjectResponseDto(
-                project.getId(),
-                project.getName(),
-                project.getOwner().getId()
-        );
+    @Cacheable(value = CacheKey.PROJECTS, key = "#projectId")
+    public @NotNull EKProject getById(@NotNull UUID projectId) {
+        return projectRepository.findById(projectId)
+                .orElseThrow(() -> ProjectNotFoundException.byId(projectId));
+    }
+
+    public @NotNull Set<EKProject> getUserProjects(@NotNull UUID userId) {
+        return projectRepository.findByOwner_Id(userId);
     }
 
     @Transactional
-    public @NotNull EKProject create(@NotNull UUID userId, @NotNull ProjectCreateRequestDto dto) {
+    public @NotNull EKProject createProject(@NotNull UUID userId, @NotNull ProjectCreateRequestDto dto) {
         EKUser user = userService.getById(userId);
+
         EKProject project = dto.toProject(user);
         projectRepository.save(project);
 
@@ -47,28 +54,28 @@ public class ProjectService {
                 .project(project)
                 .user(user)
                 .build();
+
         userProjectsRepository.save(userProject);
         return project;
     }
 
     @Transactional
-    public boolean deleteProject(@NotNull UUID projectId) {
-        EKProject project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new IllegalArgumentException("Project not found. ID: " + projectId));
-
-        UUID userId = currentUser.getId();
-        if (!project.getOwner().getId().equals(userId)) {
-            if (userRepository.findById(userId).stream().noneMatch(EKUser::isAdmin))
-                return false;
+    @CacheEvict(value = CacheKey.PROJECTS, key = "#projectId")
+    @PreAuthorize("hasRole('ADMIN') or @projectSecurity.isOwner(#projectId)")
+    public void deleteProject(@NotNull UUID projectId) {
+        if (!projectRepository.existsById(projectId)) {
+            throw ProjectNotFoundException.byId(projectId);
         }
-
-        // Delete the project itself
-        projectRepository.delete(project);
-        return true;
+        projectRepository.deleteById(projectId);
     }
 
-    public @NotNull List<EKProject> getUserProjects(@NotNull UUID userId) {
-        return projectRepository.findByOwner_Id(userId);
+
+
+    public void e() {
+        Set<EKUserProject> byIdUserId = userProjectsRepository.findById_UserId(null);
+        byIdUserId.forEach(proj -> {
+
+        });
     }
 
 }

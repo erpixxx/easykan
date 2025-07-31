@@ -1,9 +1,9 @@
-package dev.erpix.easykan.model.user;
+package dev.erpix.easykan.model.project;
 
 import lombok.Getter;
 
 @Getter
-public enum UserPermission {
+public enum UserProjectPermission {
 
     ADMIN(1L),
     CREATE_PROJECT(1L << 1),
@@ -16,12 +16,12 @@ public enum UserPermission {
 
     private final long value;
 
-    UserPermission(long value) {
+    UserProjectPermission(long value) {
         this.value = value;
     }
 
-    public static UserPermission fromValue(long value) {
-        for (UserPermission permission : values()) {
+    public static UserProjectPermission fromValue(long value) {
+        for (UserProjectPermission permission : values()) {
             if (permission.value == value) {
                 return permission;
             }
@@ -29,9 +29,9 @@ public enum UserPermission {
         throw new IllegalArgumentException("No UserPermission found for value: " + value);
     }
 
-    public static long combine(UserPermission... permissions) {
+    public static long combine(UserProjectPermission... permissions) {
         long combined = 0;
-        for (UserPermission permission : permissions) {
+        for (UserProjectPermission permission : permissions) {
             combined |= permission.value;
         }
         return combined;

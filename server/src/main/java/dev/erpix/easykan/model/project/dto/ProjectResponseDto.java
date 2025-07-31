@@ -1,17 +1,22 @@
 package dev.erpix.easykan.model.project.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import dev.erpix.easykan.model.project.EKProject;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
-@Getter @Setter
-@AllArgsConstructor
-public class ProjectResponseDto {
+public record ProjectResponseDto(
+        UUID id,
+        String name,
+        UUID owner
+) {
 
-    private UUID id;
-    private String name;
-    private UUID owner;
+    public static @NotNull ProjectResponseDto fromProject(@NotNull EKProject project) {
+        return new ProjectResponseDto(
+                project.getId(),
+                project.getName(),
+                project.getOwner().getId()
+        );
+    }
 
 }
