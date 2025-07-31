@@ -7,9 +7,9 @@ import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
-@Component("projectSecurity")
+@Component("projectPermissionEvaluator")
 @RequiredArgsConstructor
-public class ProjectSecurity {
+public class ProjectPermissionEvaluator {
 
     private final ProjectRepository projectRepository;
     private final CurrentUser currentUser;
