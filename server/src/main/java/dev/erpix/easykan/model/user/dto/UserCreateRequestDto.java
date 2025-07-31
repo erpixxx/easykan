@@ -15,15 +15,13 @@ public record UserCreateRequestDto(
 ) {
 
     public @NotNull EKUser toUser() {
-        EKUser user = new EKUser();
-        user.setLogin(login);
-        user.setDisplayName(displayName);
-        user.setEmail(email);
-        user.setCanAuthWithPassword(canAuthWithPassword);
-        if (password != null) {
-            user.setPasswordHash(password);
-        }
-        return user;
+        return EKUser.builder()
+                .login(login)
+                .displayName(displayName)
+                .email(email)
+                .canAuthWithPassword(canAuthWithPassword)
+                .passwordHash(password)
+                .build();
     }
 
 }
