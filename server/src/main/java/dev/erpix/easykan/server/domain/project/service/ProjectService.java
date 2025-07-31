@@ -62,21 +62,12 @@ public class ProjectService {
 
     @Transactional
     @CacheEvict(value = CacheKey.PROJECTS, key = "#projectId")
-    @PreAuthorize("hasRole('ADMIN') or @projectSecurity.isOwner(#projectId)")
+    @PreAuthorize("hasRole('ADMIN') or @projectPermissionEvaluator.isOwner(#projectId)")
     public void deleteProject(@NotNull UUID projectId) {
         if (!projectRepository.existsById(projectId)) {
             throw ProjectNotFoundException.byId(projectId);
         }
         projectRepository.deleteById(projectId);
-    }
-
-
-
-    public void e() {
-        Set<EKUserProject> byIdUserId = userProjectsRepository.findById_UserId(null);
-        byIdUserId.forEach(proj -> {
-
-        });
     }
 
 }
