@@ -50,11 +50,10 @@ public class UserController {
     })
     @GetMapping
     public ResponseEntity<List<UserResponseDto>> getAllUsers() {
-        List<EKUser> users = userService.getAllUsers();
-        List<UserResponseDto> userDtos = users.stream()
+        List<UserResponseDto> users = userService.getAllUsers().stream()
                 .map(UserResponseDto::fromUser)
                 .toList();
-        return ResponseEntity.ok(userDtos);
+        return ResponseEntity.ok(users);
     }
 
     @Operation(summary = "Create a new user",

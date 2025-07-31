@@ -1,6 +1,7 @@
 package dev.erpix.easykan.model;
 
 import dev.erpix.easykan.model.user.EKUser;
+import dev.erpix.easykan.model.user.Role;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -18,8 +19,8 @@ public class EKUserDetails implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return user.isAdmin() ?
-                List.of(Role.ADMIN, Role.USER) :
-                List.of(Role.USER);
+                List.of(Role.ROLE_ADMIN, Role.ROLE_USER) :
+                List.of(Role.ROLE_USER);
     }
 
     @Override

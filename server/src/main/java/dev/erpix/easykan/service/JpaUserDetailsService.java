@@ -1,5 +1,6 @@
 package dev.erpix.easykan.service;
 
+import dev.erpix.easykan.exception.UserNotFoundException;
 import dev.erpix.easykan.model.EKUserDetails;
 import dev.erpix.easykan.model.user.EKUser;
 import dev.erpix.easykan.repository.UserRepository;
@@ -20,15 +21,13 @@ public class JpaUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         EKUser user = userRepository.findByLogin(username)
-                .orElseThrow(() ->
-                        new UsernameNotFoundException("User with login '" + username + "' not found"));
+                .orElseThrow(() -> UserNotFoundException.byLogin(username));
         return new EKUserDetails(user);
     }
 
     public UserDetails loadUserById(UUID userId) throws UsernameNotFoundException {
         EKUser user = userRepository.findById(userId)
-                .orElseThrow(() ->
-                        new UsernameNotFoundException("User with ID '" + userId + "' not found"));
+                .orElseThrow(() -> UserNotFoundException.byId(userId));
         return new EKUserDetails(user);
     }
 }
