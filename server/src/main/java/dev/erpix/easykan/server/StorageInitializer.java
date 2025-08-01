@@ -31,7 +31,7 @@ public class StorageInitializer implements CommandLineRunner {
                     .displayName("Administrator")
                     .email("admin@example.com")
                     .passwordHash(passwordEncoder.encode(passwd))
-                    .isAdmin(true)
+                    .permissions(1L)
                     .canAuthWithPassword(true)
                     .build();
 

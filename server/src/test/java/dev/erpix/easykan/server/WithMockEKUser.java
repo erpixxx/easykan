@@ -1,6 +1,6 @@
 package dev.erpix.easykan.server;
 
-import dev.erpix.easykan.server.domain.user.model.Role;
+import dev.erpix.easykan.server.domain.user.model.UserPermission;
 import org.springframework.security.test.context.support.WithSecurityContext;
 
 import java.lang.annotation.ElementType;
@@ -25,6 +25,6 @@ public @interface WithMockEKUser {
 
     boolean canAuthWithPassword() default true;
 
-    Role[] roles() default { Role.ROLE_USER };
+    UserPermission[] permissions() default { UserPermission.DEFAULT_PERMISSIONS};
 
 }

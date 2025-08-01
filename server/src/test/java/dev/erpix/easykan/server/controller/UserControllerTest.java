@@ -3,7 +3,7 @@ package dev.erpix.easykan.server.controller;
 import dev.erpix.easykan.server.TestcontainersConfig;
 import dev.erpix.easykan.server.WithMockEKUser;
 import dev.erpix.easykan.server.domain.user.model.EKUser;
-import dev.erpix.easykan.server.domain.user.model.Role;
+import dev.erpix.easykan.server.domain.user.model.UserPermission;
 import dev.erpix.easykan.server.domain.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,7 +55,7 @@ public class UserControllerTest {
                     .displayName(TEST_USER_DISPLAY_NAME)
                     .email("test.user@easykan.dev")
                     .passwordHash("hashedPassword")
-                    .isAdmin(false)
+                    .permissions(0L)
                     .canAuthWithPassword(true)
                     .build();
             userRepository.save(user);
@@ -85,7 +85,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockEKUser(roles = Role.ROLE_ADMIN)
+    @WithMockEKUser(permissions = UserPermission.ADMIN)
     void deleteUser_shouldReturnNoContent_whenUserIsAdmin() throws Exception {
         EKUser userToDelete = userRepository.save(EKUser.builder()
                 .login("todelete")
@@ -100,7 +100,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockEKUser(roles = Role.ROLE_ADMIN)
+    @WithMockEKUser(permissions = UserPermission.ADMIN)
     void deleteUser_shouldReturnNotFound_whenUserDoesNotExist() throws Exception {
         UUID nonExistentUserId = UUID.randomUUID();
 
@@ -118,7 +118,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockEKUser(roles = Role.ROLE_ADMIN)
+    @WithMockEKUser(permissions = UserPermission.ADMIN)
     void createUser_shouldReturnCreated_whenUserIsAdmin() throws Exception {
         mockMvc.perform(post("/api/v1/users")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -127,7 +127,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockEKUser(roles = Role.ROLE_ADMIN)
+    @WithMockEKUser(permissions = UserPermission.ADMIN)
     void createUser_shouldReturnBadRequest_whenDataIsInvalid() throws Exception {
         String invalidUserJson = """
                 {

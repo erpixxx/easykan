@@ -22,7 +22,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public @NotNull EKUser create(@NotNull UserCreateRequestDto dto) {
         EKUser user = dto.toUser();
         if (user.getPasswordHash() != null)
@@ -30,7 +30,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_ADMIN') and #userId != authentication.principal.getId()")
+    @PreAuthorize("hasAuthority('ADMIN') and #userId != authentication.principal.getId()")
     public void deleteUser(@NotNull UUID userId) {
         if (!userRepository.existsById(userId)) {
             throw UserNotFoundException.byId(userId);

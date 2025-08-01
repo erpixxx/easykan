@@ -10,7 +10,7 @@ public record UserResponseDto(
         UUID id,
         String login,
         String displayName,
-        boolean isAdmin
+        long permissions
 ) {
 
     public static UserResponseDto fromUser(@NotNull @NonNull EKUser user) {
@@ -18,7 +18,7 @@ public record UserResponseDto(
                 user.getId(),
                 user.getLogin(),
                 user.getDisplayName(),
-                user.isAdmin()
+                user.getPermissions()
         );
     }
 
