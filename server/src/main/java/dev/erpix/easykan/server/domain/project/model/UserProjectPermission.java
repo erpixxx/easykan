@@ -38,7 +38,7 @@ public enum UserProjectPermission {
                 return permission;
             }
         }
-        throw new IllegalArgumentException("No UserPermission found for value: " + value);
+        throw new IllegalArgumentException("No UserProjectPermission found for value: " + value);
     }
 
     public static long combine(UserProjectPermission... permissions) {
@@ -47,6 +47,10 @@ public enum UserProjectPermission {
             combined |= permission.value;
         }
         return combined;
+    }
+
+    public static boolean hasPermission(long combinedPermissions, UserProjectPermission permission) {
+        return (combinedPermissions & permission.value) == permission.value;
     }
 
 }
