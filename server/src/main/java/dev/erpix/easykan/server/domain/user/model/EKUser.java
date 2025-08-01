@@ -46,8 +46,8 @@ public class EKUser {
     @Column(name = "last_login")
     private LocalDateTime lastLogin;
 
-    @Column(name = "is_admin", nullable = false)
-    private boolean isAdmin;
+    @Column(name = "permissions", nullable = false)
+    private long permissions;
 
     @JsonIgnore
     @Column(name = "can_auth_with_password", nullable = false)
