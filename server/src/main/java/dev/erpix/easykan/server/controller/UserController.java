@@ -1,7 +1,7 @@
 package dev.erpix.easykan.server.controller;
 
-import dev.erpix.easykan.server.domain.user.security.EKUserDetails;
-import dev.erpix.easykan.server.domain.user.model.EKUser;
+import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
+import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.dto.UserCreateRequestDto;
 import dev.erpix.easykan.server.domain.user.dto.UserResponseDto;
 import dev.erpix.easykan.server.domain.user.service.UserService;
@@ -14,7 +14,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,8 +37,8 @@ public class UserController {
             @ApiResponse(responseCode = "401", description = "The user is not logged in")
     })
     @GetMapping("/@me")
-    public ResponseEntity<UserResponseDto> getCurrentUser(@AuthenticationPrincipal EKUserDetails userDetails) {
-        EKUser currentUser = userService.getById(userDetails.getUser().getId());
+    public ResponseEntity<UserResponseDto> getCurrentUser(@AuthenticationPrincipal JpaUserDetails userDetails) {
+        User currentUser = userService.getById(userDetails.getUser().getId());
         return ResponseEntity.ok(UserResponseDto.fromUser(currentUser));
     }
 
@@ -65,7 +64,7 @@ public class UserController {
     })
     @PostMapping
     public ResponseEntity<UserResponseDto> createUser(@RequestBody @Valid UserCreateRequestDto requestDto) {
-        EKUser createdUser = userService.create(requestDto);
+        User createdUser = userService.create(requestDto);
         return new ResponseEntity<>(UserResponseDto.fromUser(createdUser), HttpStatus.CREATED);
     }
 

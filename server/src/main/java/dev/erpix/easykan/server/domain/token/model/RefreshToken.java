@@ -1,6 +1,6 @@
 package dev.erpix.easykan.server.domain.token.model;
 
-import dev.erpix.easykan.server.domain.user.model.EKUser;
+import dev.erpix.easykan.server.domain.user.model.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -36,7 +36,7 @@ public class RefreshToken {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_uuid")
-    private EKUser user;
+    private User user;
 
     @PrePersist
     protected void onCreate() {

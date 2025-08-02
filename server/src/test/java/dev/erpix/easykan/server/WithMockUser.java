@@ -10,8 +10,8 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.TYPE})
-@WithSecurityContext(factory = EKUserSecurityContextFactory.class)
-public @interface WithMockEKUser {
+@WithSecurityContext(factory = UserSecurityContextFactory.class)
+public @interface WithMockUser {
 
     String id() default "00000000-0000-0000-0000-000000000000";
 

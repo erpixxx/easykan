@@ -1,6 +1,6 @@
 package dev.erpix.easykan.server;
 
-import dev.erpix.easykan.server.domain.user.model.EKUser;
+import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +26,7 @@ public class StorageInitializer implements CommandLineRunner {
         if (userRepository.count() == 0) {
             String passwd = generateRandomPassword(16);
 
-            EKUser admin = EKUser.builder()
+            User admin = User.builder()
                     .login("admin")
                     .displayName("Administrator")
                     .email("admin@example.com")

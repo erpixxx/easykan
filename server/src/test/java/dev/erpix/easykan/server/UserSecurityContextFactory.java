@@ -1,8 +1,8 @@
 package dev.erpix.easykan.server;
 
-import dev.erpix.easykan.server.domain.user.model.EKUser;
+import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.model.UserPermission;
-import dev.erpix.easykan.server.domain.user.security.EKUserDetails;
+import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -10,13 +10,13 @@ import org.springframework.security.test.context.support.WithSecurityContextFact
 
 import java.util.UUID;
 
-public class EKUserSecurityContextFactory implements WithSecurityContextFactory<WithMockEKUser> {
+public class UserSecurityContextFactory implements WithSecurityContextFactory<WithMockUser> {
 
     @Override
-    public SecurityContext createSecurityContext(WithMockEKUser annotation) {
+    public SecurityContext createSecurityContext(WithMockUser annotation) {
         SecurityContext context = SecurityContextHolder.createEmptyContext();
 
-        EKUser user = EKUser.builder()
+        User user = User.builder()
                 .id(UUID.fromString(annotation.id()))
                 .login(annotation.name())
                 .displayName(annotation.displayName())
@@ -26,7 +26,7 @@ public class EKUserSecurityContextFactory implements WithSecurityContextFactory<
                 .canAuthWithPassword(annotation.canAuthWithPassword())
                 .build();
 
-        EKUserDetails userDetails = new EKUserDetails(user);
+        JpaUserDetails userDetails = new JpaUserDetails(user);
 
         var auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 

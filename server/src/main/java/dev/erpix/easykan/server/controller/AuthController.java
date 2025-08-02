@@ -4,7 +4,7 @@ import dev.erpix.easykan.server.config.EasyKanConfig;
 import dev.erpix.easykan.server.domain.auth.dto.AuthLoginRequest;
 import dev.erpix.easykan.server.domain.auth.dto.AuthUserResponse;
 import dev.erpix.easykan.server.domain.token.dto.CreateRefreshTokenDto;
-import dev.erpix.easykan.server.domain.user.model.EKUser;
+import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.token.service.TokenService;
 import dev.erpix.easykan.server.domain.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -44,7 +44,7 @@ public class AuthController {
     })
     @PostMapping("/login")
     public ResponseEntity<AuthUserResponse> login(@RequestBody AuthLoginRequest request) {
-        EKUser user = userService.getByLogin(request.login());
+        User user = userService.getByLogin(request.login());
 
         if (!user.isCanAuthWithPassword() && user.getPasswordHash() != null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();

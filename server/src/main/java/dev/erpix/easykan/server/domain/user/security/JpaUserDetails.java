@@ -1,6 +1,6 @@
 package dev.erpix.easykan.server.domain.user.security;
 
-import dev.erpix.easykan.server.domain.user.model.EKUser;
+import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.model.UserPermission;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -12,9 +12,9 @@ import java.util.UUID;
 
 @Getter
 @RequiredArgsConstructor
-public class EKUserDetails implements UserDetails {
+public class JpaUserDetails implements UserDetails {
 
-    private final EKUser user;
+    private final User user;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

@@ -1,8 +1,8 @@
 package dev.erpix.easykan.server.controller;
 
 import dev.erpix.easykan.server.TestcontainersConfig;
-import dev.erpix.easykan.server.WithMockEKUser;
-import dev.erpix.easykan.server.domain.user.model.EKUser;
+import dev.erpix.easykan.server.WithMockUser;
+import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.model.UserPermission;
 import dev.erpix.easykan.server.domain.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -50,7 +50,7 @@ public class UserControllerTest {
     @BeforeEach
     void setUp() {
         if (userRepository.findByLogin("testuser").isEmpty()) {
-            EKUser user = EKUser.builder()
+            User user = User.builder()
                     .login(TEST_USER_LOGIN)
                     .displayName(TEST_USER_DISPLAY_NAME)
                     .email("test.user@easykan.dev")
@@ -78,16 +78,16 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockEKUser
+    @WithMockUser
     void deleteUser_shouldReturnForbidden_whenUserIsNotAdmin() throws Exception {
         mockMvc.perform(delete("/api/v1/users/" + UUID.randomUUID()))
                 .andExpect(status().isForbidden());
     }
 
     @Test
-    @WithMockEKUser(permissions = UserPermission.ADMIN)
+    @WithMockUser(permissions = UserPermission.ADMIN)
     void deleteUser_shouldReturnNoContent_whenUserIsAdmin() throws Exception {
-        EKUser userToDelete = userRepository.save(EKUser.builder()
+        User userToDelete = userRepository.save(User.builder()
                 .login("todelete")
                 .displayName("User to delete")
                 .email("to.delete@easykkan.dev")
@@ -100,7 +100,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockEKUser(permissions = UserPermission.ADMIN)
+    @WithMockUser(permissions = UserPermission.ADMIN)
     void deleteUser_shouldReturnNotFound_whenUserDoesNotExist() throws Exception {
         UUID nonExistentUserId = UUID.randomUUID();
 
@@ -109,7 +109,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockEKUser
+    @WithMockUser
     void createUser_shouldReturnForbidden_whenUserIsNotAdmin() throws Exception {
         mockMvc.perform(post("/api/v1/users")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -118,7 +118,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockEKUser(permissions = UserPermission.ADMIN)
+    @WithMockUser(permissions = UserPermission.ADMIN)
     void createUser_shouldReturnCreated_whenUserIsAdmin() throws Exception {
         mockMvc.perform(post("/api/v1/users")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -127,7 +127,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockEKUser(permissions = UserPermission.ADMIN)
+    @WithMockUser(permissions = UserPermission.ADMIN)
     void createUser_shouldReturnBadRequest_whenDataIsInvalid() throws Exception {
         String invalidUserJson = """
                 {

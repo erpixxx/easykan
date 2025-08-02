@@ -1,6 +1,6 @@
 package dev.erpix.easykan.server.domain.user.dto;
 
-import dev.erpix.easykan.server.domain.user.model.EKUser;
+import dev.erpix.easykan.server.domain.user.model.User;
 import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
 
@@ -13,7 +13,7 @@ public record UserResponseDto(
         long permissions
 ) {
 
-    public static UserResponseDto fromUser(@NotNull @NonNull EKUser user) {
+    public static UserResponseDto fromUser(@NotNull @NonNull User user) {
         return new UserResponseDto(
                 user.getId(),
                 user.getLogin(),

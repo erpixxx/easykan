@@ -8,7 +8,7 @@ import dev.erpix.easykan.server.exception.UserNotFoundException;
 import dev.erpix.easykan.server.domain.auth.dto.AuthLoginRequest;
 import dev.erpix.easykan.server.domain.token.dto.CreateRefreshTokenDto;
 import dev.erpix.easykan.server.domain.token.dto.RotatedTokensDto;
-import dev.erpix.easykan.server.domain.user.model.EKUser;
+import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.auth.service.JwtProvider;
 import dev.erpix.easykan.server.domain.user.service.JpaUserDetailsService;
 import dev.erpix.easykan.server.domain.token.service.TokenService;
@@ -68,7 +68,7 @@ public class AuthControllerTest {
         String displayName = "Test User";
 
         AuthLoginRequest request = new AuthLoginRequest(login, password);
-        EKUser user = EKUser.builder()
+        User user = User.builder()
                 .id(userId)
                 .login(login)
                 .displayName(displayName)
@@ -125,7 +125,7 @@ public class AuthControllerTest {
     @Test
     void login_ShouldReturnUnauthorized_whenPasswordIsIncorrect() throws Exception {
         AuthLoginRequest request = new AuthLoginRequest("testuser", "wrongpassword");
-        EKUser user = EKUser.builder()
+        User user = User.builder()
                 .id(UUID.randomUUID())
                 .login("testuser")
                 .passwordHash("hashedPassword")

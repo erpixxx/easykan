@@ -1,8 +1,8 @@
 package dev.erpix.easykan.server.domain.user.service;
 
 import dev.erpix.easykan.server.constant.CacheKey;
+import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.exception.UserNotFoundException;
-import dev.erpix.easykan.server.domain.user.model.EKUser;
 import dev.erpix.easykan.server.domain.user.dto.UserCreateRequestDto;
 import dev.erpix.easykan.server.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +23,8 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    public @NotNull EKUser create(@NotNull UserCreateRequestDto dto) {
-        EKUser user = dto.toUser();
+    public @NotNull User create(@NotNull UserCreateRequestDto dto) {
+        User user = dto.toUser();
         if (user.getPasswordHash() != null)
             user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
         return userRepository.save(user);
@@ -38,22 +38,22 @@ public class UserService {
         userRepository.deleteById(userId);
     }
 
-    public @NotNull List<EKUser> getAllUsers() {
+    public @NotNull List<User> getAllUsers() {
         return userRepository.findAll();
     }
 
     @Cacheable(value = CacheKey.USERS, key = "#userId")
-    public @NotNull EKUser getById(@NotNull UUID userId) {
+    public @NotNull User getById(@NotNull UUID userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> UserNotFoundException.byId(userId));
     }
 
-    public @NotNull EKUser getByLogin(@NotNull String login) {
+    public @NotNull User getByLogin(@NotNull String login) {
         return userRepository.findByLogin(login)
                 .orElseThrow(() -> UserNotFoundException.byLogin(login));
     }
 
-    public @NotNull EKUser getByEmail(@NotNull String email) {
+    public @NotNull User getByEmail(@NotNull String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> UserNotFoundException.byEmail(email));
     }

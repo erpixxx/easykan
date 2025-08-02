@@ -1,11 +1,11 @@
 package dev.erpix.easykan.server.service;
 
 import dev.erpix.easykan.server.domain.token.service.TokenService;
+import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.service.UserService;
 import dev.erpix.easykan.server.exception.ResourceNotFoundException;
 import dev.erpix.easykan.server.domain.token.model.RefreshToken;
 import dev.erpix.easykan.server.domain.token.dto.RotatedTokensDto;
-import dev.erpix.easykan.server.domain.user.model.EKUser;
 import dev.erpix.easykan.server.domain.token.repository.TokenRepository;
 import dev.erpix.easykan.server.domain.auth.service.JwtProvider;
 import dev.erpix.easykan.server.domain.auth.security.TokenGenerator;
@@ -51,7 +51,7 @@ public class TokenServiceTest {
     @Test
     void createRefreshToken_shouldReturnNewToken_whenUserExists() {
         UUID userId = UUID.randomUUID();
-        EKUser user = EKUser.builder().id(userId).build();
+        User user = User.builder().id(userId).build();
         TokenParts tokenParts = new TokenParts("selector", "validator");
         String hashedValidator = "hashedValidator";
 
@@ -116,7 +116,7 @@ public class TokenServiceTest {
     @Test
     void logoutAll_shouldRevokeAllTokens_whenTokenExists() {
         String rawRefreshToken = "selector:validator";
-        EKUser user = EKUser.builder().id(UUID.randomUUID()).build();
+        User user = User.builder().id(UUID.randomUUID()).build();
 
         RefreshToken primaryToken = RefreshToken.builder()
                 .revoked(false)
@@ -156,7 +156,7 @@ public class TokenServiceTest {
     void rotateRefreshToken_shouldSucceed_whenTokenIsValid() {
         String rawOldToken = "selector:validator";
         UUID userId = UUID.randomUUID();
-        EKUser user = EKUser.builder().id(userId).build();
+        User user = User.builder().id(userId).build();
         RefreshToken oldToken = RefreshToken.builder().user(user).validator("hashedValidator").build();
         TokenParts newParts = new TokenParts("new-selector", "new-validator");
 

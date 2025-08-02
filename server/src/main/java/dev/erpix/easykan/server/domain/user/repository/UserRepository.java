@@ -1,6 +1,6 @@
 package dev.erpix.easykan.server.domain.user.repository;
 
-import dev.erpix.easykan.server.domain.user.model.EKUser;
+import dev.erpix.easykan.server.domain.user.model.User;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -10,13 +10,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface UserRepository extends JpaRepository<EKUser, UUID> {
+public interface UserRepository extends JpaRepository<User, UUID> {
 
-    @NotNull Optional<EKUser> findByEmail(@NotNull String email);
+    @NotNull Optional<User> findByEmail(@NotNull String email);
 
-    @NotNull Optional<EKUser> findByLogin(String login);
+    @NotNull Optional<User> findByLogin(String login);
 
-    @NotNull List<EKUser> findByDisplayName(String displayName);
+    @NotNull List<User> findByDisplayName(String displayName);
 
-    @NotNull List<EKUser> findByDisplayNameStartingWith(String displayName);
+    @NotNull List<User> findByDisplayNameStartingWith(String displayName);
 }

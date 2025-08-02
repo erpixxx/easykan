@@ -3,7 +3,7 @@ package dev.erpix.easykan.server.domain.token.service;
 import dev.erpix.easykan.server.domain.token.model.RefreshToken;
 import dev.erpix.easykan.server.domain.token.dto.CreateRefreshTokenDto;
 import dev.erpix.easykan.server.domain.token.dto.RotatedTokensDto;
-import dev.erpix.easykan.server.domain.user.model.EKUser;
+import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.token.repository.TokenRepository;
 import dev.erpix.easykan.server.domain.auth.service.JwtProvider;
 import dev.erpix.easykan.server.domain.auth.security.TokenGenerator;
@@ -36,7 +36,7 @@ public class TokenService {
     }
 
     public @NotNull CreateRefreshTokenDto createRefreshToken(@NotNull UUID userId) {
-        EKUser user = userService.getById(userId);
+        User user = userService.getById(userId);
 
         TokenParts tokenParts = tokenGenerator.generate();
         String validatorHash = passwordEncoder.encode(tokenParts.validator());
@@ -61,7 +61,7 @@ public class TokenService {
     @Transactional
     public void logoutAll(String rawRefreshToken) {
         findAndVerifyToken(rawRefreshToken).ifPresent(token -> {
-            EKUser user = token.getUser();
+            User user = token.getUser();
             tokenRepository.findByUserAndRevokedFalse(user)
                     .forEach(this::revokeToken);
         });

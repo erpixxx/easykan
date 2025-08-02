@@ -1,8 +1,8 @@
 package dev.erpix.easykan.server.service;
 
+import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.service.UserService;
 import dev.erpix.easykan.server.exception.UserNotFoundException;
-import dev.erpix.easykan.server.domain.user.model.EKUser;
 import dev.erpix.easykan.server.domain.user.dto.UserCreateRequestDto;
 import dev.erpix.easykan.server.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -39,30 +39,30 @@ public class UserServiceTest {
 
         when(passwordEncoder.encode("password123"))
                 .thenReturn(hashedPassword);
-        when(userRepository.save(any(EKUser.class)))
+        when(userRepository.save(any(User.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        EKUser createdUser = userService.create(dto);
+        User createdUser = userService.create(dto);
 
         assertThat(createdUser).isNotNull();
         assertThat(createdUser.getPasswordHash()).isEqualTo(hashedPassword);
         verify(passwordEncoder, times(1)).encode("password123");
-        verify(userRepository, times(1)).save(any(EKUser.class));
+        verify(userRepository, times(1)).save(any(User.class));
     }
 
     @Test
     void create_shouldNotEncodePassword_whenPasswordIsNull() {
         var dto = new UserCreateRequestDto("oauthUser", "OAuth User", "oauth@test.com", null, false);
-        EKUser user = dto.toUser();
+        User user = dto.toUser();
 
-        when(userRepository.save(any(EKUser.class)))
+        when(userRepository.save(any(User.class)))
                 .thenReturn(user);
 
-        EKUser createdUser = userService.create(dto);
+        User createdUser = userService.create(dto);
 
         assertThat(createdUser).isNotNull();
         verify(passwordEncoder, never()).encode(anyString());
-        verify(userRepository, times(1)).save(any(EKUser.class));
+        verify(userRepository, times(1)).save(any(User.class));
     }
 
     @Test
@@ -90,10 +90,10 @@ public class UserServiceTest {
     @Test
     void getById_shouldReturnUser_whenUserExists() {
         UUID userId = UUID.randomUUID();
-        EKUser user = EKUser.builder().id(userId).build();
+        User user = User.builder().id(userId).build();
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
-        EKUser foundUser = userService.getById(userId);
+        User foundUser = userService.getById(userId);
 
         assertThat(foundUser).isEqualTo(user);
     }

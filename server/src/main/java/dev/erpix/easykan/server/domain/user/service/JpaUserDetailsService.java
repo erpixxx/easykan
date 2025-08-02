@@ -1,8 +1,8 @@
 package dev.erpix.easykan.server.domain.user.service;
 
+import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
 import dev.erpix.easykan.server.exception.UserNotFoundException;
-import dev.erpix.easykan.server.domain.user.security.EKUserDetails;
-import dev.erpix.easykan.server.domain.user.model.EKUser;
+import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,14 +20,14 @@ public class JpaUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        EKUser user = userRepository.findByLogin(username)
+        User user = userRepository.findByLogin(username)
                 .orElseThrow(() -> UserNotFoundException.byLogin(username));
-        return new EKUserDetails(user);
+        return new JpaUserDetails(user);
     }
 
     public UserDetails loadUserById(UUID userId) throws UsernameNotFoundException {
-        EKUser user = userRepository.findById(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> UserNotFoundException.byId(userId));
-        return new EKUserDetails(user);
+        return new JpaUserDetails(user);
     }
 }

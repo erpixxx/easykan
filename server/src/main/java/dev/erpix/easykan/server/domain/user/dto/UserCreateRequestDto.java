@@ -1,6 +1,6 @@
 package dev.erpix.easykan.server.domain.user.dto;
 
-import dev.erpix.easykan.server.domain.user.model.EKUser;
+import dev.erpix.easykan.server.domain.user.model.User;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -14,8 +14,8 @@ public record UserCreateRequestDto(
         boolean canAuthWithPassword
 ) {
 
-    public @NotNull EKUser toUser() {
-        return EKUser.builder()
+    public @NotNull User toUser() {
+        return User.builder()
                 .login(login)
                 .displayName(displayName)
                 .email(email)

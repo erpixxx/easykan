@@ -1,7 +1,7 @@
 package dev.erpix.easykan.server.domain.user.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import dev.erpix.easykan.server.domain.project.model.EKUserProject;
+import dev.erpix.easykan.server.domain.project.model.ProjectMember;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -18,7 +18,7 @@ import java.util.UUID;
 @NoArgsConstructor @AllArgsConstructor
 @Entity
 @Table(name = "users")
-public class EKUser {
+public class User {
 
     @Id
     @Column(name = "uuid")
@@ -60,7 +60,7 @@ public class EKUser {
             mappedBy = "user",
             cascade = CascadeType.ALL,
             orphanRemoval = true)
-    private List<EKUserProject> projects;
+    private List<ProjectMember> projects;
 
     @PrePersist
     protected void onCreate() {
