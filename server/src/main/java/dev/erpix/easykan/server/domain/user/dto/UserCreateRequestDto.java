@@ -7,10 +7,22 @@ import jakarta.validation.constraints.Size;
 import org.jetbrains.annotations.NotNull;
 
 public record UserCreateRequestDto(
-        @NotBlank String login,
-        @NotBlank String displayName,
-        @NotBlank @Email String email,
-        @Size(min = 8, max = 64) String password,
+        @NotBlank(message = "Login cannot be blank")
+        @Size(min = 1, max = 64, message = "Login must be between 1 and 64 characters")
+        String login,
+
+        @NotBlank(message = "Display name cannot be blank")
+        @Size(min = 1, max = 64, message = "Display name must be between 1 and 64 characters")
+        String displayName,
+
+        @NotBlank(message = "Email cannot be blank")
+        @Email(message = "Email must be valid")
+        String email,
+
+        @NotBlank(message = "Password cannot be blank")
+        @Size(min = 8, max = 64, message = "Password must be between 8 and 64 characters")
+        String password,
+
         boolean canAuthWithPassword
 ) {
 
