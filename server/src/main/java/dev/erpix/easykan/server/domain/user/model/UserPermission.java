@@ -12,8 +12,7 @@ public enum UserPermission implements GrantedAuthority {
 
     DEFAULT_PERMISSIONS(0L),
     ADMIN(1L),
-    MANAGE_USERS(1L << 1),
-    MANAGE_PROJECTS(1L << 2),
+    CREATE_PROJECT(1L << 1),
     ;
 
     private final long value;
