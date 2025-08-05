@@ -62,7 +62,15 @@ tasks.withType<BootRun> {
 }
 
 tasks.withType<Test> {
+    doFirst {
+        val agentJar = configurations.testRuntimeClasspath.get().files.find {
+            it.name.contains("byte-buddy-agent")
+        } ?: throw GradleException("Byte Buddy agent not found in test runtime classpath")
+
+        jvmArgs("-javaagent:${agentJar.absolutePath}")
+    }
     useJUnitPlatform()
+
 }
 
 tasks.jar {
