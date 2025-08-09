@@ -21,7 +21,7 @@ import java.util.UUID;
 public class User {
 
     @Id
-    @Column(name = "uuid")
+    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.UUID)
     @JdbcTypeCode(SqlTypes.UUID)
     private UUID id;
@@ -48,10 +48,6 @@ public class User {
 
     @Column(name = "permissions", nullable = false)
     private long permissions;
-
-    @JsonIgnore
-    @Column(name = "can_auth_with_password", nullable = false)
-    private boolean canAuthWithPassword;
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude

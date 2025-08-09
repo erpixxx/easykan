@@ -18,7 +18,7 @@ public class UserSecurityContextFactory implements WithSecurityContextFactory<Wi
 
         User user = User.builder()
                 .id(UUID.fromString(annotation.id()))
-                .login(annotation.name())
+                .login(annotation.login())
                 .displayName(annotation.displayName())
                 .email(annotation.email())
                 .passwordHash(annotation.password())

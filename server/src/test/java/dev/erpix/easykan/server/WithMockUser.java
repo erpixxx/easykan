@@ -15,7 +15,7 @@ public @interface WithMockUser {
 
     String id() default "00000000-0000-0000-0000-000000000000";
 
-    String name() default "user";
+    String login() default "user";
 
     String displayName() default "User";
 
@@ -25,6 +25,6 @@ public @interface WithMockUser {
 
     boolean canAuthWithPassword() default true;
 
-    UserPermission[] permissions() default { UserPermission.DEFAULT_PERMISSIONS};
+    UserPermission[] permissions() default { UserPermission.DEFAULT_PERMISSIONS };
 
 }
