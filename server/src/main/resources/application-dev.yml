@@ -2,5 +2,19 @@ easykan:
   use-https: false
   jwt:
     secret: q+9vidZZd0Tq1tNj72NUykIaOZlLeKN9ix2PxU1Hg1Y=
-    access-token-expire: 900
+    access-token-expire: 30
     refresh-token-expire: 604800
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          discord:
+            client-id: ${DISCORD_CLIENT_ID}
+            client-secret: ${DISCORD_CLIENT_SECRET}
+            redirect-uri: localhost:8080/api/oauth2/callback/discord
+            scope:
+              - identify
+              - email
+            client-name: Discord
+            authorization-grant-type: authorization_code
