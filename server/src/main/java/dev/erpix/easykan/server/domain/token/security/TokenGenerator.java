@@ -1,4 +1,4 @@
-package dev.erpix.easykan.server.domain.auth.security;
+package dev.erpix.easykan.server.domain.token.security;
 
 import org.springframework.stereotype.Component;
 
