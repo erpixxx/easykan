@@ -5,7 +5,8 @@ import java.util.Arrays;
 public interface CacheKey {
 
     String PROJECTS = "projects";
-    String USERS = "users";
+    String USERS_ID = "users_id";
+    String USERS_LOGIN = "users_login";
 
     static String[] getCacheKeys() {
         return Arrays.stream(CacheKey.class.getDeclaredFields())
