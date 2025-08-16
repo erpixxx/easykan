@@ -1,4 +1,4 @@
-package dev.erpix.easykan.server;
+package dev.erpix.easykan.server.testsupport.security;
 
 import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.model.UserPermission;
@@ -23,7 +23,6 @@ public class UserSecurityContextFactory implements WithSecurityContextFactory<Wi
                 .email(annotation.email())
                 .passwordHash(annotation.password())
                 .permissions(UserPermission.toValue(annotation.permissions()))
-                .canAuthWithPassword(annotation.canAuthWithPassword())
                 .build();
 
         JpaUserDetails userDetails = new JpaUserDetails(user);

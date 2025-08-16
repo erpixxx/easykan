@@ -36,7 +36,7 @@ public class UserServiceTest {
     @Test
     void create_shouldEncodePasswordAndSaveChanges() {
         String hashedPassword = "hashedPassword";
-        var dto = new UserCreateRequestDto("test", "Test User", "test@test.com", "password123", false);
+        var dto = new UserCreateRequestDto("test", "Test User", "test@test.com", "password123");
 
         when(passwordEncoder.encode("password123"))
                 .thenReturn(hashedPassword);
@@ -53,7 +53,7 @@ public class UserServiceTest {
 
     @Test
     void create_shouldNotEncodePassword_whenPasswordIsNull() {
-        var dto = new UserCreateRequestDto("oauthUser", "OAuth User", "oauth@test.com", null, false);
+        var dto = new UserCreateRequestDto("oauthUser", "OAuth User", "oauth@test.com", null);
         User user = dto.toUser();
 
         when(userRepository.save(any(User.class)))
@@ -105,13 +105,6 @@ public class UserServiceTest {
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
         assertThrows(UserNotFoundException.class, () -> userService.getById(userId));
-    }
-
-    @Test
-    void updateCurrentUser_shouldUpdateUser() {
-        var dto = new CurrentUserUpdateRequestDto("newlogin", "New Display Name", "new.email@easykan.dev");
-        UUID currentUserId = UUID.randomUUID();
-
     }
 
 }

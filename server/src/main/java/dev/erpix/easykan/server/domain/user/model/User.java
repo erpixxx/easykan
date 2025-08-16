@@ -1,66 +1,104 @@
 package dev.erpix.easykan.server.domain.user.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import dev.erpix.easykan.server.domain.auth.model.OAuthAccount;
+import dev.erpix.easykan.server.domain.project.model.Project;
 import dev.erpix.easykan.server.domain.project.model.ProjectMember;
+import dev.erpix.easykan.server.domain.token.model.RefreshToken;
+import dev.erpix.easykan.server.domain.board.model.Board;
+import dev.erpix.easykan.server.domain.card.model.CardAssignee;
 import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import java.time.Instant;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Getter @Setter
 @Builder
-@ToString
-@EqualsAndHashCode
-@NoArgsConstructor @AllArgsConstructor
+@ToString(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@AllArgsConstructor @NoArgsConstructor
 @Entity
-@Table(name = "users")
+@Table(name = "users", schema = "public", indexes = {
+        @Index(name = "users_login_idx", columnList = "login"),
+        @Index(name = "users_display_name_idx", columnList = "display_name")
+}, uniqueConstraints = {
+        @UniqueConstraint(name = "users_login_key", columnNames = {"login"}),
+        @UniqueConstraint(name = "users_email_key", columnNames = {"email"})
+})
 public class User {
 
+    @ToString.Include
+    @EqualsAndHashCode.Include
     @Id
-    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.UUID)
-    @JdbcTypeCode(SqlTypes.UUID)
+    @Column(name = "id", nullable = false)
     private UUID id;
 
-    @Column(name = "login", nullable = false, unique = true, length = 64)
+    @ToString.Include
+    @Size(max = 64)
+    @NotNull
+    @Column(name = "login", nullable = false, length = 64)
     private String login;
 
+    @ToString.Include
+    @Size(max = 64)
+    @NotNull
     @Column(name = "display_name", nullable = false, length = 64)
     private String displayName;
 
-    @JsonIgnore
-    @Column(name = "email", nullable = false, unique = true)
+    @ToString.Include
+    @Size(max = 255)
+    @NotNull
+    @Column(name = "email", nullable = false)
     private String email;
 
-    @JsonIgnore
+    @Size(max = 255)
     @Column(name = "password_hash")
     private String passwordHash;
 
+    @NotNull
     @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @Column(name = "last_login")
-    private LocalDateTime lastLogin;
+    private Instant lastLogin;
 
+    @ToString.Include
+    @NotNull
     @Column(name = "permissions", nullable = false)
-    private long permissions;
+    private Long permissions;
 
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    @JsonIgnore
-    @OneToMany(
-            mappedBy = "user",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true)
-    private List<ProjectMember> projects;
+    @OneToMany(mappedBy = "user")
+    private Set<CardAssignee> cardAssignments = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "owner")
+    private Set<Board> boards = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "member")
+    private Set<ProjectMember> projectMembers = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "owner")
+    private Set<Project> projects = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "user")
+    private Set<OAuthAccount> OAuthAccounts = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "user")
+    private Set<RefreshToken> refreshTokens = new LinkedHashSet<>();
 
     @PrePersist
     protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
+        if (this.createdAt == null) {
+            this.createdAt = Instant.now();
+        }
+        if (this.permissions == null) {
+            this.permissions = UserPermission.DEFAULT_PERMISSIONS.getValue();
+        }
     }
 
 }

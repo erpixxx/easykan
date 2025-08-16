@@ -14,8 +14,4 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     @NotNull Optional<User> findByLogin(String login);
 
-    @NotNull List<User> findByDisplayName(String displayName);
-
-    @NotNull List<User> findByDisplayNameStartingWith(String displayName);
-
 }

@@ -21,9 +21,7 @@ public record UserCreateRequestDto(
 
         @NotBlank(message = "Password cannot be blank")
         @Size(min = 8, max = 64, message = "Password must be between 8 and 64 characters")
-        String password,
-
-        boolean canAuthWithPassword
+        String password
 ) {
 
     public @NotNull User toUser() {
@@ -31,7 +29,6 @@ public record UserCreateRequestDto(
                 .login(login)
                 .displayName(displayName)
                 .email(email)
-                .canAuthWithPassword(canAuthWithPassword)
                 .passwordHash(password)
                 .build();
     }

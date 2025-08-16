@@ -7,7 +7,7 @@ import dev.erpix.easykan.server.domain.user.dto.CurrentUserUpdateRequestDto;
 import dev.erpix.easykan.server.domain.user.dto.UserUpdateRequestDto;
 import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.model.UserPermission;
-import dev.erpix.easykan.server.domain.user.security.RequirePermission;
+import dev.erpix.easykan.server.domain.user.security.RequireUserPermission;
 import dev.erpix.easykan.server.domain.user.util.UserDetailsProvider;
 import dev.erpix.easykan.server.exception.UserNotFoundException;
 import dev.erpix.easykan.server.domain.user.dto.UserCreateRequestDto;
@@ -15,12 +15,15 @@ import dev.erpix.easykan.server.domain.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -32,18 +35,19 @@ public class UserService {
     private final OAuthAccountRepository oAuthAccountRepository;
     private final UserDetailsProvider userDetailsProvider;
 
-    @Cacheable(value = CacheKey.USERS, key = "#userId")
+    @Cacheable(value = CacheKey.USERS_ID, key = "#userId")
     public @NotNull User getById(@NotNull UUID userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> UserNotFoundException.byId(userId));
     }
 
+    @Cacheable(value = CacheKey.USERS_LOGIN, key = "#login")
     public @NotNull User getByLogin(@NotNull String login) {
         return userRepository.findByLogin(login)
                 .orElseThrow(() -> UserNotFoundException.byLogin(login));
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @RequireUserPermission(UserPermission.MANAGE_USERS)
     public @NotNull User create(@NotNull UserCreateRequestDto dto) {
         User user = dto.toUser();
         if (user.getPasswordHash() != null)
@@ -51,7 +55,12 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    @PreAuthorize("hasAuthority('ADMIN') and #userId != authentication.principal.getId()")
+    @Caching(evict = {
+            @CacheEvict(value = CacheKey.USERS_ID, key = "#userId"),
+            @CacheEvict(value = CacheKey.USERS_LOGIN, allEntries = true) // Clear all login cache for consistency
+    })
+    @PreAuthorize("#userId != authentication.principal.getId()")
+    @RequireUserPermission(UserPermission.MANAGE_USERS)
     public void deleteUser(@NotNull UUID userId) {
         if (!userRepository.existsById(userId)) {
             throw UserNotFoundException.byId(userId);
@@ -59,14 +68,15 @@ public class UserService {
         userRepository.deleteById(userId);
     }
 
-    public @NotNull List<User> getAllUsers() {
-        return userRepository.findAll();
+    @RequireUserPermission(UserPermission.MANAGE_USERS)
+    public @NotNull Page<User> getAllUsers(Pageable pageable) {
+        return userRepository.findAll(pageable);
     }
 
     @Transactional
     public void updateCurrentUser(@NotNull CurrentUserUpdateRequestDto dto) {
         UUID currentUserId = userDetailsProvider.getCurrentUserDetails()
-                .map(details -> details.getUser().getId())
+                .map(details -> details.user().getId())
                 .orElseThrow(() -> new IllegalStateException("User details not found in security context")); // lub inna obsługa błędu
 
         User userToUpdate = userRepository.findById(currentUserId)
@@ -85,23 +95,22 @@ public class UserService {
         userRepository.save(userToUpdate);
     }
 
-    @RequirePermission(UserPermission.ADMIN)
+    @RequireUserPermission(UserPermission.MANAGE_USERS)
     public void updateUser(@NotNull UUID userId, @NotNull UserUpdateRequestDto dto) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> UserNotFoundException.byId(userId));
     }
 
     @Transactional
-    public User loadOrCreateFromOAuth(
+    public OAuthAccount loadOrCreateFromOAuth(
             @NotNull String providerId,
             @NotNull String providerName,
             @NotNull String login,
             @NotNull String displayName,
-            @NotNull String email) {
-
-        // Make sure that login, displayName, and email are not repeated
+            @NotNull String email
+    ) {
+        // todo: Make sure that login, displayName, and email are not duplicated
         return oAuthAccountRepository.findByProviderIdAndProviderName(providerId, providerName)
-                .map(OAuthAccount::getUser)
                 .orElseGet(() -> {
                     User user = User.builder()
                             .login(login)
@@ -116,7 +125,7 @@ public class UserService {
                     account.setProviderId(providerId);
                     oAuthAccountRepository.save(account);
 
-                    return user;
+                    return account;
                 });
     }
 

@@ -12,8 +12,8 @@ public enum UserPermission implements GrantedAuthority {
 
     DEFAULT_PERMISSIONS(0L),
     ADMIN(1L),
-    CREATE_PROJECT(1L << 1),
-    ;
+    MANAGE_PROJECTS(1L << 1),
+    MANAGE_USERS(1L << 2);
 
     private final long value;
 
@@ -32,25 +32,19 @@ public enum UserPermission implements GrantedAuthority {
                 .toList();
     }
 
-    public static long toValue(List<UserPermission> permissions) {
-        return permissions.stream()
-                .mapToLong(UserPermission::getValue)
-                .reduce(0, (a, b) -> a | b);
-    }
-
     public static long toValue(UserPermission... permissions) {
         return Arrays.stream(permissions)
                 .mapToLong(UserPermission::getValue)
                 .reduce(0, (a, b) -> a | b);
     }
 
-    public static boolean hasPermission(long userPermissions, UserPermission permission) {
-        return (userPermissions & permission.getValue()) == permission.getValue();
+    public static boolean hasPermission(User user, UserPermission permission) {
+        return (user.getPermissions() & permission.getValue()) == permission.getValue();
     }
 
-    public static boolean hasAnyPermission(long userPermissions, UserPermission... permissions) {
+    public static boolean hasAnyPermission(User user, UserPermission... permissions) {
         return Arrays.stream(permissions)
-                .anyMatch(permission -> hasPermission(userPermissions, permission));
+                .anyMatch(permission -> hasPermission(user, permission));
     }
 
 }

@@ -14,5 +14,7 @@ public record UserUpdateRequestDto(
         @Size(max = 64, message = "Display name must be at most 64 characters")
         String email,
 
-        Long permissions
+        Long permissionsToGrant,
+
+        Long permissionsToRevoke
 ) { }
