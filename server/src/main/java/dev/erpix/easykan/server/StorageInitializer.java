@@ -32,7 +32,6 @@ public class StorageInitializer implements CommandLineRunner {
                     .email("admin@example.com")
                     .passwordHash(passwordEncoder.encode(passwd))
                     .permissions(1L)
-                    .canAuthWithPassword(true)
                     .build();
 
             userRepository.save(admin);

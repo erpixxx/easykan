@@ -1,4 +1,4 @@
-package dev.erpix.easykan.server;
+package dev.erpix.easykan.server.testsupport.config;
 
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;

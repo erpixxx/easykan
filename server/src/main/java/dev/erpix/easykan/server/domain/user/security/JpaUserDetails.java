@@ -2,19 +2,13 @@ package dev.erpix.easykan.server.domain.user.security;
 
 import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.model.UserPermission;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.UUID;
 
-@Getter
-@RequiredArgsConstructor
-public class JpaUserDetails implements UserDetails {
-
-    private final User user;
+public record JpaUserDetails(User user) implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

@@ -30,4 +30,5 @@ public class JpaUserDetailsService implements UserDetailsService {
                 .orElseThrow(() -> UserNotFoundException.byId(userId));
         return new JpaUserDetails(user);
     }
+
 }
