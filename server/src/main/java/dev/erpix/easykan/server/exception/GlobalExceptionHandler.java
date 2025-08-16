@@ -29,7 +29,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
         Map<String, String> errors = ex.getBindingResult().getFieldErrors().stream()
                 .filter(field -> field.getDefaultMessage() != null)
-                .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
+                .collect(Collectors.toMap(
+                        FieldError::getField,
+                        FieldError::getDefaultMessage,
+                        (existingValue, newValue) -> existingValue
+                ));
 
         problem.setProperty("errors", errors);
 
@@ -37,9 +41,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(RestException.class)
-    public ResponseEntity<ProblemDetail> handleRestException(RestException ex) {
+    public ResponseEntity<ProblemDetail> handleRestException(RestException ex, WebRequest request) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(ex.getStatus(), ex.getMessage());
-        problem.setTitle("REST Error");
+        problem.setTitle(ex.getStatus().getReasonPhrase());
+        problem.setInstance(URI.create(request.getDescription(false)));
 
         return ResponseEntity.status(ex.getStatus()).body(problem);
     }

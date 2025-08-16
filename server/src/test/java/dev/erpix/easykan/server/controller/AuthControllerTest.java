@@ -1,32 +1,36 @@
 package dev.erpix.easykan.server.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.erpix.easykan.server.testsupport.security.WithMockUser;
 import dev.erpix.easykan.server.config.EasyKanConfig;
 import dev.erpix.easykan.server.config.SecurityConfig;
+import dev.erpix.easykan.server.domain.auth.service.AuthService;
+import dev.erpix.easykan.server.domain.token.dto.TokenPairDto;
+import dev.erpix.easykan.server.domain.token.dto.CreateTokenDto;
 import dev.erpix.easykan.server.exception.GlobalExceptionHandler;
+import dev.erpix.easykan.server.exception.InvalidTokenException;
 import dev.erpix.easykan.server.exception.UserNotFoundException;
-import dev.erpix.easykan.server.domain.auth.dto.AuthLoginRequest;
-import dev.erpix.easykan.server.domain.token.dto.CreateRefreshTokenDto;
-import dev.erpix.easykan.server.domain.token.dto.RotatedTokensDto;
-import dev.erpix.easykan.server.domain.user.model.User;
-import dev.erpix.easykan.server.domain.auth.service.JwtProvider;
+import dev.erpix.easykan.server.domain.auth.dto.AuthLoginRequestDto;
+import dev.erpix.easykan.server.domain.token.service.JwtProvider;
 import dev.erpix.easykan.server.domain.user.service.JpaUserDetailsService;
 import dev.erpix.easykan.server.domain.token.service.TokenService;
 import dev.erpix.easykan.server.domain.user.service.UserService;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.provider.Arguments;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
-import java.util.UUID;
+import java.time.Duration;
+import java.util.stream.Stream;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -34,13 +38,22 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(AuthController.class)
 @Import({SecurityConfig.class, GlobalExceptionHandler.class})
-public class AuthControllerTest {
+public class AuthControllerTest extends AbstractControllerSecurityTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @MockitoBean
+    private AuthService authService;
+
+    @MockitoBean
+    private JpaUserDetailsService jpaUserDetailsService;
+
+    @MockitoBean
+    private JwtProvider jwtProvider;
 
     @MockitoBean
     private TokenService tokenService;
@@ -54,97 +67,77 @@ public class AuthControllerTest {
     @MockitoBean
     private EasyKanConfig properties;
 
-    @MockitoBean
-    private JwtProvider jwtProvider;
-
-    @MockitoBean
-    private JpaUserDetailsService jpaUserDetailsService;
+    @Override
+    protected Stream<Arguments> provideProtectedEndpoints() {
+        return Stream.of(Arguments.of("POST", "/api/auth/logout-all"));
+    }
 
     @Test
     void login_shouldReturnOkAndTokens_whenCredentialsAreValid() throws Exception {
-        UUID userId = UUID.randomUUID();
-        String login = "testuser";
-        String password = "password123";
-        String displayName = "Test User";
+        AuthLoginRequestDto request = new AuthLoginRequestDto("testuser", "password123");
 
-        AuthLoginRequest request = new AuthLoginRequest(login, password);
-        User user = User.builder()
-                .id(userId)
-                .login(login)
-                .displayName(displayName)
-                .passwordHash("hashedPassword")
-                .canAuthWithPassword(true)
-                .build();
-        CreateRefreshTokenDto refreshToken = new CreateRefreshTokenDto("raw-refresh-token",
-                LocalDateTime.now().plusDays(7));
+        CreateTokenDto accessToken = new CreateTokenDto("raw-access-token", Duration.ofMinutes(15));
+        CreateTokenDto refreshToken = new CreateTokenDto("raw-refresh-token", Duration.ofDays(7));
+        int accessTokenExpire = (int) accessToken.duration().getSeconds();
+        int refreshTokenExpire = (int) refreshToken.duration().getSeconds();
 
-        when(userService.getByLogin(login)).thenReturn(user);
-        when(passwordEncoder.matches(password, "hashedPassword")).thenReturn(true);
-        when(tokenService.createAccessToken(userId)).thenReturn("new-access-token");
-        when(tokenService.createRefreshToken(userId)).thenReturn(refreshToken);
+        when(authService.loginWithPassword(any(AuthLoginRequestDto.class))).thenReturn(
+                new TokenPairDto(accessToken.rawToken(), accessToken.duration(),
+                        refreshToken.rawToken(), refreshToken.duration()));
 
-        var jwtProperties = mock(EasyKanConfig.JwtProperties.class);
-        int accessTokenExpire = 60;
-        int refreshTokenExpire = 3600;
-        when(properties.jwt()).thenReturn(jwtProperties);
-        when(jwtProperties.accessTokenExpire()).thenReturn(accessTokenExpire);
-        when(jwtProperties.refreshTokenExpire()).thenReturn(refreshTokenExpire);
-        when(properties.useHttps()).thenReturn(false);
-
-        mockMvc.perform(post("/api/v1/auth/login")
+        mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsBytes(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.login").value(login))
-                .andExpect(jsonPath("$.displayName").value(displayName))
                 .andExpect(cookie().exists("access_token"))
-                .andExpect(cookie().value("access_token", "new-access-token"))
+                .andExpect(cookie().value("access_token", accessToken.rawToken()))
                 .andExpect(cookie().maxAge("access_token", accessTokenExpire))
                 .andExpect(cookie().httpOnly("access_token", true))
                 .andExpect(cookie().exists("refresh_token"))
-                .andExpect(cookie().value("refresh_token", "raw-refresh-token"))
+                .andExpect(cookie().value("refresh_token", refreshToken.rawToken()))
                 .andExpect(cookie().maxAge("refresh_token", refreshTokenExpire))
                 .andExpect(cookie().httpOnly("refresh_token", true));
 
-        verify(tokenService).createAccessToken(userId);
-        verify(tokenService).createRefreshToken(userId);
+        verify(authService).loginWithPassword(request);
     }
 
     @Test
     void login_shouldReturnNotFound_whenUserNotFound() throws Exception {
-        AuthLoginRequest request = new AuthLoginRequest("nouser", "password123");
-        when(userService.getByLogin("nouser"))
+        AuthLoginRequestDto request = new AuthLoginRequestDto("nouser", "password123");
+        when(authService.loginWithPassword(any(AuthLoginRequestDto.class)))
                 .thenThrow(UserNotFoundException.byLogin("nouser"));
 
-        mockMvc.perform(post("/api/v1/auth/login")
+        mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isNotFound());
+                        .content(objectMapper.writeValueAsBytes(request)))
+                .andExpect(status().isNotFound())
+                .andExpect(result -> assertThat(result.getResolvedException())
+                        .isInstanceOf(UserNotFoundException.class))
+                .andReturn();
+
+        verify(authService).loginWithPassword(request);
     }
 
     @Test
     void login_ShouldReturnUnauthorized_whenPasswordIsIncorrect() throws Exception {
-        AuthLoginRequest request = new AuthLoginRequest("testuser", "wrongpassword");
-        User user = User.builder()
-                .id(UUID.randomUUID())
-                .login("testuser")
-                .passwordHash("hashedPassword")
-                .build();
+        AuthLoginRequestDto request = new AuthLoginRequestDto("testuser", "wrongpassword");
 
-        when(userService.getByLogin("testuser")).thenReturn(user);
-        when(passwordEncoder.matches("wrongpassword", "hashedPassword")).thenReturn(false);
+        when(authService.loginWithPassword(any(AuthLoginRequestDto.class)))
+                .thenThrow(new BadCredentialsException("Invalid login or password."));
 
-        mockMvc.perform(post("/api/v1/auth/login")
+        mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsBytes(request)))
                 .andExpect(status().isUnauthorized());
+
+        verify(authService).loginWithPassword(request);
     }
 
     @Test
     void logout_shouldClearCookies_whenTokenIsPresent() throws Exception {
         String refreshToken = "some-refresh-token";
 
-        mockMvc.perform(post("/api/v1/auth/logout")
+        mockMvc.perform(post("/api/auth/logout")
                         .cookie(new Cookie("refresh_token", refreshToken)))
                 .andExpect(status().isOk())
                 .andExpect(cookie().maxAge("access_token", 0))
@@ -155,7 +148,7 @@ public class AuthControllerTest {
 
     @Test
     void logout_shouldClearCookies_whenTokenIsNotPresent() throws Exception {
-        mockMvc.perform(post("/api/v1/auth/logout"))
+        mockMvc.perform(post("/api/auth/logout"))
                 .andExpect(status().isOk())
                 .andExpect(cookie().maxAge("access_token", 0))
                 .andExpect(cookie().maxAge("refresh_token", 0));
@@ -164,16 +157,40 @@ public class AuthControllerTest {
     }
 
     @Test
+    @WithMockUser
+    void logoutAll_shouldClearCookies_whenTokenIsPresent() throws Exception {
+        String refreshToken = "some-refresh-token";
+
+        mockMvc.perform(post("/api/auth/logout-all")
+                        .cookie(new Cookie("refresh_token", refreshToken)))
+                .andExpect(status().isOk())
+                .andExpect(cookie().maxAge("access_token", 0))
+                .andExpect(cookie().maxAge("refresh_token", 0));
+
+        verify(tokenService).logoutAll();
+    }
+
+    @Test
+    void logoutAll_shouldReturnUnauthorized_whenTokenIsNotPresent() throws Exception {
+        mockMvc.perform(post("/api/auth/logout-all"))
+                .andExpect(status().isUnauthorized());
+
+        verify(tokenService, never()).logoutAll();
+    }
+
+    @Test
     void refresh_shouldReturnOkAndNewTokens_whenTokenIsValid() throws Exception {
         String oldRefreshToken = "old-valid-token";
-        RotatedTokensDto rotatedTokens = new RotatedTokensDto(
+        TokenPairDto rotatedTokens = new TokenPairDto(
                 "new-access-token",
+                Duration.ofMinutes(15),
                 "new-raw-refresh-token",
-                LocalDateTime.now().plusDays(7));
+                Duration.ofDays(7));
 
-        when(tokenService.rotateRefreshToken(oldRefreshToken)).thenReturn(Optional.of(rotatedTokens));
+        when(tokenService.rotateRefreshToken(oldRefreshToken))
+                .thenReturn(rotatedTokens);
 
-        mockMvc.perform(post("/api/v1/auth/refresh")
+        mockMvc.perform(post("/api/auth/refresh")
                         .cookie(new Cookie("refresh_token", oldRefreshToken)))
                 .andExpect(status().isOk())
                 .andExpect(cookie().value("access_token", "new-access-token"))
@@ -183,17 +200,14 @@ public class AuthControllerTest {
     @Test
     void refresh_shouldReturnUnauthorized_whenTokenIsInvalid() throws Exception {
         String invalidRefreshToken = "invalid-token";
-        when(tokenService.rotateRefreshToken(invalidRefreshToken)).thenReturn(Optional.empty());
+        when(tokenService.rotateRefreshToken(invalidRefreshToken))
+                .thenThrow(new InvalidTokenException());
 
-        mockMvc.perform(post("/api/v1/auth/refresh")
+        mockMvc.perform(post("/api/auth/refresh")
                         .cookie(new Cookie("refresh_token", invalidRefreshToken)))
-                .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void refresh_shouldReturnUnauthorized_whenNoTokenIsProvided() throws Exception {
-        mockMvc.perform(post("/api/v1/auth/refresh"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isUnauthorized())
+                .andExpect(result -> assertThat(result.getResolvedException())
+                        .isInstanceOf(InvalidTokenException.class));
     }
 
 }

@@ -1,7 +1,7 @@
 package dev.erpix.easykan.server.security;
 
 import dev.erpix.easykan.server.config.EasyKanConfig;
-import dev.erpix.easykan.server.domain.auth.service.JwtProvider;
+import dev.erpix.easykan.server.domain.token.service.JwtProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

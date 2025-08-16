@@ -1,13 +1,15 @@
 package dev.erpix.easykan.server.config.filter;
 
-import dev.erpix.easykan.server.domain.auth.service.JwtProvider;
+import dev.erpix.easykan.server.domain.token.service.JwtProvider;
 import dev.erpix.easykan.server.domain.user.service.JpaUserDetailsService;
+import dev.erpix.easykan.server.exception.InvalidTokenException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,6 +25,7 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtProvider jwtProvider;
@@ -36,14 +39,18 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
 
         getTokenFromCookie(request).ifPresent(token -> {
-            String subject = jwtProvider.validate(token);
-            if (subject != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UUID userId = UUID.fromString(subject);
-                UserDetails userDetails = userDetailsService.loadUserById(userId);
+            try {
+                if (SecurityContextHolder.getContext().getAuthentication() == null) {
+                    String subject = jwtProvider.validate(token);
+                    UUID userId = UUID.fromString(subject);
+                    UserDetails userDetails = userDetailsService.loadUserById(userId);
 
-                var auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(auth);
+                    var auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(auth);
+                }
+            } catch (InvalidTokenException e) {
+                log.warn("Invalid JWT token received: {}", e.getMessage());
             }
         });
 

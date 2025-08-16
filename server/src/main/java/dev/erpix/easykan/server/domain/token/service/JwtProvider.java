@@ -1,6 +1,7 @@
-package dev.erpix.easykan.server.domain.auth.service;
+package dev.erpix.easykan.server.domain.token.service;
 
 import dev.erpix.easykan.server.config.EasyKanConfig;
+import dev.erpix.easykan.server.exception.InvalidTokenException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -38,7 +39,7 @@ public class JwtProvider {
                 .compact();
     }
 
-    public @Nullable String validate(@NotNull String token) {
+    public @NotNull String validate(@NotNull String token) {
         try {
             return Jwts.parser()
                     .verifyWith(key)
@@ -47,8 +48,7 @@ public class JwtProvider {
                     .getPayload()
                     .getSubject();
         } catch (JwtException e) {
-            // Token is invalid or expired
-            return null;
+            throw new InvalidTokenException();
         }
     }
 
