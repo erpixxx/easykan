@@ -24,7 +24,6 @@ import org.springframework.test.context.TestPropertySources;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
-import java.sql.Ref;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -193,7 +192,7 @@ public class TokenServiceTest {
         List<RefreshToken> capturedTokens = refreshTokenCaptor.getAllValues();
         assertThat(capturedTokens).hasSize(2);
 
-        RefreshToken revokedToken = capturedTokens.get(0);
+        RefreshToken revokedToken = capturedTokens.getFirst();
         assertThat(revokedToken.isRevoked()).isTrue();
         assertThat(revokedToken).isEqualTo(oldToken);
 

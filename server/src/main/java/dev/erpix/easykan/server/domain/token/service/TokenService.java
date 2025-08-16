@@ -9,21 +9,17 @@ import dev.erpix.easykan.server.domain.token.repository.TokenRepository;
 import dev.erpix.easykan.server.domain.token.security.TokenGenerator;
 import dev.erpix.easykan.server.domain.token.security.TokenParts;
 import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
-import dev.erpix.easykan.server.domain.user.service.JpaUserDetailsService;
 import dev.erpix.easykan.server.domain.user.service.UserService;
 import dev.erpix.easykan.server.domain.user.util.UserDetailsProvider;
 import dev.erpix.easykan.server.exception.InvalidTokenException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
