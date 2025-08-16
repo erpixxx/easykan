@@ -1,6 +1,5 @@
 package dev.erpix.easykan.server.service;
 
-import dev.erpix.easykan.server.domain.user.dto.CurrentUserUpdateRequestDto;
 import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.service.UserService;
 import dev.erpix.easykan.server.exception.UserNotFoundException;
