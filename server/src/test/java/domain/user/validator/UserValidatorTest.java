@@ -1,0 +1,85 @@
+package domain.user.validator;
+
+import dev.erpix.easykan.server.domain.user.repository.UserRepository;
+import dev.erpix.easykan.server.domain.user.validator.UserValidator;
+import dev.erpix.easykan.server.exception.ResourceAlreadyExistsException;
+import org.hibernate.validator.internal.constraintvalidators.bv.EmailValidator;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+public class UserValidatorTest {
+
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private EmailValidator emailValidator;
+
+    @InjectMocks
+    private UserValidator userValidator;
+
+    private final UUID userId = UUID.randomUUID();
+
+    @Test
+    void validateLogin_shouldDoNothing_whenLoginIsValid() {
+        String validLogin = "validLogin";
+
+        when(userRepository.existsByLoginAndIdNot(validLogin, userId))
+                .thenReturn(false);
+
+        assertDoesNotThrow(() -> userValidator.validateLogin(validLogin, userId));
+    }
+
+    @Test
+    void validateLogin_shouldThrowException_whenLoginIsBlank() {
+        String blankLogin = " ";
+
+        assertThrows(IllegalArgumentException.class, () ->
+                userValidator.validateLogin(blankLogin, userId));
+    }
+
+    @Test
+    void validateLogin_shouldThrowException_whenLoginAlreadyExists() {
+        String existingLogin = "admin";
+
+        when(userRepository.existsByLoginAndIdNot(existingLogin, userId))
+                .thenReturn(true);
+
+        assertThrows(ResourceAlreadyExistsException.class, () ->
+                userValidator.validateLogin(existingLogin, userId));
+    }
+
+    @Test
+    void validateEmail_shouldNotThrowException_whenEmailIsValidAndUnique() {
+        String validEmail = "test@example.com";
+
+        when(emailValidator.isValid(validEmail, null))
+                .thenReturn(true);
+        when(userRepository.existsByEmailAndIdNot(validEmail, userId))
+                .thenReturn(false);
+
+        assertDoesNotThrow(() -> userValidator.validateEmail(validEmail, userId));
+    }
+
+    @Test
+    void validateEmail_shouldThrowException_whenEmailFormatIsInvalid() {
+        String invalidEmail = "not-an-email";
+
+        when(emailValidator.isValid(invalidEmail, null))
+                .thenReturn(false);
+
+        assertThrows(IllegalArgumentException.class, () ->
+                userValidator.validateEmail(invalidEmail, userId));
+    }
+
+}
