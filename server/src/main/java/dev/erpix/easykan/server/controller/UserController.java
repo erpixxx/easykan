@@ -1,7 +1,6 @@
 package dev.erpix.easykan.server.controller;
 
 import dev.erpix.easykan.server.domain.user.dto.CurrentUserUpdateRequestDto;
-import dev.erpix.easykan.server.domain.user.dto.UserUpdateRequestDto;
 import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
 import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.dto.UserCreateRequestDto;
@@ -85,19 +84,20 @@ public class UserController {
         userService.deleteUser(userId);
     }
 
-    @Operation(summary = "Updates current user details",
+    @Operation(summary = "Update current user's info",
             description = "Updates the details of the currently authenticated user.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Successful operation"),
+            @ApiResponse(responseCode = "400", description = "Invalid data provided"),
+            @ApiResponse(responseCode = "401", description = "User is not authenticated")
+    })
     @PatchMapping("/@me")
-    public void updateCurrentUser(@RequestBody @Valid CurrentUserUpdateRequestDto requestDto) {
-        userService.updateCurrentUser(requestDto);
-    }
-
-    @Operation(summary = "Update a user",
-            description = "Updates user details by their ID.")
-    @PatchMapping("/{userId}")
-    public void updateUser(@PathVariable UUID userId,
-                           @RequestBody @Valid UserUpdateRequestDto requestDto) {
-        userService.updateUser(userId, requestDto);
+    public ResponseEntity<UserResponseDto> updateCurrentUser(
+            @AuthenticationPrincipal JpaUserDetails userDetails,
+            @RequestBody @Valid CurrentUserUpdateRequestDto requestDto
+    ) {
+        User user = userService.updateCurrentUser(userDetails.getId(), requestDto);
+        return ResponseEntity.ok(UserResponseDto.fromUser(user));
     }
 
 }

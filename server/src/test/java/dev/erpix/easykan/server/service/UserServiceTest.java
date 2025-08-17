@@ -1,7 +1,9 @@
 package dev.erpix.easykan.server.service;
 
+import dev.erpix.easykan.server.domain.user.dto.CurrentUserUpdateRequestDto;
 import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.service.UserService;
+import dev.erpix.easykan.server.domain.user.validator.UserValidator;
 import dev.erpix.easykan.server.exception.UserNotFoundException;
 import dev.erpix.easykan.server.domain.user.dto.UserCreateRequestDto;
 import dev.erpix.easykan.server.domain.user.repository.UserRepository;
@@ -28,6 +30,9 @@ public class UserServiceTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private UserValidator userValidator;
 
     @InjectMocks
     private UserService userService;
@@ -104,6 +109,43 @@ public class UserServiceTest {
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
         assertThrows(UserNotFoundException.class, () -> userService.getById(userId));
+    }
+
+    @Test
+    void updateCurrentUser_shouldUpdateUserDetails() {
+        UUID userId = UUID.randomUUID();
+        String oldLogin = "oldLogin";
+        String oldDisplayName = "Old Name";
+        String oldEmail = "old.email@easykan.dev";
+        User user = User.builder()
+                .id(userId)
+                .login(oldLogin)
+                .displayName(oldDisplayName)
+                .email(oldEmail)
+                .build();
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
+        when(userRepository.save(any(User.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        String newLogin = "newLogin";
+        String newDisplayName = "New Name";
+        String newEmail = "new.email@easykan.dev";
+        var dto = new CurrentUserUpdateRequestDto(
+                Optional.of(newLogin),
+                Optional.of(newDisplayName),
+                Optional.of(newEmail)
+        );
+        User updatedUser = userService.updateCurrentUser(userId, dto);
+
+        assertThat(updatedUser).isNotNull();
+        assertThat(updatedUser.getLogin())
+                .isEqualTo(newLogin);
+        assertThat(updatedUser.getDisplayName())
+                .isEqualTo(newDisplayName);
+        assertThat(updatedUser.getEmail())
+                .isEqualTo(newEmail);
     }
 
 }

@@ -27,6 +27,7 @@ repositories {
 
 dependencies {
     implementation("com.bucket4j:bucket4j_jdk17-core:8.14.0")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.19.2")
     implementation("com.github.ben-manes.caffeine:caffeine:3.2.2")
     implementation("io.jsonwebtoken:jjwt-api:0.12.6")
     implementation("org.jetbrains:annotations:26.0.2")

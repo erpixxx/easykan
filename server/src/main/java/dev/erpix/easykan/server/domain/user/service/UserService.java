@@ -9,6 +9,7 @@ import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.model.UserPermission;
 import dev.erpix.easykan.server.domain.user.security.RequireUserPermission;
 import dev.erpix.easykan.server.domain.user.util.UserDetailsProvider;
+import dev.erpix.easykan.server.domain.user.validator.UserValidator;
 import dev.erpix.easykan.server.exception.UserNotFoundException;
 import dev.erpix.easykan.server.domain.user.dto.UserCreateRequestDto;
 import dev.erpix.easykan.server.domain.user.repository.UserRepository;
@@ -34,6 +35,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final OAuthAccountRepository oAuthAccountRepository;
     private final UserDetailsProvider userDetailsProvider;
+    private final UserValidator userValidator;
 
     @Cacheable(value = CacheKey.USERS_ID, key = "#userId")
     public @NotNull User getById(@NotNull UUID userId) {
@@ -74,25 +76,27 @@ public class UserService {
     }
 
     @Transactional
-    public void updateCurrentUser(@NotNull CurrentUserUpdateRequestDto dto) {
-        UUID currentUserId = userDetailsProvider.getCurrentUserDetails()
-                .map(details -> details.user().getId())
-                .orElseThrow(() -> new IllegalStateException("User details not found in security context")); // lub inna obsługa błędu
+    public User updateCurrentUser(
+            @NotNull UUID userId,
+            @NotNull CurrentUserUpdateRequestDto dto
+    ) {
+        User userToUpdate = userRepository.findById(userId)
+                .orElseThrow(() -> UserNotFoundException.byId(userId));
 
-        User userToUpdate = userRepository.findById(currentUserId)
-                .orElseThrow(() -> UserNotFoundException.byId(currentUserId));
+        dto.login().ifPresent(login -> {
+            userValidator.validateLogin(login, userId);
+            userToUpdate.setLogin(login);
+        });
+        dto.displayName().ifPresent(displayName -> {
+            userValidator.validateDisplayName(displayName);
+            userToUpdate.setDisplayName(displayName);
+        });
+        dto.email().ifPresent(email -> {
+            userValidator.validateEmail(email, userId);
+            userToUpdate.setEmail(email);
+        });
 
-        if (dto.login() != null) {
-            userToUpdate.setLogin(dto.login());
-        }
-        if (dto.displayName() != null) {
-            userToUpdate.setDisplayName(dto.displayName());
-        }
-        if (dto.email() != null) {
-            userToUpdate.setEmail(dto.email());
-        }
-
-        userRepository.save(userToUpdate);
+        return userRepository.save(userToUpdate);
     }
 
     @RequireUserPermission(UserPermission.MANAGE_USERS)
