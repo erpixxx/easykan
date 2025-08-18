@@ -15,6 +15,10 @@ public enum UserPermission implements GrantedAuthority {
     MANAGE_PROJECTS(1L << 1),
     MANAGE_USERS(1L << 2);
 
+    public static final long ALL_PERMISSIONS_MASK = Arrays.stream(values())
+            .mapToLong(UserPermission::getValue)
+            .reduce(0, (a, b) -> a | b);
+
     private final long value;
 
     UserPermission(long value) {
@@ -45,6 +49,15 @@ public enum UserPermission implements GrantedAuthority {
     public static boolean hasAnyPermission(User user, UserPermission... permissions) {
         return Arrays.stream(permissions)
                 .anyMatch(permission -> hasPermission(user, permission));
+    }
+
+    public static void validatePermissions(long permissions) {
+        if (permissions < 0) {
+            throw new IllegalArgumentException("Permissions value cannot be negative");
+        }
+        if ((permissions & ~UserPermission.ALL_PERMISSIONS_MASK) != 0) {
+            throw new IllegalArgumentException("Invalid permissions value: " + permissions);
+        }
     }
 
 }

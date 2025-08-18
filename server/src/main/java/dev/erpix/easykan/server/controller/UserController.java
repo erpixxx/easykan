@@ -1,6 +1,7 @@
 package dev.erpix.easykan.server.controller;
 
 import dev.erpix.easykan.server.domain.user.dto.UserInfoUpdateRequestDto;
+import dev.erpix.easykan.server.domain.user.dto.UserPermissionsUpdateRequestDto;
 import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
 import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.dto.UserCreateRequestDto;
@@ -115,6 +116,23 @@ public class UserController {
     ) {
         User user = userService.updateUserInfo(userId, requestDto);
         return ResponseEntity.ok(UserResponseDto.fromUser(user));
+    }
+
+    @Operation(summary = "Update user permissions",
+            description = "Sets the permissions for a given user")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Permissions updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid permissions value provided"),
+            @ApiResponse(responseCode = "403", description = "Insufficient permissions"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
+    @PutMapping("/{userId}/permissions")
+    public ResponseEntity<Void> updateUserPermissions(
+            @PathVariable UUID userId,
+            @RequestBody UserPermissionsUpdateRequestDto requestDto
+            ) {
+        userService.updateUserPermissions(userId, requestDto);
+        return ResponseEntity.noContent().build();
     }
 
 }

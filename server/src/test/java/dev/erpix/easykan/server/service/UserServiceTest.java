@@ -1,6 +1,7 @@
 package dev.erpix.easykan.server.service;
 
 import dev.erpix.easykan.server.domain.user.dto.UserInfoUpdateRequestDto;
+import dev.erpix.easykan.server.domain.user.dto.UserPermissionsUpdateRequestDto;
 import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.service.UserService;
 import dev.erpix.easykan.server.domain.user.validator.UserValidator;
@@ -228,6 +229,58 @@ public class UserServiceTest {
         verify(userValidator, never()).validateLogin(anyString(), any(UUID.class));
         verify(userValidator, never()).validateDisplayName(anyString());
         verify(userValidator, never()).validateEmail(anyString(), any(UUID.class));
+    }
+
+    @Test
+    void updateUserPermissions_shouldUpdatePermissionsForUser() {
+        UUID userId = UUID.randomUUID();
+        long newPermissions = 0b0011;
+        User user = User.builder().id(userId).build();
+
+        var requestDto = new UserPermissionsUpdateRequestDto(newPermissions);
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
+        when(userRepository.save(any(User.class)))
+                .thenReturn(user);
+
+        userService.updateUserPermissions(userId, requestDto);
+
+        assertThat(user.getPermissions()).isEqualTo(newPermissions);
+        verify(userRepository).findById(userId);
+        verify(userRepository).save(any(User.class));
+    }
+
+    @Test
+    void updateUserPermissions_shouldThrowException_whenUserDoesNotExist() {
+        UUID userId = UUID.randomUUID();
+        long newPermissions = 0b0011;
+        var requestDto = new UserPermissionsUpdateRequestDto(newPermissions);
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.empty());
+
+        assertThrows(UserNotFoundException.class, () ->
+                userService.updateUserPermissions(userId, requestDto));
+
+        verify(userRepository).findById(userId);
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void updateUserPermissions_shouldThrowException_whenPermissionsAreInvalid() {
+        UUID userId = UUID.randomUUID();
+        long invalidPermissions = 12345L; // Not compatible with UserPermission bitmask
+        var requestDto = new UserPermissionsUpdateRequestDto(invalidPermissions);
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(new User()));
+
+        assertThrows(IllegalArgumentException.class, () ->
+                userService.updateUserPermissions(userId, requestDto));
+
+        verify(userRepository).findById(userId);
+        verify(userRepository, never()).save(any(User.class));
     }
 
 }

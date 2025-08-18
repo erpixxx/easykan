@@ -4,6 +4,7 @@ import dev.erpix.easykan.server.constant.CacheKey;
 import dev.erpix.easykan.server.domain.auth.model.OAuthAccount;
 import dev.erpix.easykan.server.domain.auth.repository.OAuthAccountRepository;
 import dev.erpix.easykan.server.domain.user.dto.UserInfoUpdateRequestDto;
+import dev.erpix.easykan.server.domain.user.dto.UserPermissionsUpdateRequestDto;
 import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.model.UserPermission;
 import dev.erpix.easykan.server.domain.user.security.RequireUserPermission;
@@ -97,6 +98,27 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> UserNotFoundException.byId(userId));
         return updateUserInfoAndSave(user, dto);
+    }
+
+    @Transactional
+    @Caching(put = {
+            @CachePut(value = CacheKey.USERS_ID, key = "#result.id"),
+            @CachePut(value = CacheKey.USERS_LOGIN, key = "#result.login")
+    })
+    @PreAuthorize("#userId != authentication.principal.getId()")
+    @RequireUserPermission(UserPermission.ADMIN)
+    public void updateUserPermissions(
+            @NotNull UUID userId,
+            @NotNull UserPermissionsUpdateRequestDto dto
+    ) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> UserNotFoundException.byId(userId));
+
+        long permissions = dto.permissions();
+        UserPermission.validatePermissions(permissions);
+        user.setPermissions(permissions);
+
+        userRepository.save(user);
     }
 
     protected @NotNull User updateUserInfoAndSave(@NotNull User user, @NotNull UserInfoUpdateRequestDto dto) {
