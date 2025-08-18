@@ -4,11 +4,9 @@ import dev.erpix.easykan.server.constant.CacheKey;
 import dev.erpix.easykan.server.domain.auth.model.OAuthAccount;
 import dev.erpix.easykan.server.domain.auth.repository.OAuthAccountRepository;
 import dev.erpix.easykan.server.domain.user.dto.CurrentUserUpdateRequestDto;
-import dev.erpix.easykan.server.domain.user.dto.UserUpdateRequestDto;
 import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.model.UserPermission;
 import dev.erpix.easykan.server.domain.user.security.RequireUserPermission;
-import dev.erpix.easykan.server.domain.user.util.UserDetailsProvider;
 import dev.erpix.easykan.server.domain.user.validator.UserValidator;
 import dev.erpix.easykan.server.exception.UserNotFoundException;
 import dev.erpix.easykan.server.domain.user.dto.UserCreateRequestDto;
@@ -17,6 +15,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
@@ -34,7 +33,6 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final OAuthAccountRepository oAuthAccountRepository;
-    private final UserDetailsProvider userDetailsProvider;
     private final UserValidator userValidator;
 
     @Cacheable(value = CacheKey.USERS_ID, key = "#userId")
@@ -76,6 +74,10 @@ public class UserService {
     }
 
     @Transactional
+    @Caching(put = {
+            @CachePut(value = CacheKey.USERS_ID, key = "#result.id"),
+            @CachePut(value = CacheKey.USERS_LOGIN, key = "#result.login")
+    })
     public User updateCurrentUser(
             @NotNull UUID userId,
             @NotNull CurrentUserUpdateRequestDto dto
@@ -99,11 +101,11 @@ public class UserService {
         return userRepository.save(userToUpdate);
     }
 
-    @RequireUserPermission(UserPermission.MANAGE_USERS)
-    public void updateUser(@NotNull UUID userId, @NotNull UserUpdateRequestDto dto) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> UserNotFoundException.byId(userId));
-    }
+//    @RequireUserPermission(UserPermission.MANAGE_USERS)
+//    public void updateUser(@NotNull UUID userId, @NotNull UserUpdateRequestDto dto) {
+//        User user = userRepository.findById(userId)
+//                .orElseThrow(() -> UserNotFoundException.byId(userId));
+//    }
 
     @Transactional
     public OAuthAccount loadOrCreateFromOAuth(
