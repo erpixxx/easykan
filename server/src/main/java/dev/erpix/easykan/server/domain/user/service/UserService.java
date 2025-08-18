@@ -3,7 +3,7 @@ package dev.erpix.easykan.server.domain.user.service;
 import dev.erpix.easykan.server.constant.CacheKey;
 import dev.erpix.easykan.server.domain.auth.model.OAuthAccount;
 import dev.erpix.easykan.server.domain.auth.repository.OAuthAccountRepository;
-import dev.erpix.easykan.server.domain.user.dto.CurrentUserUpdateRequestDto;
+import dev.erpix.easykan.server.domain.user.dto.UserInfoUpdateRequestDto;
 import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.model.UserPermission;
 import dev.erpix.easykan.server.domain.user.security.RequireUserPermission;
@@ -34,6 +34,11 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final OAuthAccountRepository oAuthAccountRepository;
     private final UserValidator userValidator;
+
+    @RequireUserPermission(UserPermission.MANAGE_USERS)
+    public @NotNull Page<User> getAllUsers(Pageable pageable) {
+        return userRepository.findAll(pageable);
+    }
 
     @Cacheable(value = CacheKey.USERS_ID, key = "#userId")
     public @NotNull User getById(@NotNull UUID userId) {
@@ -68,9 +73,18 @@ public class UserService {
         userRepository.deleteById(userId);
     }
 
-    @RequireUserPermission(UserPermission.MANAGE_USERS)
-    public @NotNull Page<User> getAllUsers(Pageable pageable) {
-        return userRepository.findAll(pageable);
+    @Transactional
+    @Caching(put = {
+            @CachePut(value = CacheKey.USERS_ID, key = "#result.id"),
+            @CachePut(value = CacheKey.USERS_LOGIN, key = "#result.login")
+    })
+    public User updateCurrentUserInfo(
+            @NotNull UUID userId,
+            @NotNull UserInfoUpdateRequestDto dto
+    ) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> UserNotFoundException.byId(userId));
+        return updateUserInfoAndSave(user, dto);
     }
 
     @Transactional
@@ -78,34 +92,29 @@ public class UserService {
             @CachePut(value = CacheKey.USERS_ID, key = "#result.id"),
             @CachePut(value = CacheKey.USERS_LOGIN, key = "#result.login")
     })
-    public User updateCurrentUser(
-            @NotNull UUID userId,
-            @NotNull CurrentUserUpdateRequestDto dto
-    ) {
-        User userToUpdate = userRepository.findById(userId)
+    @RequireUserPermission(UserPermission.MANAGE_USERS)
+    public User updateUserInfo(@NotNull UUID userId, @NotNull UserInfoUpdateRequestDto dto) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> UserNotFoundException.byId(userId));
+        return updateUserInfoAndSave(user, dto);
+    }
 
+    protected @NotNull User updateUserInfoAndSave(@NotNull User user, @NotNull UserInfoUpdateRequestDto dto) {
         dto.login().ifPresent(login -> {
-            userValidator.validateLogin(login, userId);
-            userToUpdate.setLogin(login);
+            userValidator.validateLogin(login, user.getId());
+            user.setLogin(login);
         });
         dto.displayName().ifPresent(displayName -> {
             userValidator.validateDisplayName(displayName);
-            userToUpdate.setDisplayName(displayName);
+            user.setDisplayName(displayName);
         });
         dto.email().ifPresent(email -> {
-            userValidator.validateEmail(email, userId);
-            userToUpdate.setEmail(email);
+            userValidator.validateEmail(email, user.getId());
+            user.setEmail(email);
         });
 
-        return userRepository.save(userToUpdate);
+        return userRepository.save(user);
     }
-
-//    @RequireUserPermission(UserPermission.MANAGE_USERS)
-//    public void updateUser(@NotNull UUID userId, @NotNull UserUpdateRequestDto dto) {
-//        User user = userRepository.findById(userId)
-//                .orElseThrow(() -> UserNotFoundException.byId(userId));
-//    }
 
     @Transactional
     public OAuthAccount loadOrCreateFromOAuth(

@@ -62,7 +62,9 @@ public class UserControllerTest extends AbstractControllerSecurityTest {
                 Arguments.of("GET", "/api/users/@me"),
                 Arguments.of("GET", "/api/users"),
                 Arguments.of("POST", "/api/users"),
-                Arguments.of("DELETE", "/api/users/00000000-0000-0000-0000-000000000000")
+                Arguments.of("DELETE", "/api/users/" + WithMockUser.Default.ID),
+                Arguments.of("PATCH", "/api/users/@me"),
+                Arguments.of("PATCH", "/api/users/" + WithMockUser.Default.ID)
         );
     }
 

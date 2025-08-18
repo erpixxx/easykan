@@ -1,6 +1,6 @@
 package dev.erpix.easykan.server.controller;
 
-import dev.erpix.easykan.server.domain.user.dto.CurrentUserUpdateRequestDto;
+import dev.erpix.easykan.server.domain.user.dto.UserInfoUpdateRequestDto;
 import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
 import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.dto.UserCreateRequestDto;
@@ -94,9 +94,26 @@ public class UserController {
     @PatchMapping("/@me")
     public ResponseEntity<UserResponseDto> updateCurrentUser(
             @AuthenticationPrincipal JpaUserDetails userDetails,
-            @RequestBody @Valid CurrentUserUpdateRequestDto requestDto
+            @RequestBody UserInfoUpdateRequestDto requestDto
     ) {
-        User user = userService.updateCurrentUser(userDetails.getId(), requestDto);
+        User user = userService.updateCurrentUserInfo(userDetails.getId(), requestDto);
+        return ResponseEntity.ok(UserResponseDto.fromUser(user));
+    }
+
+    @Operation(summary = "Update user details",
+            description = "Updates the given user's details.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Successful operation"),
+            @ApiResponse(responseCode = "400", description = "Invalid data provided"),
+            @ApiResponse(responseCode = "401", description = "User is not authenticated"),
+            @ApiResponse(responseCode = "403", description = "User does not have permission to update this user"),
+    })
+    @PatchMapping("/{userId}")
+    public ResponseEntity<UserResponseDto> updateUser(
+            @PathVariable UUID userId,
+            @RequestBody UserInfoUpdateRequestDto requestDto
+    ) {
+        User user = userService.updateUserInfo(userId, requestDto);
         return ResponseEntity.ok(UserResponseDto.fromUser(user));
     }
 
