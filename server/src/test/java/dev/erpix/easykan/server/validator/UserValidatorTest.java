@@ -1,4 +1,4 @@
-package domain.user.validator;
+package dev.erpix.easykan.server.validator;
 
 import dev.erpix.easykan.server.domain.user.repository.UserRepository;
 import dev.erpix.easykan.server.domain.user.validator.UserValidator;
