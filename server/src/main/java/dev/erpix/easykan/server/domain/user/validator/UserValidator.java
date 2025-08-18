@@ -2,6 +2,7 @@ package dev.erpix.easykan.server.domain.user.validator;
 
 import dev.erpix.easykan.server.domain.user.repository.UserRepository;
 import dev.erpix.easykan.server.exception.ResourceAlreadyExistsException;
+import dev.erpix.easykan.server.exception.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.validator.internal.constraintvalidators.bv.EmailValidator;
 import org.springframework.stereotype.Component;
@@ -22,7 +23,7 @@ public class UserValidator {
 
     public void validateLogin(String login, UUID userId) {
         if (login.isBlank() || login.length() > LOGIN_MAX_LENGTH) {
-            throw new IllegalArgumentException("Login must be between " + LOGIN_MIN_LENGTH +
+            throw new ValidationException("Login must be between " + LOGIN_MIN_LENGTH +
                     " and " + LOGIN_MAX_LENGTH + " characters");
         }
         if (userRepository.existsByLoginAndIdNot(login, userId)) {
@@ -32,14 +33,14 @@ public class UserValidator {
 
     public void validateDisplayName(String displayName) {
         if (displayName.isBlank() || displayName.length() > DISPLAY_NAME_MAX_LENGTH) {
-            throw new IllegalArgumentException("Display name must be between " + DISPLAY_NAME_MIN_LENGTH +
+            throw new ValidationException("Display name must be between " + DISPLAY_NAME_MIN_LENGTH +
                     " and " + DISPLAY_NAME_MAX_LENGTH + " characters");
         }
     }
 
     public void validateEmail(String email, UUID userId) {
         if (!emailValidator.isValid(email, null)) {
-            throw new IllegalArgumentException("Email must be a valid email address");
+            throw new ValidationException("Email must be a valid email address");
         }
         if (userRepository.existsByEmailAndIdNot(email, userId)) {
             throw new ResourceAlreadyExistsException("Email already exists: " + email);

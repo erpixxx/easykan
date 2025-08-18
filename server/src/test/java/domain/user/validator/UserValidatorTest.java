@@ -3,6 +3,7 @@ package domain.user.validator;
 import dev.erpix.easykan.server.domain.user.repository.UserRepository;
 import dev.erpix.easykan.server.domain.user.validator.UserValidator;
 import dev.erpix.easykan.server.exception.ResourceAlreadyExistsException;
+import dev.erpix.easykan.server.exception.ValidationException;
 import org.hibernate.validator.internal.constraintvalidators.bv.EmailValidator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,7 +45,7 @@ public class UserValidatorTest {
     void validateLogin_shouldThrowException_whenLoginIsBlank() {
         String blankLogin = " ";
 
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(ValidationException.class, () ->
                 userValidator.validateLogin(blankLogin, userId));
     }
 
@@ -78,7 +79,7 @@ public class UserValidatorTest {
         when(emailValidator.isValid(invalidEmail, null))
                 .thenReturn(false);
 
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(ValidationException.class, () ->
                 userValidator.validateEmail(invalidEmail, userId));
     }
 

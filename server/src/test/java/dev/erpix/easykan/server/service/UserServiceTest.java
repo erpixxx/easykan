@@ -8,6 +8,7 @@ import dev.erpix.easykan.server.domain.user.validator.UserValidator;
 import dev.erpix.easykan.server.exception.UserNotFoundException;
 import dev.erpix.easykan.server.domain.user.dto.UserCreateRequestDto;
 import dev.erpix.easykan.server.domain.user.repository.UserRepository;
+import dev.erpix.easykan.server.exception.ValidationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -276,7 +277,7 @@ public class UserServiceTest {
         when(userRepository.findById(userId))
                 .thenReturn(Optional.of(new User()));
 
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(ValidationException.class, () ->
                 userService.updateUserPermissions(userId, requestDto));
 
         verify(userRepository).findById(userId);

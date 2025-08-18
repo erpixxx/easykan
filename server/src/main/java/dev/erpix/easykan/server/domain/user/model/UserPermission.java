@@ -1,5 +1,6 @@
 package dev.erpix.easykan.server.domain.user.model;
 
+import dev.erpix.easykan.server.exception.ValidationException;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 
@@ -53,10 +54,10 @@ public enum UserPermission implements GrantedAuthority {
 
     public static void validatePermissions(long permissions) {
         if (permissions < 0) {
-            throw new IllegalArgumentException("Permissions value cannot be negative");
+            throw new ValidationException("Permissions value cannot be negative");
         }
         if ((permissions & ~UserPermission.ALL_PERMISSIONS_MASK) != 0) {
-            throw new IllegalArgumentException("Invalid permissions value: " + permissions);
+            throw new ValidationException("Invalid permissions value: " + permissions);
         }
     }
 
