@@ -21,7 +21,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             MethodArgumentNotValidException ex,
             @NotNull HttpHeaders headers,
             @NotNull HttpStatusCode status,
-            WebRequest request) {
+            WebRequest request
+    ) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(status,
                 "Validation failed for one or more fields.");
         problem.setTitle("Validation Error");

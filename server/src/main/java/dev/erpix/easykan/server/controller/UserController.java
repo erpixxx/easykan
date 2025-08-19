@@ -129,8 +129,8 @@ public class UserController {
     @PutMapping("/{userId}/permissions")
     public ResponseEntity<Void> updateUserPermissions(
             @PathVariable UUID userId,
-            @RequestBody UserPermissionsUpdateRequestDto requestDto
-            ) {
+            @RequestBody @Valid UserPermissionsUpdateRequestDto requestDto
+    ) {
         userService.updateUserPermissions(userId, requestDto);
         return ResponseEntity.noContent().build();
     }
