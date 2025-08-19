@@ -83,8 +83,9 @@ public class AuthController {
             @ApiResponse(responseCode = "401", description = "Invalid or missing refresh token")
     })
     @PostMapping("/refresh")
-    public ResponseEntity<?> refresh(@CookieValue(name = "refresh_token")
-                                         String refreshToken
+    public ResponseEntity<?> refresh(
+            @CookieValue(name = "refresh_token")
+            String refreshToken
     ) {
         TokenPairDto tokenPairDto = tokenService.rotateRefreshToken(refreshToken);
 
