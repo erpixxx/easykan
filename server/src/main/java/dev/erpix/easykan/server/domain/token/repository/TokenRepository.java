@@ -17,6 +17,8 @@ public interface TokenRepository extends JpaRepository<RefreshToken, Long> {
 
     void deleteAllByExpiresAtBefore(Instant expiresAtBefore);
 
+    Optional<RefreshToken> findBySelector(String selector);
+
     Optional<RefreshToken> findBySelectorAndRevokedFalseAndExpiresAtAfter(String selector, Instant expiresAtAfter);
 
     List<RefreshToken> findByUserAndRevokedFalse(User user);

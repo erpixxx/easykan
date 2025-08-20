@@ -4,11 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.erpix.easykan.server.config.SecurityConfig;
 import dev.erpix.easykan.server.domain.token.service.JwtProvider;
 import dev.erpix.easykan.server.domain.user.dto.UserCreateRequestDto;
+import dev.erpix.easykan.server.domain.user.dto.UserInfoUpdateRequestDto;
+import dev.erpix.easykan.server.domain.user.dto.UserPermissionsUpdateRequestDto;
 import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
 import dev.erpix.easykan.server.domain.user.service.JpaUserDetailsService;
 import dev.erpix.easykan.server.domain.user.service.UserService;
 import dev.erpix.easykan.server.exception.GlobalExceptionHandler;
 import dev.erpix.easykan.server.exception.UserNotFoundException;
+import dev.erpix.easykan.server.exception.ValidationException;
 import dev.erpix.easykan.server.testsupport.security.WithMockUser;
 import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.model.UserPermission;
@@ -29,6 +32,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -64,7 +68,8 @@ public class UserControllerTest extends AbstractControllerSecurityTest {
                 Arguments.of("POST", "/api/users"),
                 Arguments.of("DELETE", "/api/users/" + WithMockUser.Default.ID),
                 Arguments.of("PATCH", "/api/users/@me"),
-                Arguments.of("PATCH", "/api/users/" + WithMockUser.Default.ID)
+                Arguments.of("PATCH", "/api/users/" + WithMockUser.Default.ID),
+                Arguments.of("PUT", "/api/users/" + WithMockUser.Default.ID + "/permissions")
         );
     }
 
@@ -253,6 +258,136 @@ public class UserControllerTest extends AbstractControllerSecurityTest {
                 .when(userService).deleteUser(UUID.fromString(WithMockUser.Default.ID));
 
         mockMvc.perform(delete("/api/users/{userId}", WithMockUser.Default.ID))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser
+    void updateCurrentUser_shouldReturnUpdatedUser_whenValidDataProvided() throws Exception {
+        String newLogin = "updateduser";
+        String newDisplayName = "Updated User";
+        UserInfoUpdateRequestDto requestDto = new UserInfoUpdateRequestDto(
+                Optional.of(newLogin),
+                Optional.of(newDisplayName),
+                Optional.empty());
+
+        long permissions = UserPermission.toValue(WithMockUser.Default.PERMISSIONS);
+        User updatedUser = User.builder()
+                .id(UUID.fromString(WithMockUser.Default.ID))
+                .login(newLogin)
+                .displayName(newDisplayName)
+                .passwordHash(WithMockUser.Default.PASSWORD)
+                .permissions(permissions)
+                .build();
+
+        when(userService.updateCurrentUserInfo(any(UUID.class), any(UserInfoUpdateRequestDto.class)))
+                .thenReturn(updatedUser);
+
+        mockMvc.perform(patch("/api/users/@me")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(requestDto)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(WithMockUser.Default.ID))
+                .andExpect(jsonPath("$.login").value(newLogin))
+                .andExpect(jsonPath("$.displayName").value(newDisplayName))
+                .andExpect(jsonPath("$.permissions").value(permissions));
+    }
+
+    @Test
+    @WithMockUser
+    void updateCurrentUser_shouldReturnBadRequest_whenInvalidDataProvided() throws Exception {
+        UserInfoUpdateRequestDto requestDto = new UserInfoUpdateRequestDto(
+                Optional.of("toolongloginnameexceedingmaxlength"),
+                Optional.of("Also too long display name that exceeds the maximum length"),
+                Optional.of("bademailformat"));
+
+        when(userService.updateCurrentUserInfo(any(UUID.class), any(UserInfoUpdateRequestDto.class)))
+                .thenThrow(new ValidationException("Invalid data provided"));
+
+        mockMvc.perform(patch("/api/users/@me")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(requestDto)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser
+    void updateCurrentUser_shouldReturnNotFound_whenUserDoesNotExist() throws Exception {
+        UserInfoUpdateRequestDto requestDto = new UserInfoUpdateRequestDto(
+                Optional.of("updateduser"),
+                Optional.of("Updated User"),
+                Optional.empty());
+
+        when(userService.updateCurrentUserInfo(any(UUID.class), any(UserInfoUpdateRequestDto.class)))
+                .thenThrow(UserNotFoundException.byId(UUID.fromString(WithMockUser.Default.ID)));
+
+        mockMvc.perform(patch("/api/users/@me")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(requestDto)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(permissions = UserPermission.ADMIN)
+    void updateUserPermissions_shouldUpdatePermissions_whenUserIsAdmin() throws Exception {
+        UUID userId = UUID.randomUUID();
+        var requestDto = new UserPermissionsUpdateRequestDto(
+                UserPermission.toValue(UserPermission.MANAGE_PROJECTS));
+
+        mockMvc.perform(put("/api/users/{userId}/permissions", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(requestDto)))
+                .andExpect(status().isNoContent());
+
+        verify(userService).updateUserPermissions(eq(userId), any());
+    }
+
+    @Test
+    @WithMockUser(permissions = UserPermission.ADMIN)
+    void updateUserPermissions_shouldReturnNotFound_whenUserDoesNotExist() throws Exception {
+        UUID userId = UUID.randomUUID();
+        var requestDto = new UserPermissionsUpdateRequestDto(
+                UserPermission.toValue(UserPermission.MANAGE_PROJECTS));
+
+        doThrow(UserNotFoundException.byId(userId))
+                .when(userService).updateUserPermissions(eq(userId), any());
+
+        mockMvc.perform(put("/api/users/{userId}/permissions", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(requestDto)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(permissions = UserPermission.ADMIN)
+    void updateUserPermissions_shouldReturnBadRequest_whenInvalidPermissionsProvided() throws Exception {
+        UUID userId = UUID.randomUUID();
+
+        @SuppressWarnings("DataFlowIssue")
+        var requestDto = new UserPermissionsUpdateRequestDto(-1L);
+
+        mockMvc.perform(put("/api/users/{userId}/permissions", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(requestDto)))
+                .andExpect(status().isBadRequest());
+
+        verify(userService, never()).updateUserPermissions(eq(userId), any());
+    }
+
+    @Test
+    @WithMockUser
+    void updateUserPermissions_shouldReturnForbidden_whenUserDoesNotHaveAdminPermission() throws Exception {
+        UUID userId = UUID.randomUUID();
+        var requestDto = new UserPermissionsUpdateRequestDto(
+                UserPermission.toValue(UserPermission.MANAGE_PROJECTS));
+
+        doThrow(new AccessDeniedException("Insufficient permissions."))
+                .when(userService).updateUserPermissions(eq(userId), any());
+
+        mockMvc.perform(put("/api/users/{userId}/permissions", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(requestDto)))
                 .andExpect(status().isForbidden());
     }
 

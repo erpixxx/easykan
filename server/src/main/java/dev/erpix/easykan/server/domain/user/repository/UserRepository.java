@@ -19,4 +19,6 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     boolean existsByEmailAndIdNot(@Size(max = 255) @jakarta.validation.constraints.NotNull String email, UUID uuid);
 
     boolean existsByLoginAndIdNot(@Size(max = 64) @jakarta.validation.constraints.NotNull String login, UUID uuid);
+
+    void deleteByLogin(@Size(max = 64) @jakarta.validation.constraints.NotNull String login);
 }
