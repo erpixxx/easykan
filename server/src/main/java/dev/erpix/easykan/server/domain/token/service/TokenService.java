@@ -66,8 +66,7 @@ public class TokenService {
     }
 
     @Transactional
-    public void logoutAll() {
-        JpaUserDetails userDetails = userDetailsProvider.getRequiredCurrentUserDetails();
+    public void logoutAll(@NotNull JpaUserDetails userDetails) {
         tokenRepository.revokeAllByUserAndExpiresAtAfter(userDetails.user(), Instant.now());
     }
 

@@ -5,6 +5,7 @@ import dev.erpix.easykan.server.domain.auth.dto.AuthLoginRequestDto;
 import dev.erpix.easykan.server.domain.token.dto.TokenPairDto;
 import dev.erpix.easykan.server.domain.auth.service.AuthService;
 import dev.erpix.easykan.server.domain.token.service.TokenService;
+import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
@@ -70,8 +72,8 @@ public class AuthController {
             @ApiResponse(responseCode = "401", description = "Invalid or missing refresh token")
     })
     @PostMapping("/logout-all")
-    public ResponseEntity<Void> logoutAll() {
-        tokenService.logoutAll();
+    public ResponseEntity<Void> logoutAll(@AuthenticationPrincipal JpaUserDetails userDetails) {
+        tokenService.logoutAll(userDetails);
         return tokenClearResponse();
     }
 

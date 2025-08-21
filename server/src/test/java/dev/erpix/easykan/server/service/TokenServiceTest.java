@@ -14,15 +14,13 @@ import dev.erpix.easykan.server.domain.token.security.TokenGenerator;
 import dev.erpix.easykan.server.domain.token.security.TokenParts;
 import dev.erpix.easykan.server.exception.UserNotFoundException;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.TestPropertySources;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -35,39 +33,44 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@SpringJUnitConfig(classes = TokenService.class)
-@EnableConfigurationProperties(EasyKanConfig.class)
-@TestPropertySources({
-        @TestPropertySource(properties = "easykan.jwt.access-token-expire=" + TokenServiceTest.ACCESS_TOKEN_EXPIRE),
-        @TestPropertySource(properties = "easykan.jwt.refresh-token-expire=" + TokenServiceTest.REFRESH_TOKEN_EXPIRE),
-        @TestPropertySource(properties = "easykan.jwt.secret=secret")
-})
+@ExtendWith(MockitoExtension.class)
 public class TokenServiceTest {
 
-    static final int ACCESS_TOKEN_EXPIRE = 180;
-    static final int REFRESH_TOKEN_EXPIRE = 3600;
-
-    @Autowired
+    @InjectMocks
     private TokenService tokenService;
 
-    @MockitoBean
+    @Mock
+    private EasyKanConfig config;
+    @Mock
     private TokenRepository tokenRepository;
-    @MockitoBean
+    @Mock
     private UserService userService;
-    @MockitoBean
+    @Mock
     private PasswordEncoder passwordEncoder;
-    @MockitoBean
+    @Mock
     private TokenGenerator tokenGenerator;
-    @MockitoBean
+    @Mock
     private JwtProvider jwtProvider;
-    @MockitoBean
+    @Mock
     private UserDetailsProvider userDetailsProvider;
 
     @Captor
     private ArgumentCaptor<RefreshToken> refreshTokenCaptor;
 
+    private static final String JWT_SECRET = "secret";
+    private static final int ACCESS_TOKEN_EXPIRE = 180;
+    private static final int REFRESH_TOKEN_EXPIRE = 3600;
+
+    private void mockConfig() {
+        var jwt = new EasyKanConfig.JwtProperties(JWT_SECRET, ACCESS_TOKEN_EXPIRE, REFRESH_TOKEN_EXPIRE);
+        when(config.jwt())
+                .thenReturn(jwt);
+    }
+
     @Test
     void createAccessToken_shouldReturnToken_forAnyId() {
+        mockConfig();
+
         UUID userId = UUID.randomUUID();
         when(jwtProvider.generate(userId.toString()))
                 .thenReturn("accessToken");
@@ -79,6 +82,8 @@ public class TokenServiceTest {
 
     @Test
     void createRefreshToken_shouldReturnNewToken_whenUserExists() {
+        mockConfig();
+
         UUID userId = UUID.randomUUID();
         User user = User.builder().id(userId).build();
         String selector = "selector";
@@ -136,9 +141,6 @@ public class TokenServiceTest {
     void logout_shouldDoNothing_whenTokenIsInvalid() {
         String rawRefreshToken = "invalid-token";
 
-        when(tokenRepository.findBySelectorAndRevokedFalseAndExpiresAtAfter(any(), any()))
-                .thenReturn(Optional.empty());
-
         tokenService.logout(rawRefreshToken);
 
         verify(tokenRepository, never()).save(any(RefreshToken.class));
@@ -148,27 +150,16 @@ public class TokenServiceTest {
     void logoutAll_shouldRevokeAllTokens_whenTokenExists() {
         User user = User.builder().id(UUID.randomUUID()).build();
 
-        when(userDetailsProvider.getRequiredCurrentUserDetails())
-                .thenReturn(new JpaUserDetails(user));
-
-        tokenService.logoutAll();
+        tokenService.logoutAll(new JpaUserDetails(user));
 
         verify(tokenRepository).revokeAllByUserAndExpiresAtAfter(
                 eq(user), any(Instant.class));
     }
 
     @Test
-    void logoutAll_shouldThrowException_whenUserDetailsNotFound() {
-        when(userDetailsProvider.getRequiredCurrentUserDetails())
-                .thenThrow(new IllegalStateException("User details not found"));
-
-        assertThrows(IllegalStateException.class, tokenService::logoutAll);
-
-        verify(tokenRepository, never()).revokeAllByUserAndExpiresAtAfter(any(), any());
-    }
-
-    @Test
     void rotateRefreshToken_shouldReturnNewTokens_whenOldTokenIsValid() {
+        mockConfig();
+
         String rawRefreshToken = "selector:validator";
         User user = User.builder().id(UUID.randomUUID()).build();
         RefreshToken oldToken = RefreshToken.builder()

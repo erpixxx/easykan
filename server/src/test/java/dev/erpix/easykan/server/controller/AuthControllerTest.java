@@ -1,6 +1,7 @@
 package dev.erpix.easykan.server.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
 import dev.erpix.easykan.server.testsupport.security.WithMockUser;
 import dev.erpix.easykan.server.config.EasyKanConfig;
 import dev.erpix.easykan.server.config.SecurityConfig;
@@ -167,7 +168,7 @@ public class AuthControllerTest extends AbstractControllerSecurityTest {
                 .andExpect(cookie().maxAge("access_token", 0))
                 .andExpect(cookie().maxAge("refresh_token", 0));
 
-        verify(tokenService).logoutAll();
+        verify(tokenService).logoutAll(any(JpaUserDetails.class));
     }
 
     @Test
@@ -175,7 +176,7 @@ public class AuthControllerTest extends AbstractControllerSecurityTest {
         mockMvc.perform(post("/api/auth/logout-all"))
                 .andExpect(status().isUnauthorized());
 
-        verify(tokenService, never()).logoutAll();
+        verify(tokenService, never()).logoutAll(any(JpaUserDetails.class));
     }
 
     @Test
