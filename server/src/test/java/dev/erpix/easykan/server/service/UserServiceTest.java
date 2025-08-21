@@ -32,6 +32,9 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
 
+    @InjectMocks
+    private UserService userService;
+
     @Mock
     private UserRepository userRepository;
 
@@ -40,9 +43,6 @@ public class UserServiceTest {
 
     @Mock
     private UserValidator userValidator;
-
-    @InjectMocks
-    private UserService userService;
 
     @Test
     void create_shouldEncodePasswordAndSaveChanges() {
