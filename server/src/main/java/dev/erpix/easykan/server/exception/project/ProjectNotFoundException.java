@@ -1,4 +1,6 @@
-package dev.erpix.easykan.server.exception;
+package dev.erpix.easykan.server.exception.project;
+
+import dev.erpix.easykan.server.exception.resource.ResourceNotFoundException;
 
 import java.util.UUID;
 
