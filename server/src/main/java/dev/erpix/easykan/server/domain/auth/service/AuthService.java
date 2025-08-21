@@ -6,7 +6,7 @@ import dev.erpix.easykan.server.domain.token.dto.CreateTokenDto;
 import dev.erpix.easykan.server.domain.token.service.TokenService;
 import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.service.UserService;
-import dev.erpix.easykan.server.exception.UnsupportedAuthenticationMethodException;
+import dev.erpix.easykan.server.exception.auth.UnsupportedAuthenticationMethodException;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.security.authentication.BadCredentialsException;

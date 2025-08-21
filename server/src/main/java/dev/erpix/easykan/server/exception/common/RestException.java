@@ -1,4 +1,4 @@
-package dev.erpix.easykan.server.exception;
+package dev.erpix.easykan.server.exception.common;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;

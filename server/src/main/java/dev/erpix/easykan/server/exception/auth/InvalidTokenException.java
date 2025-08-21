@@ -1,5 +1,6 @@
-package dev.erpix.easykan.server.exception;
+package dev.erpix.easykan.server.exception.auth;
 
+import dev.erpix.easykan.server.exception.common.RestException;
 import org.springframework.http.HttpStatus;
 
 public class InvalidTokenException extends RestException {

@@ -1,5 +1,6 @@
 package dev.erpix.easykan.server.exception;
 
+import dev.erpix.easykan.server.exception.common.RestException;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.http.*;
 import org.springframework.validation.FieldError;

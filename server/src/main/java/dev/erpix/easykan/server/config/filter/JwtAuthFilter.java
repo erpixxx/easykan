@@ -2,7 +2,7 @@ package dev.erpix.easykan.server.config.filter;
 
 import dev.erpix.easykan.server.domain.token.service.JwtProvider;
 import dev.erpix.easykan.server.domain.user.service.JpaUserDetailsService;
-import dev.erpix.easykan.server.exception.InvalidTokenException;
+import dev.erpix.easykan.server.exception.auth.InvalidTokenException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;

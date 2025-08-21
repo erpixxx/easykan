@@ -11,7 +11,7 @@ import dev.erpix.easykan.server.domain.token.security.TokenParts;
 import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
 import dev.erpix.easykan.server.domain.user.service.UserService;
 import dev.erpix.easykan.server.domain.user.util.UserDetailsProvider;
-import dev.erpix.easykan.server.exception.InvalidTokenException;
+import dev.erpix.easykan.server.exception.auth.InvalidTokenException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;

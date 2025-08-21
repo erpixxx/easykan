@@ -1,6 +1,6 @@
 package dev.erpix.easykan.server.domain.user.model;
 
-import dev.erpix.easykan.server.exception.ValidationException;
+import dev.erpix.easykan.server.exception.common.ValidationException;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 

@@ -1,7 +1,7 @@
 package dev.erpix.easykan.server.domain.user.service;
 
 import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
-import dev.erpix.easykan.server.exception.UserNotFoundException;
+import dev.erpix.easykan.server.exception.user.UserNotFoundException;
 import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

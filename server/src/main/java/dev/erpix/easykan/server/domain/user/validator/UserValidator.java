@@ -1,8 +1,8 @@
 package dev.erpix.easykan.server.domain.user.validator;
 
 import dev.erpix.easykan.server.domain.user.repository.UserRepository;
-import dev.erpix.easykan.server.exception.ResourceAlreadyExistsException;
-import dev.erpix.easykan.server.exception.ValidationException;
+import dev.erpix.easykan.server.exception.resource.ResourceAlreadyExistsException;
+import dev.erpix.easykan.server.exception.common.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.validator.internal.constraintvalidators.bv.EmailValidator;
 import org.springframework.stereotype.Component;

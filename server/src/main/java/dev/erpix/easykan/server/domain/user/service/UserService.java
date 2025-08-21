@@ -9,7 +9,7 @@ import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.model.UserPermission;
 import dev.erpix.easykan.server.domain.user.security.RequireUserPermission;
 import dev.erpix.easykan.server.domain.user.validator.UserValidator;
-import dev.erpix.easykan.server.exception.UserNotFoundException;
+import dev.erpix.easykan.server.exception.user.UserNotFoundException;
 import dev.erpix.easykan.server.domain.user.dto.UserCreateRequestDto;
 import dev.erpix.easykan.server.domain.user.repository.UserRepository;
 import jakarta.transaction.Transactional;

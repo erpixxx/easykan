@@ -1,4 +1,4 @@
-package dev.erpix.easykan.server.exception;
+package dev.erpix.easykan.server.exception.auth;
 
 import org.springframework.security.core.AuthenticationException;
 

@@ -2,8 +2,8 @@ package dev.erpix.easykan.server.validator;
 
 import dev.erpix.easykan.server.domain.user.repository.UserRepository;
 import dev.erpix.easykan.server.domain.user.validator.UserValidator;
-import dev.erpix.easykan.server.exception.ResourceAlreadyExistsException;
-import dev.erpix.easykan.server.exception.ValidationException;
+import dev.erpix.easykan.server.exception.resource.ResourceAlreadyExistsException;
+import dev.erpix.easykan.server.exception.common.ValidationException;
 import dev.erpix.easykan.server.testsupport.Category;
 import org.hibernate.validator.internal.constraintvalidators.bv.EmailValidator;
 import org.junit.jupiter.api.Tag;

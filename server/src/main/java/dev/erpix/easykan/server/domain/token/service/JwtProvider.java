@@ -1,7 +1,7 @@
 package dev.erpix.easykan.server.domain.token.service;
 
 import dev.erpix.easykan.server.config.EasyKanConfig;
-import dev.erpix.easykan.server.exception.InvalidTokenException;
+import dev.erpix.easykan.server.exception.auth.InvalidTokenException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
