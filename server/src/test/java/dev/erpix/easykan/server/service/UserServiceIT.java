@@ -9,22 +9,18 @@ import dev.erpix.easykan.server.domain.user.repository.UserRepository;
 import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
 import dev.erpix.easykan.server.domain.user.service.UserService;
 import dev.erpix.easykan.server.domain.user.validator.UserValidator;
-import dev.erpix.easykan.server.exception.UserNotFoundException;
+import dev.erpix.easykan.server.exception.user.UserNotFoundException;
 import dev.erpix.easykan.server.testsupport.Category;
-import dev.erpix.easykan.server.testsupport.config.TestcontainersConfig;
+import dev.erpix.easykan.server.testsupport.annotation.IntegrationTest;
 import dev.erpix.easykan.server.testsupport.annotation.WithPersistedUser;
 import dev.erpix.easykan.server.testsupport.annotation.WithPersistedUsers;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -33,10 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Tag(Category.INTEGRATION_TEST)
-@SpringBootTest
-@ActiveProfiles("test")
-@Import(TestcontainersConfig.class)
-@Transactional
+@IntegrationTest
 public class UserServiceIT {
 
     @Autowired

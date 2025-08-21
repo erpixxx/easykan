@@ -7,7 +7,7 @@ import dev.erpix.easykan.server.domain.token.dto.TokenPairDto;
 import dev.erpix.easykan.server.domain.token.service.TokenService;
 import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.service.UserService;
-import dev.erpix.easykan.server.exception.UnsupportedAuthenticationMethodException;
+import dev.erpix.easykan.server.exception.auth.UnsupportedAuthenticationMethodException;
 import dev.erpix.easykan.server.testsupport.Category;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;

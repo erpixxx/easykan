@@ -9,20 +9,16 @@ import dev.erpix.easykan.server.domain.token.repository.TokenRepository;
 import dev.erpix.easykan.server.domain.token.service.JwtProvider;
 import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.repository.UserRepository;
-import dev.erpix.easykan.server.exception.UnsupportedAuthenticationMethodException;
-import dev.erpix.easykan.server.exception.UserNotFoundException;
+import dev.erpix.easykan.server.exception.auth.UnsupportedAuthenticationMethodException;
+import dev.erpix.easykan.server.exception.user.UserNotFoundException;
 import dev.erpix.easykan.server.testsupport.Category;
-import dev.erpix.easykan.server.testsupport.config.TestcontainersConfig;
+import dev.erpix.easykan.server.testsupport.annotation.IntegrationTest;
 import dev.erpix.easykan.server.testsupport.annotation.WithPersistedUser;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.time.Instant;
 
@@ -30,10 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Tag(Category.INTEGRATION_TEST)
-@SpringBootTest
-@ActiveProfiles("test")
-@Import(TestcontainersConfig.class)
-@Transactional
+@IntegrationTest
 public class AuthServiceIT {
 
     @Autowired
