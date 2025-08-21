@@ -22,6 +22,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.time.Instant;
 
@@ -30,6 +31,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Tag(Category.INTEGRATION_TEST)
 @SpringBootTest
+@ActiveProfiles("test")
 @Import(TestcontainersConfig.class)
 @Transactional
 public class AuthServiceIT {
