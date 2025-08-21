@@ -1,6 +1,7 @@
-package dev.erpix.easykan.server.testsupport.security;
+package dev.erpix.easykan.server.testsupport.annotation;
 
 import dev.erpix.easykan.server.domain.user.model.UserPermission;
+import dev.erpix.easykan.server.testsupport.annotation.context.UserSecurityContextFactory;
 import org.springframework.security.test.context.support.WithSecurityContext;
 
 import java.lang.annotation.ElementType;

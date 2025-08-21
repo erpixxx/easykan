@@ -1,9 +1,11 @@
-package dev.erpix.easykan.server.testsupport.security;
+package dev.erpix.easykan.server.testsupport.extension;
 
 import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.model.UserPermission;
 import dev.erpix.easykan.server.domain.user.repository.UserRepository;
 import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
+import dev.erpix.easykan.server.testsupport.annotation.WithPersistedUser;
+import dev.erpix.easykan.server.testsupport.annotation.WithPersistedUsers;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;

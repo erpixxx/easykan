@@ -1,8 +1,9 @@
-package dev.erpix.easykan.server.testsupport.security;
+package dev.erpix.easykan.server.testsupport.annotation.context;
 
 import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.model.UserPermission;
 import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
+import dev.erpix.easykan.server.testsupport.annotation.WithMockUser;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;

@@ -3,7 +3,7 @@ package dev.erpix.easykan.server.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
 import dev.erpix.easykan.server.testsupport.Category;
-import dev.erpix.easykan.server.testsupport.security.WithMockUser;
+import dev.erpix.easykan.server.testsupport.annotation.WithMockUser;
 import dev.erpix.easykan.server.config.EasyKanConfig;
 import dev.erpix.easykan.server.config.SecurityConfig;
 import dev.erpix.easykan.server.domain.auth.service.AuthService;

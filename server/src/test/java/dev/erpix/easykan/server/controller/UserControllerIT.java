@@ -13,7 +13,7 @@ import dev.erpix.easykan.server.exception.GlobalExceptionHandler;
 import dev.erpix.easykan.server.exception.UserNotFoundException;
 import dev.erpix.easykan.server.exception.ValidationException;
 import dev.erpix.easykan.server.testsupport.Category;
-import dev.erpix.easykan.server.testsupport.security.WithMockUser;
+import dev.erpix.easykan.server.testsupport.annotation.WithMockUser;
 import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.model.UserPermission;
 import org.junit.jupiter.api.Tag;

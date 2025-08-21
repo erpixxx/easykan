@@ -1,5 +1,6 @@
-package dev.erpix.easykan.server.testsupport.security;
+package dev.erpix.easykan.server.testsupport.annotation;
 
+import dev.erpix.easykan.server.testsupport.extension.PersistUserExtension;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.lang.annotation.ElementType;

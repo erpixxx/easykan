@@ -13,7 +13,7 @@ import dev.erpix.easykan.server.exception.UnsupportedAuthenticationMethodExcepti
 import dev.erpix.easykan.server.exception.UserNotFoundException;
 import dev.erpix.easykan.server.testsupport.Category;
 import dev.erpix.easykan.server.testsupport.config.TestcontainersConfig;
-import dev.erpix.easykan.server.testsupport.security.WithPersistedUser;
+import dev.erpix.easykan.server.testsupport.annotation.WithPersistedUser;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
