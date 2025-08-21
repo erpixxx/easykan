@@ -2,6 +2,7 @@ package dev.erpix.easykan.server.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
+import dev.erpix.easykan.server.testsupport.Category;
 import dev.erpix.easykan.server.testsupport.security.WithMockUser;
 import dev.erpix.easykan.server.config.EasyKanConfig;
 import dev.erpix.easykan.server.config.SecurityConfig;
@@ -17,6 +18,7 @@ import dev.erpix.easykan.server.domain.user.service.JpaUserDetailsService;
 import dev.erpix.easykan.server.domain.token.service.TokenService;
 import dev.erpix.easykan.server.domain.user.service.UserService;
 import jakarta.servlet.http.Cookie;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.provider.Arguments;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,9 +39,10 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@Tag(Category.INTEGRATION_TEST)
 @WebMvcTest(AuthController.class)
 @Import({SecurityConfig.class, GlobalExceptionHandler.class})
-public class AuthControllerTest extends AbstractControllerSecurityTest {
+public class AuthControllerIT extends AbstractControllerSecurityTest {
 
     @Autowired
     private MockMvc mockMvc;

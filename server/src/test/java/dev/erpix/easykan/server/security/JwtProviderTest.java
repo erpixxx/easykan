@@ -3,7 +3,9 @@ package dev.erpix.easykan.server.security;
 import dev.erpix.easykan.server.config.EasyKanConfig;
 import dev.erpix.easykan.server.domain.token.service.JwtProvider;
 import dev.erpix.easykan.server.exception.InvalidTokenException;
+import dev.erpix.easykan.server.testsupport.Category;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -13,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@Tag(Category.UNIT_TEST)
 public class JwtProviderTest {
 
     private JwtProvider jwtProvider;

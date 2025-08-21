@@ -13,6 +13,8 @@ import dev.erpix.easykan.server.domain.token.service.JwtProvider;
 import dev.erpix.easykan.server.domain.token.security.TokenGenerator;
 import dev.erpix.easykan.server.domain.token.security.TokenParts;
 import dev.erpix.easykan.server.exception.UserNotFoundException;
+import dev.erpix.easykan.server.testsupport.Category;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -33,6 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@Tag(Category.UNIT_TEST)
 @ExtendWith(MockitoExtension.class)
 public class TokenServiceTest {
 
@@ -41,18 +44,21 @@ public class TokenServiceTest {
 
     @Mock
     private EasyKanConfig config;
+
     @Mock
     private TokenRepository tokenRepository;
+
     @Mock
     private UserService userService;
+
     @Mock
     private PasswordEncoder passwordEncoder;
+
     @Mock
     private TokenGenerator tokenGenerator;
+
     @Mock
     private JwtProvider jwtProvider;
-    @Mock
-    private UserDetailsProvider userDetailsProvider;
 
     @Captor
     private ArgumentCaptor<RefreshToken> refreshTokenCaptor;

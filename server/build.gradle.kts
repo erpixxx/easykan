@@ -72,7 +72,18 @@ tasks.withType<Test> {
         jvmArgs("-javaagent:${agentJar.absolutePath}")
     }
     useJUnitPlatform()
+}
 
+tasks.register<Test>("unitTests") {
+    useJUnitPlatform {
+        includeTags("unit-test")
+    }
+}
+
+tasks.register<Test>("integrationTests") {
+    useJUnitPlatform {
+        includeTags("integration-test")
+    }
 }
 
 tasks.jar {

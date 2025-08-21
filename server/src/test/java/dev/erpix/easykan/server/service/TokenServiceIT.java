@@ -10,9 +10,11 @@ import dev.erpix.easykan.server.domain.token.service.TokenService;
 import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
 import dev.erpix.easykan.server.domain.user.service.UserService;
 import dev.erpix.easykan.server.domain.user.util.UserDetailsProvider;
+import dev.erpix.easykan.server.testsupport.Category;
 import dev.erpix.easykan.server.testsupport.config.TestcontainersConfig;
 import dev.erpix.easykan.server.testsupport.security.WithPersistedUser;
 import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,6 +27,7 @@ import java.time.Instant;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
+@Tag(Category.INTEGRATION_TEST)
 @SpringBootTest
 @Import(TestcontainersConfig.class)
 @Transactional

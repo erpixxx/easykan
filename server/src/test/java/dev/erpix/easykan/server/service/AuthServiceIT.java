@@ -11,9 +11,11 @@ import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.repository.UserRepository;
 import dev.erpix.easykan.server.exception.UnsupportedAuthenticationMethodException;
 import dev.erpix.easykan.server.exception.UserNotFoundException;
+import dev.erpix.easykan.server.testsupport.Category;
 import dev.erpix.easykan.server.testsupport.config.TestcontainersConfig;
 import dev.erpix.easykan.server.testsupport.security.WithPersistedUser;
 import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,6 +28,7 @@ import java.time.Instant;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+@Tag(Category.INTEGRATION_TEST)
 @SpringBootTest
 @Import(TestcontainersConfig.class)
 @Transactional

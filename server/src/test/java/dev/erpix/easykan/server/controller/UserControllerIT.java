@@ -12,9 +12,11 @@ import dev.erpix.easykan.server.domain.user.service.UserService;
 import dev.erpix.easykan.server.exception.GlobalExceptionHandler;
 import dev.erpix.easykan.server.exception.UserNotFoundException;
 import dev.erpix.easykan.server.exception.ValidationException;
+import dev.erpix.easykan.server.testsupport.Category;
 import dev.erpix.easykan.server.testsupport.security.WithMockUser;
 import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.model.UserPermission;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -41,9 +43,10 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@Tag(Category.INTEGRATION_TEST)
 @WebMvcTest(UserController.class)
 @Import({SecurityConfig.class, GlobalExceptionHandler.class})
-public class UserControllerTest extends AbstractControllerSecurityTest {
+public class UserControllerIT extends AbstractControllerSecurityTest {
 
     @Autowired
     private MockMvc mockMvc;
