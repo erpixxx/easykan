@@ -51,13 +51,7 @@ public class TokenServiceIT {
     private PasswordEncoder passwordEncoder;
 
     @MockitoBean
-    private UserDetailsProvider userDetailsProvider;
-
-    @MockitoBean
     private TokenGenerator tokenGenerator;
-
-    @MockitoBean
-    private JwtProvider jwtProvider;
 
     private static final String SAMPLE_SELECTOR = "selector";
     private static final String SAMPLE_VALIDATOR = "validator";
