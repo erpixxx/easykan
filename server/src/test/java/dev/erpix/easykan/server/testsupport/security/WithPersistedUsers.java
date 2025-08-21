@@ -12,6 +12,8 @@ import java.lang.annotation.Target;
 @ExtendWith(PersistUserExtension.class)
 public @interface WithPersistedUsers {
 
-    WithPersistedUser[] value() default {};
+    WithPersistedUser principal() default @WithPersistedUser;
+
+    WithPersistedUser[] others() default {};
 
 }

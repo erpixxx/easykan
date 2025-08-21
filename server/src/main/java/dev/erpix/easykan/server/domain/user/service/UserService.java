@@ -107,7 +107,7 @@ public class UserService {
     })
     @PreAuthorize("#userId != authentication.principal.getId()")
     @RequireUserPermission(UserPermission.ADMIN)
-    public void updateUserPermissions(
+    public User updateUserPermissions(
             @NotNull UUID userId,
             @NotNull UserPermissionsUpdateRequestDto dto
     ) {
@@ -118,7 +118,7 @@ public class UserService {
         UserPermission.validatePermissions(permissions);
         user.setPermissions(permissions);
 
-        userRepository.save(user);
+        return userRepository.save(user);
     }
 
     protected @NotNull User updateUserInfoAndSave(@NotNull User user, @NotNull UserInfoUpdateRequestDto dto) {

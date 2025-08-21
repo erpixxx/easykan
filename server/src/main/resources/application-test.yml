@@ -1,0 +1,6 @@
+easykan:
+  use-https: false
+  jwt:
+    secret: q+9vidZZd0Tq1tNj72NUykIaOZlLeKN9ix2PxU1Hg1Y=
+    access-token-expire: 150
+    refresh-token-expire: 3600

@@ -18,7 +18,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Arrays;
-import java.util.function.Consumer;
 
 public class PersistUserExtension implements AfterEachCallback, BeforeEachCallback {
 
@@ -37,36 +36,43 @@ public class PersistUserExtension implements AfterEachCallback, BeforeEachCallba
     @Override
     public void beforeEach(ExtensionContext context) {
         AnnotationSupport.findAnnotation(context.getElement(), WithPersistedUsers.class)
-                .ifPresent(ann -> Arrays.stream(ann.value())
-                        .forEach(createPersistedUser(context)));
+                .ifPresent(ann -> {
+                    User principal = createPersistedUser(context, ann.principal());
+                    setAuthentication(principal);
+                    Arrays.stream(ann.others())
+                            .forEach(o -> createPersistedUser(context, o));
+                });
         AnnotationSupport.findAnnotation(context.getElement(), WithPersistedUser.class)
-                .ifPresent(createPersistedUser(context));
+                .ifPresent(ann -> {
+                    User user = createPersistedUser(context, ann);
+                    setAuthentication(user);
+                });
     }
 
-    private Consumer<? super WithPersistedUser> createPersistedUser(ExtensionContext context) {
-        return (WithPersistedUser ann) -> {
-            ApplicationContext appCtx = SpringExtension.getApplicationContext(context);
-            UserRepository userRepository = appCtx.getBean(UserRepository.class);
-            PasswordEncoder passwordEncoder = appCtx.getBean(PasswordEncoder.class);
+    private User createPersistedUser(ExtensionContext context, WithPersistedUser ann) {
+        ApplicationContext appCtx = SpringExtension.getApplicationContext(context);
+        UserRepository userRepository = appCtx.getBean(UserRepository.class);
+        PasswordEncoder passwordEncoder = appCtx.getBean(PasswordEncoder.class);
 
-            User user = User.builder()
-                    .login(ann.login())
-                    .displayName(ann.displayName())
-                    .email(ann.email())
-                    .passwordHash(passwordEncoder.encode(ann.password()))
-                    .permissions(UserPermission.toValue(ann.permissions()))
-                    .build();
+        User user = User.builder()
+                .login(ann.login())
+                .displayName(ann.displayName())
+                .email(ann.email())
+                .passwordHash(passwordEncoder.encode(ann.password()))
+                .permissions(UserPermission.toValue(ann.permissions()))
+                .build();
 
-            User createdUser = userRepository.save(user);
+        return userRepository.save(user);
+    }
 
-            JpaUserDetails userDetails = new JpaUserDetails(createdUser);
-            var auth = new UsernamePasswordAuthenticationToken(userDetails, null,
-                    userDetails.getAuthorities());
+    private void setAuthentication(User user) {
+        JpaUserDetails userDetails = new JpaUserDetails(user);
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                userDetails, null, userDetails.getAuthorities());
 
-            SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-            securityContext.setAuthentication(auth);
-            SecurityContextHolder.setContext(securityContext);
-        };
+        SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+        securityContext.setAuthentication(authentication);
+        SecurityContextHolder.setContext(securityContext);
     }
 
 }
