@@ -67,7 +67,9 @@ public class UserController {
             @ApiResponse(responseCode = "403", description = "The user is not an ADMIN")
     })
     @PostMapping
-    public ResponseEntity<UserResponseDto> createUser(@RequestBody @Valid UserCreateRequestDto requestDto) {
+    public ResponseEntity<UserResponseDto> createUser(
+            @RequestBody @Valid UserCreateRequestDto requestDto
+    ) {
         User createdUser = userService.create(requestDto);
         return new ResponseEntity<>(UserResponseDto.fromUser(createdUser), HttpStatus.CREATED);
     }
@@ -95,7 +97,7 @@ public class UserController {
     @PatchMapping("/@me")
     public ResponseEntity<UserResponseDto> updateCurrentUser(
             @AuthenticationPrincipal JpaUserDetails userDetails,
-            @Valid @RequestBody UserInfoUpdateRequestDto requestDto
+            @RequestBody @Valid UserInfoUpdateRequestDto requestDto
     ) {
         User user = userService.updateCurrentUserInfo(userDetails.getId(), requestDto);
         return ResponseEntity.ok(UserResponseDto.fromUser(user));
@@ -112,7 +114,7 @@ public class UserController {
     @PatchMapping("/{userId}")
     public ResponseEntity<UserResponseDto> updateUser(
             @PathVariable UUID userId,
-            @RequestBody UserInfoUpdateRequestDto requestDto
+            @RequestBody @Valid UserInfoUpdateRequestDto requestDto
     ) {
         User user = userService.updateUserInfo(userId, requestDto);
         return ResponseEntity.ok(UserResponseDto.fromUser(user));
