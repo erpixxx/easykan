@@ -1,5 +1,7 @@
-package dev.erpix.easykan.server.domain.user.validator;
+package dev.erpix.easykan.server.domain.user.constraint.annotation;
 
+import dev.erpix.easykan.server.domain.user.constraint.validator.OptionalPasswordConstraintValidator;
+import dev.erpix.easykan.server.domain.user.constraint.validator.RequiredPasswordConstraintValidator;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 

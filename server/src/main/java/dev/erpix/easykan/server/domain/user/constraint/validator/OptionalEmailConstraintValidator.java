@@ -1,5 +1,6 @@
-package dev.erpix.easykan.server.domain.user.validator;
+package dev.erpix.easykan.server.domain.user.constraint.validator;
 
+import dev.erpix.easykan.server.domain.user.constraint.annotation.OptionalEmail;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import lombok.RequiredArgsConstructor;

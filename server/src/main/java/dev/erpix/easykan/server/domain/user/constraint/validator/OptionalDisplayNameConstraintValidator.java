@@ -1,4 +1,4 @@
-package dev.erpix.easykan.server.domain.user.validator;
+package dev.erpix.easykan.server.domain.user.constraint.validator;
 
 import dev.erpix.easykan.server.validator.OptionalConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;

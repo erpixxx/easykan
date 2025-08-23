@@ -1,6 +1,7 @@
-package dev.erpix.easykan.server.domain.user.validator;
+package dev.erpix.easykan.server.domain.user.constraint.validator;
 
 import dev.erpix.easykan.server.constant.ValidationConstants;
+import dev.erpix.easykan.server.domain.user.constraint.annotation.Login;
 import dev.erpix.easykan.server.validator.StringConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 

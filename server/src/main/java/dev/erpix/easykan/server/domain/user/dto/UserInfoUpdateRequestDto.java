@@ -1,8 +1,8 @@
 package dev.erpix.easykan.server.domain.user.dto;
 
-import dev.erpix.easykan.server.domain.user.validator.DisplayName;
-import dev.erpix.easykan.server.domain.user.validator.Login;
-import dev.erpix.easykan.server.domain.user.validator.OptionalEmail;
+import dev.erpix.easykan.server.domain.user.constraint.annotation.DisplayName;
+import dev.erpix.easykan.server.domain.user.constraint.annotation.Login;
+import dev.erpix.easykan.server.domain.user.constraint.annotation.OptionalEmail;
 
 import java.util.Optional;
 

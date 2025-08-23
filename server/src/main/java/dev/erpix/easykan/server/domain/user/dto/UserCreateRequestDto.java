@@ -1,12 +1,10 @@
 package dev.erpix.easykan.server.domain.user.dto;
 
 import dev.erpix.easykan.server.domain.user.model.User;
-import dev.erpix.easykan.server.domain.user.validator.DisplayName;
-import dev.erpix.easykan.server.domain.user.validator.Login;
-import dev.erpix.easykan.server.domain.user.validator.Password;
+import dev.erpix.easykan.server.domain.user.constraint.annotation.DisplayName;
+import dev.erpix.easykan.server.domain.user.constraint.annotation.Login;
+import dev.erpix.easykan.server.domain.user.constraint.annotation.Password;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import org.jetbrains.annotations.NotNull;
 
 public record UserCreateRequestDto(
