@@ -8,7 +8,6 @@ import dev.erpix.easykan.server.domain.user.dto.UserPermissionsUpdateRequestDto;
 import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.model.UserPermission;
 import dev.erpix.easykan.server.domain.user.security.RequireUserPermission;
-import dev.erpix.easykan.server.domain.user.validator.UserValidator;
 import dev.erpix.easykan.server.exception.user.UserNotFoundException;
 import dev.erpix.easykan.server.domain.user.dto.UserCreateRequestDto;
 import dev.erpix.easykan.server.domain.user.repository.UserRepository;
@@ -34,7 +33,6 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final OAuthAccountRepository oAuthAccountRepository;
-    private final UserValidator userValidator;
 
     @RequireUserPermission(UserPermission.MANAGE_USERS)
     public @NotNull Page<User> getAllUsers(Pageable pageable) {
@@ -122,18 +120,9 @@ public class UserService {
     }
 
     protected @NotNull User updateUserInfoAndSave(@NotNull User user, @NotNull UserInfoUpdateRequestDto dto) {
-        dto.login().ifPresent(login -> {
-            userValidator.validateLogin(login, user.getId());
-            user.setLogin(login);
-        });
-        dto.displayName().ifPresent(displayName -> {
-            userValidator.validateDisplayName(displayName);
-            user.setDisplayName(displayName);
-        });
-        dto.email().ifPresent(email -> {
-            userValidator.validateEmail(email, user.getId());
-            user.setEmail(email);
-        });
+        dto.login().ifPresent(user::setLogin);
+        dto.displayName().ifPresent(user::setDisplayName);
+        dto.email().ifPresent(user::setEmail);
 
         return userRepository.save(user);
     }

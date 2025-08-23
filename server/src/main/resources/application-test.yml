@@ -4,3 +4,10 @@ easykan:
     secret: q+9vidZZd0Tq1tNj72NUykIaOZlLeKN9ix2PxU1Hg1Y=
     access-token-expire: 150
     refresh-token-expire: 3600
+  password:
+    enabled: true
+    min-length: 8
+    require-uppercase: true
+    require-lowercase: true
+    require-digit: true
+    require-special-character: true

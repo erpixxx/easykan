@@ -95,7 +95,7 @@ public class UserController {
     @PatchMapping("/@me")
     public ResponseEntity<UserResponseDto> updateCurrentUser(
             @AuthenticationPrincipal JpaUserDetails userDetails,
-            @RequestBody UserInfoUpdateRequestDto requestDto
+            @Valid @RequestBody UserInfoUpdateRequestDto requestDto
     ) {
         User user = userService.updateCurrentUserInfo(userDetails.getId(), requestDto);
         return ResponseEntity.ok(UserResponseDto.fromUser(user));

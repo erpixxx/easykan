@@ -17,6 +17,7 @@ public class UserValidator {
     public static final int LOGIN_MIN_LENGTH = 1;
     public static final int DISPLAY_NAME_MAX_LENGTH = 64;
     public static final int DISPLAY_NAME_MIN_LENGTH = 1;
+    public static final int PASSWORD_MIN_LENGTH = 8;
 
     private final UserRepository userRepository;
     private final EmailValidator emailValidator;
@@ -44,6 +45,12 @@ public class UserValidator {
         }
         if (userRepository.existsByEmailAndIdNot(email, userId)) {
             throw new ResourceAlreadyExistsException("Email already exists: " + email);
+        }
+    }
+
+    public void validatePassword(String password) {
+        if (password.length() < PASSWORD_MIN_LENGTH) {
+            throw new ValidationException("Password must be at least " + PASSWORD_MIN_LENGTH + " characters long");
         }
     }
 
