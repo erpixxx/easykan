@@ -16,7 +16,6 @@ import dev.erpix.easykan.server.domain.auth.dto.AuthLoginRequestDto;
 import dev.erpix.easykan.server.domain.token.service.JwtProvider;
 import dev.erpix.easykan.server.domain.user.service.JpaUserDetailsService;
 import dev.erpix.easykan.server.domain.token.service.TokenService;
-import dev.erpix.easykan.server.domain.user.service.UserService;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -26,7 +25,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -50,26 +48,25 @@ public class AuthControllerIT extends AbstractControllerSecurityTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @SuppressWarnings("unused")
     @MockitoBean
     private AuthService authService;
 
+    @SuppressWarnings("unused")
     @MockitoBean
     private JpaUserDetailsService jpaUserDetailsService;
 
+    @SuppressWarnings("unused")
     @MockitoBean
     private JwtProvider jwtProvider;
 
+    @SuppressWarnings("unused")
     @MockitoBean
     private TokenService tokenService;
 
+    @SuppressWarnings("unused")
     @MockitoBean
-    private UserService userService;
-
-    @MockitoBean
-    private PasswordEncoder passwordEncoder;
-
-    @MockitoBean
-    private EasyKanConfig properties;
+    private EasyKanConfig config;
 
     @Override
     protected Stream<Arguments> provideProtectedEndpoints() {

@@ -54,12 +54,15 @@ public class UserControllerIT extends AbstractControllerSecurityTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @SuppressWarnings("unused")
     @MockitoBean
     private JpaUserDetailsService jpaUserDetailsService;
 
+    @SuppressWarnings("unused")
     @MockitoBean
     private JwtProvider jwtProvider;
 
+    @SuppressWarnings("unused")
     @MockitoBean
     private UserService userService;
 
