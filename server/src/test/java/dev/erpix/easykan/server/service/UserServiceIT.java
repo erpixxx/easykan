@@ -8,7 +8,6 @@ import dev.erpix.easykan.server.domain.user.model.UserPermission;
 import dev.erpix.easykan.server.domain.user.repository.UserRepository;
 import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
 import dev.erpix.easykan.server.domain.user.service.UserService;
-import dev.erpix.easykan.server.domain.user.validator.UserValidator;
 import dev.erpix.easykan.server.exception.user.UserNotFoundException;
 import dev.erpix.easykan.server.testsupport.Category;
 import dev.erpix.easykan.server.testsupport.annotation.IntegrationTest;
@@ -40,9 +39,6 @@ public class UserServiceIT {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private UserValidator userValidator;
 
     @Test
     @WithPersistedUsers(principal = @WithPersistedUser(

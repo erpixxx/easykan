@@ -2,6 +2,7 @@ package dev.erpix.easykan.server.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.erpix.easykan.server.config.SecurityConfig;
+import dev.erpix.easykan.server.constant.ValidationConstants;
 import dev.erpix.easykan.server.domain.token.service.JwtProvider;
 import dev.erpix.easykan.server.domain.user.dto.UserCreateRequestDto;
 import dev.erpix.easykan.server.domain.user.dto.UserInfoUpdateRequestDto;
@@ -16,6 +17,7 @@ import dev.erpix.easykan.server.testsupport.Category;
 import dev.erpix.easykan.server.testsupport.annotation.WithMockUser;
 import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.model.UserPermission;
+import org.hibernate.validator.internal.constraintvalidators.bv.EmailValidator;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -151,7 +153,7 @@ public class UserControllerIT extends AbstractControllerSecurityTest {
         String newUserLogin = "newuser";
         String newUserDisplayName = "New User";
         String newUserEmail = "new.user@easykan.dev";
-        String newUserPermission = "password";
+        String newUserPermission = "Pa$$w0rd";
         User newUser = User.builder()
                 .id(UUID.randomUUID())
                 .login(newUserLogin)
@@ -186,7 +188,7 @@ public class UserControllerIT extends AbstractControllerSecurityTest {
     @WithMockUser
     void createUser_shouldReturnForbidden_whenUserDoesNotHaveManageUsersPermission() throws Exception {
         UserCreateRequestDto request = new UserCreateRequestDto(
-                "newuser", "New User", "new.user@easykan.dev", "password");
+                "newuser", "New User", "new.user@easykan.dev", "Pa$$w0rd");
 
         when(userService.create(any(UserCreateRequestDto.class)))
                 .thenThrow(new AccessDeniedException("Insufficient permissions."));
@@ -199,11 +201,14 @@ public class UserControllerIT extends AbstractControllerSecurityTest {
 
     @ParameterizedTest
     @CsvSource({
-            "'',          'New User', 'user@test.dev', 'password123''",
-            "'  ',        'New User', 'user@test.dev', 'password123'",
-            "'newuser',   '',         'user@test.dev', 'password123'",
-            "'newuser',   'New User', 'not-an-email',  'password123'",
-            "'newuser',   'New User', 'user@test.dev', '1234'"
+            "'',        'New User', 'user@test.dev', 'Pa$$w0rd''",
+            "'  ',      'New User', 'user@test.dev', 'Pa$$w0rd'",
+            "'$$$',     'New User', 'user@test.dev', 'Pa$$w0rd'",
+            "'newuser', '',         'user@test.dev', 'Pa$$w0rd'",
+            "'newuser', '  ',       'user@test.dev', 'Pa$$w0rd'",
+            "'newuser', 'New User', 'not-an-email',  'Pa$$w0rd'",
+            "'newuser', 'New User', 'user@test.dev', ''",
+            "'newuser', 'New User', 'user@test.dev', '1234'"
     })
     @WithMockUser
     void createUser_shouldReturnBadRequest_whenInvalidDataProvided(
@@ -297,16 +302,22 @@ public class UserControllerIT extends AbstractControllerSecurityTest {
                 .andExpect(jsonPath("$.permissions").value(permissions));
     }
 
-    @Test
+    @ParameterizedTest
+    @CsvSource({
+            "'',            'Updated User', 'updated.user@easykan.dev'",
+            "'  ',          'Updated User', 'updated.user@easykan.dev'",
+            "'$$$',         'Updated User', 'updated.user@easykan.dev'",
+            "'updateduser', '',             'updated.user@easykan.dev'",
+            "'updateduser', '  ',           'updated.user@easykan.dev'",
+            "'updateduser', 'Updated User', 'bademailformat'"
+    })
     @WithMockUser
-    void updateCurrentUser_shouldReturnBadRequest_whenInvalidDataProvided() throws Exception {
+    void updateCurrentUser_shouldReturnBadRequest_whenInvalidDataProvided(
+            String login, String displayName, String email) throws Exception {
         UserInfoUpdateRequestDto requestDto = new UserInfoUpdateRequestDto(
-                Optional.of("toolongloginnameexceedingmaxlength"),
-                Optional.of("Also too long display name that exceeds the maximum length"),
-                Optional.of("bademailformat"));
-
-        when(userService.updateCurrentUserInfo(any(UUID.class), any(UserInfoUpdateRequestDto.class)))
-                .thenThrow(new ValidationException("Invalid data provided"));
+                Optional.ofNullable(login),
+                Optional.ofNullable(displayName),
+                Optional.ofNullable(email));
 
         mockMvc.perform(patch("/api/users/@me")
                         .contentType(MediaType.APPLICATION_JSON)

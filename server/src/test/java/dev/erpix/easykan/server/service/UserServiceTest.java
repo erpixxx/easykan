@@ -4,7 +4,6 @@ import dev.erpix.easykan.server.domain.user.dto.UserInfoUpdateRequestDto;
 import dev.erpix.easykan.server.domain.user.dto.UserPermissionsUpdateRequestDto;
 import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.service.UserService;
-import dev.erpix.easykan.server.domain.user.validator.UserValidator;
 import dev.erpix.easykan.server.exception.user.UserNotFoundException;
 import dev.erpix.easykan.server.domain.user.dto.UserCreateRequestDto;
 import dev.erpix.easykan.server.domain.user.repository.UserRepository;
@@ -43,9 +42,6 @@ public class UserServiceTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
-
-    @Mock
-    private UserValidator userValidator;
 
     @Test
     void create_shouldEncodePasswordAndSaveChanges() {
@@ -209,9 +205,6 @@ public class UserServiceTest {
         assertThat(result).isEqualTo(updatedUser);
         verify(userRepository).findById(userId);
         verify(userRepository).save(any(User.class));
-        verify(userValidator).validateLogin(updatedLogin, userId);
-        verify(userValidator).validateDisplayName(updatedDisplayName);
-        verify(userValidator).validateEmail(updatedEmail, userId);
     }
 
     @Test
@@ -230,9 +223,6 @@ public class UserServiceTest {
 
         verify(userRepository).findById(userId);
         verify(userRepository, never()).save(any(User.class));
-        verify(userValidator, never()).validateLogin(anyString(), any(UUID.class));
-        verify(userValidator, never()).validateDisplayName(anyString());
-        verify(userValidator, never()).validateEmail(anyString(), any(UUID.class));
     }
 
     @Test
