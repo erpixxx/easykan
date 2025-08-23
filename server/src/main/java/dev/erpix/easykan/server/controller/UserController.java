@@ -8,6 +8,8 @@ import dev.erpix.easykan.server.domain.user.dto.UserCreateRequestDto;
 import dev.erpix.easykan.server.domain.user.dto.UserResponseDto;
 import dev.erpix.easykan.server.domain.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -37,8 +39,12 @@ public class UserController {
     @Operation(summary = "Get current user info",
             description = "Returns details of the currently authenticated user.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successful operation"),
-            @ApiResponse(responseCode = "401", description = "The user is not logged in")
+            @ApiResponse(responseCode = "200",
+                    description = "Successful operation",
+                    content = @Content(schema = @Schema(implementation = UserResponseDto.class))),
+            @ApiResponse(responseCode = "401",
+                    description = "User is not authenticated",
+                    content = @Content)
     })
     @GetMapping("/@me")
     public ResponseEntity<UserResponseDto> getCurrentUser(@AuthenticationPrincipal JpaUserDetails userDetails) {
@@ -48,9 +54,15 @@ public class UserController {
     @Operation(summary = "Get all users",
             description = "Returns a list of all users.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successful operation"),
-            @ApiResponse(responseCode = "401", description = "User is not authenticated"),
-            @ApiResponse(responseCode = "403", description = "User has insufficient permissions to view users")
+            @ApiResponse(responseCode = "200",
+                    description = "Successful operation",
+                    content = @Content(schema = @Schema(implementation = UserResponseDto.class))),
+            @ApiResponse(responseCode = "401",
+                    description = "Not authenticated",
+                    content = @Content),
+            @ApiResponse(responseCode = "403",
+                    description = "Insufficient permissions",
+                    content = @Content)
     })
     @GetMapping
     public ResponseEntity<Page<UserResponseDto>> getAllUsers(@ParameterObject Pageable pageable) {
@@ -62,9 +74,15 @@ public class UserController {
     @Operation(summary = "Create a new user",
             description = "Creates a new user.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "User created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid user data provided"),
-            @ApiResponse(responseCode = "403", description = "The user is not an ADMIN")
+            @ApiResponse(responseCode = "201",
+                    description = "Created successfully",
+                    content = @Content(schema = @Schema(implementation = UserResponseDto.class))),
+            @ApiResponse(responseCode = "400",
+                    description = "Invalid user data provided",
+                    content = @Content),
+            @ApiResponse(responseCode = "403",
+                    description = "Insufficient permissions",
+                    content = @Content)
     })
     @PostMapping
     public ResponseEntity<UserResponseDto> createUser(
@@ -77,8 +95,8 @@ public class UserController {
     @Operation(summary = "Delete a user",
             description = "Deletes a user by their ID.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "User deleted successfully"),
-            @ApiResponse(responseCode = "403", description = "The user is not an ADMIN"),
+            @ApiResponse(responseCode = "204", description = "Deleted successfully"),
+            @ApiResponse(responseCode = "403", description = "Insufficient permissions"),
             @ApiResponse(responseCode = "404", description = "The user with given ID does not exist")
     })
     @DeleteMapping("/{userId}")
@@ -90,9 +108,15 @@ public class UserController {
     @Operation(summary = "Update current user's info",
             description = "Updates the details of the currently authenticated user.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Successful operation"),
-            @ApiResponse(responseCode = "400", description = "Invalid data provided"),
-            @ApiResponse(responseCode = "401", description = "User is not authenticated")
+            @ApiResponse(responseCode = "200",
+                    description = "Successful operation",
+                    content = @Content(schema = @Schema(implementation = UserResponseDto.class))),
+            @ApiResponse(responseCode = "400",
+                    description = "Invalid data provided",
+                    content = @Content),
+            @ApiResponse(responseCode = "401",
+                    description = "User is not authenticated",
+                    content = @Content)
     })
     @PatchMapping("/@me")
     public ResponseEntity<UserResponseDto> updateCurrentUser(
@@ -106,10 +130,18 @@ public class UserController {
     @Operation(summary = "Update user details",
             description = "Updates the given user's details.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Successful operation"),
-            @ApiResponse(responseCode = "400", description = "Invalid data provided"),
-            @ApiResponse(responseCode = "401", description = "User is not authenticated"),
-            @ApiResponse(responseCode = "403", description = "User does not have permission to update this user"),
+            @ApiResponse(responseCode = "200",
+                    description = "Successful operation",
+                    content = @Content(schema = @Schema(implementation = UserResponseDto.class))),
+            @ApiResponse(responseCode = "400",
+                    description = "Invalid data provided",
+                    content = @Content),
+            @ApiResponse(responseCode = "401",
+                    description = "User is not authenticated",
+                    content = @Content),
+            @ApiResponse(responseCode = "403",
+                    description = "User does not have permission to update this user",
+                    content = @Content),
     })
     @PatchMapping("/{userId}")
     public ResponseEntity<UserResponseDto> updateUser(
@@ -123,18 +155,26 @@ public class UserController {
     @Operation(summary = "Update user permissions",
             description = "Sets the permissions for a given user")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Permissions updated successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid permissions value provided"),
-            @ApiResponse(responseCode = "403", description = "Insufficient permissions"),
-            @ApiResponse(responseCode = "404", description = "User not found")
+            @ApiResponse(responseCode = "200",
+                    description = "Permissions updated successfully",
+                    content = @Content(schema = @Schema(implementation = UserResponseDto.class))),
+            @ApiResponse(responseCode = "400",
+                    description = "Invalid permissions value provided",
+                    content = @Content),
+            @ApiResponse(responseCode = "403",
+                    description = "Insufficient permissions",
+                    content = @Content),
+            @ApiResponse(responseCode = "404",
+                    description = "User not found",
+                    content = @Content)
     })
     @PutMapping("/{userId}/permissions")
-    public ResponseEntity<Void> updateUserPermissions(
+    public ResponseEntity<UserResponseDto> updateUserPermissions(
             @PathVariable UUID userId,
             @RequestBody @Valid UserPermissionsUpdateRequestDto requestDto
     ) {
-        userService.updateUserPermissions(userId, requestDto);
-        return ResponseEntity.noContent().build();
+        User user = userService.updateUserPermissions(userId, requestDto);
+        return ResponseEntity.ok(UserResponseDto.fromUser(user));
     }
 
 }
