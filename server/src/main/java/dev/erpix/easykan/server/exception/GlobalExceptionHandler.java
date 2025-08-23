@@ -44,7 +44,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(RestException.class)
     public ResponseEntity<ProblemDetail> handleRestException(RestException ex, WebRequest request) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(ex.getStatus(), ex.getMessage());
+        String message = ex.getMessage() != null ? ex.getMessage() : "Unexpected error";
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(ex.getStatus(), message);
         problem.setTitle(ex.getStatus().getReasonPhrase());
         problem.setInstance(URI.create(request.getDescription(false)));
 

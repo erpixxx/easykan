@@ -7,7 +7,6 @@ import dev.erpix.easykan.server.domain.user.service.UserService;
 import dev.erpix.easykan.server.exception.user.UserNotFoundException;
 import dev.erpix.easykan.server.domain.user.dto.UserCreateRequestDto;
 import dev.erpix.easykan.server.domain.user.repository.UserRepository;
-import dev.erpix.easykan.server.exception.common.ValidationException;
 import dev.erpix.easykan.server.testsupport.Category;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -255,22 +254,6 @@ public class UserServiceTest {
                 .thenReturn(Optional.empty());
 
         assertThrows(UserNotFoundException.class, () ->
-                userService.updateUserPermissions(userId, requestDto));
-
-        verify(userRepository).findById(userId);
-        verify(userRepository, never()).save(any(User.class));
-    }
-
-    @Test
-    void updateUserPermissions_shouldThrowException_whenPermissionsAreInvalid() {
-        UUID userId = UUID.randomUUID();
-        long invalidPermissions = 12345L; // Not compatible with UserPermission bitmask
-        var requestDto = new UserPermissionsUpdateRequestDto(invalidPermissions);
-
-        when(userRepository.findById(userId))
-                .thenReturn(Optional.of(new User()));
-
-        assertThrows(ValidationException.class, () ->
                 userService.updateUserPermissions(userId, requestDto));
 
         verify(userRepository).findById(userId);

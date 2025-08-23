@@ -2,7 +2,6 @@ package dev.erpix.easykan.server.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.erpix.easykan.server.config.SecurityConfig;
-import dev.erpix.easykan.server.constant.ValidationConstants;
 import dev.erpix.easykan.server.domain.token.service.JwtProvider;
 import dev.erpix.easykan.server.domain.user.dto.UserCreateRequestDto;
 import dev.erpix.easykan.server.domain.user.dto.UserInfoUpdateRequestDto;
@@ -12,17 +11,16 @@ import dev.erpix.easykan.server.domain.user.service.JpaUserDetailsService;
 import dev.erpix.easykan.server.domain.user.service.UserService;
 import dev.erpix.easykan.server.exception.GlobalExceptionHandler;
 import dev.erpix.easykan.server.exception.user.UserNotFoundException;
-import dev.erpix.easykan.server.exception.common.ValidationException;
 import dev.erpix.easykan.server.testsupport.Category;
 import dev.erpix.easykan.server.testsupport.annotation.WithMockUser;
 import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.model.UserPermission;
-import org.hibernate.validator.internal.constraintvalidators.bv.EmailValidator;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -373,13 +371,13 @@ public class UserControllerIT extends AbstractControllerSecurityTest {
                 .andExpect(status().isNotFound());
     }
 
-    @Test
+    @ParameterizedTest
+    @MethodSource("provideInvalidPermissions")
     @WithMockUser(permissions = UserPermission.ADMIN)
-    void updateUserPermissions_shouldReturnBadRequest_whenInvalidPermissionsProvided() throws Exception {
+    void updateUserPermissions_shouldReturnBadRequest_whenInvalidPermissionsProvided(long invalidPermissions) throws Exception {
         UUID userId = UUID.randomUUID();
 
-        @SuppressWarnings("DataFlowIssue")
-        var requestDto = new UserPermissionsUpdateRequestDto(-1L);
+        var requestDto = new UserPermissionsUpdateRequestDto(invalidPermissions);
 
         mockMvc.perform(put("/api/users/{userId}/permissions", userId)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -403,6 +401,19 @@ public class UserControllerIT extends AbstractControllerSecurityTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsBytes(requestDto)))
                 .andExpect(status().isForbidden());
+    }
+
+    // Helper methods
+
+    static Stream<Long> provideInvalidPermissions() {
+        long allValidBits = UserPermission.ALL_PERMISSIONS_MASK;
+        long invalidBit = Long.highestOneBit(allValidBits) << 1;
+
+        return Stream.of(
+                -1L,
+                invalidBit,
+                allValidBits | invalidBit
+        );
     }
 
 }

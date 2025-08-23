@@ -112,10 +112,7 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> UserNotFoundException.byId(userId));
 
-        long permissions = dto.permissions();
-        UserPermission.validatePermissions(permissions);
-        user.setPermissions(permissions);
-
+        user.setPermissions(dto.permissions());
         return userRepository.save(user);
     }
 
