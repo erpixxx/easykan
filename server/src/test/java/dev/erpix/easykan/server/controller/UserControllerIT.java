@@ -341,22 +341,31 @@ public class UserControllerIT extends AbstractControllerSecurityTest {
     }
 
     @Test
-    @WithMockUser(permissions = UserPermission.ADMIN)
-    void updateUserPermissions_shouldUpdatePermissions_whenUserIsAdmin() throws Exception {
+    @WithMockUser
+    void updateUserPermissions_shouldReturnUpdatedUser_whenValidRequest() throws Exception {
         UUID userId = UUID.randomUUID();
         var requestDto = new UserPermissionsUpdateRequestDto(
                 UserPermission.toValue(UserPermission.MANAGE_PROJECTS));
 
+        var updatedUser = new User();
+        updatedUser.setId(userId);
+        updatedUser.setPermissions(requestDto.permissions());
+
+        when(userService.updateUserPermissions(eq(userId), any()))
+                .thenReturn(updatedUser);
+
         mockMvc.perform(put("/api/users/{userId}/permissions", userId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsBytes(requestDto)))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(userId.toString()))
+                .andExpect(jsonPath("$.permissions").value(requestDto.permissions()));
 
         verify(userService).updateUserPermissions(eq(userId), any());
     }
 
     @Test
-    @WithMockUser(permissions = UserPermission.ADMIN)
+    @WithMockUser
     void updateUserPermissions_shouldReturnNotFound_whenUserDoesNotExist() throws Exception {
         UUID userId = UUID.randomUUID();
         var requestDto = new UserPermissionsUpdateRequestDto(
@@ -373,7 +382,7 @@ public class UserControllerIT extends AbstractControllerSecurityTest {
 
     @ParameterizedTest
     @MethodSource("provideInvalidPermissions")
-    @WithMockUser(permissions = UserPermission.ADMIN)
+    @WithMockUser
     void updateUserPermissions_shouldReturnBadRequest_whenInvalidPermissionsProvided(long invalidPermissions) throws Exception {
         UUID userId = UUID.randomUUID();
 
