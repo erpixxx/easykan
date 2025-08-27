@@ -1,0 +1,21 @@
+@use "mixins" as mixins;
+
+.loading-screen {
+  @include mixins.theme(background,
+          radial-gradient(circle at center bottom, var(--accent-3) 0%, var(--color-background) 100%),
+          radial-gradient(circle at center bottom, var(--accent-3) 0%, var(--color-background) 100%)
+  );
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+
+  .scale-loader {
+    opacity: 1;
+    transition: opacity 0.5s ease-out;
+    &.fade-out {
+      opacity: 0;
+    }
+  }
+}
+

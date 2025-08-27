@@ -1,5 +1,5 @@
-import "../scss/components/user_nav.scss"
-import logo from "../assets/logo-512.png"
+import "../../../scss/components/user_nav.scss"
+import logo from "../../../assets/logo-256.png"
 import {
   Avatar, Badge,
   Box, Card,

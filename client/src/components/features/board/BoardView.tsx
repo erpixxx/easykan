@@ -1,7 +1,7 @@
-import {Column, type ColumnProps} from "./Column.tsx";
+import {Column, type ColumnProps} from "../../Column.tsx";
 import {useState} from "react";
 import {DragDropContext, Draggable, Droppable, type DropResult} from "@hello-pangea/dnd";
-import type {CardProps} from "./Card.tsx";
+import type {CardProps} from "../../Card.tsx";
 
 export function BoardView() {
   const [columns, setColumns] = useState<Record<string, ColumnProps>>({

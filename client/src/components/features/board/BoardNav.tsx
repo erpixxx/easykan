@@ -1,4 +1,4 @@
-import {IconButton} from "./IconButton.tsx";
+import {IconButton} from "../../IconButton.tsx";
 
 export function BoardNav() {
   return (

@@ -1,4 +1,4 @@
-import "../scss/components/projects_view.scss";
+import "../../../scss/components/projects_view.scss";
 import {
   Avatar,
   Box,

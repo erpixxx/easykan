@@ -1,10 +1,13 @@
-import { LoginCard } from "../components/LoginCard.tsx";
+import { LoginCard } from "../components/features/login/LoginCard.tsx";
+import {PageTransition} from "../components/PageTransition.tsx";
 import "../scss/login.scss"
 
 export function LoginPage() {
   return(
-    <div className="login-page">
-      <LoginCard />
-    </div>
+    <PageTransition>
+      <div className="login-page">
+        <LoginCard />
+      </div>
+    </PageTransition>
   );
 }

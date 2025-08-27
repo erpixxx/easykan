@@ -1,7 +1,7 @@
 import "../scss/home.scss";
-import { BoardNav } from "../components/BoardNav.tsx";
-import { BoardView } from "../components/BoardView.tsx";
-import {BoardViewNav} from "../components/BoardViewNav.tsx";
+import { BoardNav } from "../components/features/board/BoardNav.tsx";
+import { BoardView } from "../components/features/board/BoardView.tsx";
+import { BoardViewNav } from "../components/features/board/BoardViewNav.tsx";
 
 export function HomePage() {
     return (
