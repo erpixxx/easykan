@@ -1,9 +1,11 @@
 package dev.erpix.easykan.server.domain.auth.service;
 
 import dev.erpix.easykan.server.domain.auth.dto.AuthLoginRequestDto;
+import dev.erpix.easykan.server.domain.auth.dto.UserAndTokenPairResponseDto;
 import dev.erpix.easykan.server.domain.token.dto.TokenPairDto;
 import dev.erpix.easykan.server.domain.token.dto.CreateTokenDto;
 import dev.erpix.easykan.server.domain.token.service.TokenService;
+import dev.erpix.easykan.server.domain.user.dto.UserResponseDto;
 import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.service.UserService;
 import dev.erpix.easykan.server.exception.auth.UnsupportedAuthenticationMethodException;
@@ -21,7 +23,7 @@ public class AuthService {
     private final TokenService tokenService;
     private final UserService userService;
 
-    public TokenPairDto loginWithPassword(@NotNull AuthLoginRequestDto requestDto) {
+    public UserAndTokenPairResponseDto loginWithPassword(@NotNull AuthLoginRequestDto requestDto) {
         User user = userService.getByLogin(requestDto.login());
 
         if (user.getPasswordHash() == null) {
@@ -36,8 +38,9 @@ public class AuthService {
         CreateTokenDto accessToken = tokenService.createAccessToken(user.getId());
         CreateTokenDto refreshToken = tokenService.createRefreshToken(user.getId());
 
-        return new TokenPairDto(accessToken.rawToken(), accessToken.duration(),
+        TokenPairDto tokenPairDto = new TokenPairDto(accessToken.rawToken(), accessToken.duration(),
                 refreshToken.rawToken(), refreshToken.duration());
+        return new UserAndTokenPairResponseDto(UserResponseDto.fromUser(user), tokenPairDto);
     }
 
 }

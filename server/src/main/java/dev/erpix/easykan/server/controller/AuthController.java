@@ -2,9 +2,11 @@ package dev.erpix.easykan.server.controller;
 
 import dev.erpix.easykan.server.config.EasyKanConfig;
 import dev.erpix.easykan.server.domain.auth.dto.AuthLoginRequestDto;
+import dev.erpix.easykan.server.domain.auth.dto.UserAndTokenPairResponseDto;
 import dev.erpix.easykan.server.domain.token.dto.TokenPairDto;
 import dev.erpix.easykan.server.domain.auth.service.AuthService;
 import dev.erpix.easykan.server.domain.token.service.TokenService;
+import dev.erpix.easykan.server.domain.user.dto.UserResponseDto;
 import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -39,14 +41,16 @@ public class AuthController {
             @ApiResponse(responseCode = "404", description = "User does not exist")
     })
     @PostMapping("/login")
-    public ResponseEntity<Void> login(@RequestBody AuthLoginRequestDto request) {
-        TokenPairDto result = authService.loginWithPassword(request);
+    public ResponseEntity<UserResponseDto> login(@RequestBody AuthLoginRequestDto request) {
+        UserAndTokenPairResponseDto result = authService.loginWithPassword(request);
+        TokenPairDto tokenPairDto = result.tokenPair();
+        UserResponseDto user = result.user();
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, createCookie("access_token",
-                        result.newAccessToken(), result.newAccessTokenDuration()))
+                        tokenPairDto.newAccessToken(), tokenPairDto.newAccessTokenDuration()))
                 .header(HttpHeaders.SET_COOKIE, createCookie("refresh_token",
-                        result.newRawRefreshToken(), result.newRefreshTokenDuration()))
-                .build();
+                        tokenPairDto.newRawRefreshToken(), tokenPairDto.newRefreshTokenDuration()))
+                .body(user);
     }
 
     @Operation(
