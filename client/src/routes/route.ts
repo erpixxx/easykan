@@ -2,17 +2,23 @@ import { HomePage } from "../pages/HomePage.tsx";
 import { LoginPage } from "../pages/LoginPage.tsx";
 import {ProjectsPage} from "../pages/ProjectsPage.tsx";
 
-export const ROUTES = [
+export const routes = [
   {
     path: '/',
-    element: HomePage
+    Element: HomePage,
+    protected: true
   },
   {
     path: '/login',
-    element: LoginPage
+    Element: LoginPage,
+    protected: false
   },
   {
     path: '/projects',
-    element: ProjectsPage
+    Element: ProjectsPage,
+    protected: true
   }
 ];
+
+export const loginPath = '/login';
+export const defaultPath = '/projects';
