@@ -1,8 +1,6 @@
 package dev.erpix.easykan.server.domain.user.service;
 
 import dev.erpix.easykan.server.constant.CacheKey;
-import dev.erpix.easykan.server.domain.auth.model.OAuthAccount;
-import dev.erpix.easykan.server.domain.auth.repository.OAuthAccountRepository;
 import dev.erpix.easykan.server.domain.user.dto.UserInfoUpdateRequestDto;
 import dev.erpix.easykan.server.domain.user.dto.UserPermissionsUpdateRequestDto;
 import dev.erpix.easykan.server.domain.user.model.User;
@@ -32,7 +30,6 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final OAuthAccountRepository oAuthAccountRepository;
 
     @RequireUserPermission(UserPermission.MANAGE_USERS)
     public @NotNull Page<User> getAllUsers(Pageable pageable) {
@@ -122,34 +119,6 @@ public class UserService {
         dto.email().ifPresent(user::setEmail);
 
         return userRepository.save(user);
-    }
-
-    @Transactional
-    public OAuthAccount loadOrCreateFromOAuth(
-            @NotNull String providerId,
-            @NotNull String providerName,
-            @NotNull String login,
-            @NotNull String displayName,
-            @NotNull String email
-    ) {
-        // todo: Make sure that login, displayName, and email are not duplicated
-        return oAuthAccountRepository.findByProviderIdAndProviderName(providerId, providerName)
-                .orElseGet(() -> {
-                    User user = User.builder()
-                            .login(login)
-                            .displayName(displayName)
-                            .email(email)
-                            .build();
-                    user = userRepository.save(user);
-
-                    OAuthAccount account = new OAuthAccount();
-                    account.setUser(user);
-                    account.setProviderName(providerName);
-                    account.setProviderId(providerId);
-                    oAuthAccountRepository.save(account);
-
-                    return account;
-                });
     }
 
 }
