@@ -9,20 +9,29 @@ const API_URL = env.API_URL;
 axios.defaults.withCredentials = true;
 
 export const login = async (payload: AuthLoginRequestDto): Promise<User> => {
-    const res = await axios.post(`${API_URL}/auth/login`, payload);
+    const res = await api.post(`${API_URL}/auth/login`, payload);
     return res.data;
 }
 
 export const logout = async (): Promise<void> => {
-    await axios.post(`${API_URL}/logout`);
+    try {
+        await api.post(`${API_URL}/auth/logout`);
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            console.warn("Logout request failed:", error.message);
+        }
+        else {
+            console.error("Unexpected logout error:", error);
+        }
+    }
 };
 
 export const logoutAll = async (): Promise<void> => {
-    await axios.post(`${API_URL}/logout-all`);
+    await api.post(`${API_URL}/auth/logout-all`);
 };
 
 export const refreshToken = async (): Promise<void> => {
-    await axios.post(`${API_URL}/refresh`);
+    await api.post(`${API_URL}/auth/refresh`);
 };
 
 export const getCurrentUser = async (): Promise<User | null> => {
