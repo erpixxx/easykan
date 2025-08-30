@@ -2,7 +2,7 @@ import { AuthProvider } from "../../context/AuthProvider.tsx";
 import { Theme, Box } from "@radix-ui/themes";
 import { Toast } from "radix-ui";
 import { Outlet } from "react-router-dom";
-import {Loader} from "./Loader.tsx";
+import { Loader } from "./Loader.tsx";
 
 export function AppLayout() {
   return (

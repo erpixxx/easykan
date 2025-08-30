@@ -1,6 +1,6 @@
-import {type ReactNode, useEffect, useState} from "react";
-import {useAuth} from "../../context/AuthContext.tsx";
-import {ScaleLoader} from "react-spinners";
+import { type ReactNode, useEffect, useState } from "react";
+import { useAuth } from "../../context/AuthContext.tsx";
+import { ScaleLoader } from "react-spinners";
 import "../../scss/loading-screen.scss"
 
 export const Loader = ({ children }: { children: ReactNode }) => {
@@ -30,6 +30,5 @@ export const Loader = ({ children }: { children: ReactNode }) => {
         );
     }
 
-    // Gdy loader jest odmontowany, pokazujemy resztę aplikacji
     return <>{children}</>;
 }
