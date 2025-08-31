@@ -7,18 +7,18 @@ public record EasyKanConfig(
         String serverUrl,
         String clientUrl,
         boolean useHttps,
-        JwtProperties jwt,
-        PasswordProperties password,
-        OidcProperties oidc
+        Jwt jwt,
+        Password password,
+        Oidc oidc
 ) {
 
-    public record JwtProperties(
+    public record Jwt(
             String secret,
             int accessTokenExpire,
             int refreshTokenExpire
     ) { }
 
-    public record PasswordProperties(
+    public record Password(
             boolean enabled,
             int minLength,
             boolean requireUppercase,
@@ -27,7 +27,7 @@ public record EasyKanConfig(
             boolean requireSpecialCharacter
     ) { }
 
-    public record OidcProperties(
+    public record Oidc(
             boolean enabled,
             String issuerUri,
             String clientId,

@@ -67,7 +67,7 @@ public class TokenServiceTest {
     private static final int REFRESH_TOKEN_EXPIRE = 3600;
 
     private void mockConfig() {
-        var jwt = new EasyKanConfig.JwtProperties(JWT_SECRET, ACCESS_TOKEN_EXPIRE, REFRESH_TOKEN_EXPIRE);
+        var jwt = new EasyKanConfig.Jwt(JWT_SECRET, ACCESS_TOKEN_EXPIRE, REFRESH_TOKEN_EXPIRE);
         when(config.jwt())
                 .thenReturn(jwt);
     }

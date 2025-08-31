@@ -23,13 +23,13 @@ public class JwtProviderTest {
     @BeforeEach
     public void setUp() {
         EasyKanConfig mockConfig = mock(EasyKanConfig.class);
-        EasyKanConfig.JwtProperties mockJwtProperties = mock(EasyKanConfig.JwtProperties.class);
+        EasyKanConfig.Jwt mockJwt = mock(EasyKanConfig.Jwt.class);
 
         when(mockConfig.jwt())
-                .thenReturn(mockJwtProperties);
-        when(mockJwtProperties.secret())
+                .thenReturn(mockJwt);
+        when(mockJwt.secret())
                 .thenReturn("msrzFGLW0mLB1TlEvwu3MlYMqjGXPAH9sSU3LJlvTxA=");
-        when(mockJwtProperties.accessTokenExpire())
+        when(mockJwt.accessTokenExpire())
                 .thenReturn(3600);
 
         jwtProvider = new JwtProvider(mockConfig);
@@ -53,10 +53,10 @@ public class JwtProviderTest {
         String token = jwtProvider.generate(subject);
 
         EasyKanConfig otherConfig = mock(EasyKanConfig.class);
-        EasyKanConfig.JwtProperties otherJwtProperties = mock(EasyKanConfig.JwtProperties.class);
+        EasyKanConfig.Jwt otherJwt = mock(EasyKanConfig.Jwt.class);
         when(otherConfig.jwt())
-                .thenReturn(otherJwtProperties);
-        when(otherJwtProperties.secret())
+                .thenReturn(otherJwt);
+        when(otherJwt.secret())
                 .thenReturn("other-super-secure-token-which-is-not-the-same-as-the-original");
         JwtProvider otherProvider = new JwtProvider(otherConfig);
         otherProvider.init();
@@ -76,12 +76,12 @@ public class JwtProviderTest {
     @Test
     void validate_shouldThrowException_whenTokenIsExpired() throws InterruptedException {
         EasyKanConfig shortLivedConfig = mock(EasyKanConfig.class);
-        EasyKanConfig.JwtProperties shortLivedJwtProperties = mock(EasyKanConfig.JwtProperties.class);
+        EasyKanConfig.Jwt shortLivedJwt = mock(EasyKanConfig.Jwt.class);
         when(shortLivedConfig.jwt())
-                .thenReturn(shortLivedJwtProperties);
-        when(shortLivedJwtProperties.secret())
+                .thenReturn(shortLivedJwt);
+        when(shortLivedJwt.secret())
                 .thenReturn("msrzFGLW0mLB1TlEvwu3MlYMqjGXPAH9sSU3LJlvTxA=");
-        when(shortLivedJwtProperties.accessTokenExpire())
+        when(shortLivedJwt.accessTokenExpire())
                 .thenReturn(1);
 
         JwtProvider shortLivedProvider = new JwtProvider(shortLivedConfig);
