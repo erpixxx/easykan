@@ -4,9 +4,12 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "easykan")
 public record EasyKanConfig(
+        String serverUrl,
+        String clientUrl,
         boolean useHttps,
         JwtProperties jwt,
-        PasswordProperties password
+        PasswordProperties password,
+        OidcProperties oidc
 ) {
 
     public record JwtProperties(
@@ -22,6 +25,15 @@ public record EasyKanConfig(
             boolean requireLowercase,
             boolean requireDigit,
             boolean requireSpecialCharacter
+    ) { }
+
+    public record OidcProperties(
+            boolean enabled,
+            String issuerUri,
+            String clientId,
+            String clientSecret,
+            String[] scopes,
+            String usernameClaim
     ) { }
 
 }
