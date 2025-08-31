@@ -13,24 +13,3 @@ easykan:
     require-special-character: true
   client-url: http://localhost:5173
   server-url: http://localhost:8080
-spring:
-  security:
-    oauth2:
-      client:
-        registration:
-          discord:
-            authorization-grant-type: authorization_code
-            client-id: ${DISCORD_CLIENT_ID}
-            client-secret: ${DISCORD_CLIENT_SECRET}
-            client-authentication-method: client_secret_post
-            provider: discord
-            redirect-uri: http://localhost:8080/login/oauth2/code/discord
-            scope:
-              - identify
-              - email
-        provider:
-          discord:
-            authorization-uri: https://discord.com/api/oauth2/authorize
-            token-uri: https://discord.com/api/oauth2/token
-            user-info-uri: https://discord.com/api/users/@me
-            user-name-attribute: username
