@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @SpringBootTest
-@ActiveProfiles("test")
+@ActiveProfiles("prod")
 @Import(TestcontainersConfig.class)
 @Transactional
 public @interface IntegrationTest { }
