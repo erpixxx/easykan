@@ -14,11 +14,7 @@ export function AppLayout() {
     >
       <AuthProvider>
         <Loader>
-          <Box
-              className="background"
-              height="100%"
-              width="100%"
-          >
+          <Box className="background" height="100%" width="100%">
             <Toast.Provider swipeDirection="right">
               <Outlet />
             </Toast.Provider>
