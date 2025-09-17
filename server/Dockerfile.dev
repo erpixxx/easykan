@@ -2,4 +2,4 @@ FROM gradle:8.14.2-jdk21
 
 WORKDIR /app
 
-CMD ["./start-dev.sh"]
+CMD [ "gradle", "bootRun" ]
