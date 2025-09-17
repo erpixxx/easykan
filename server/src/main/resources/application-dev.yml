@@ -1,15 +1,26 @@
 easykan:
   use-https: false
   jwt:
-    secret: q+9vidZZd0Tq1tNj72NUykIaOZlLeKN9ix2PxU1Hg1Y=
-    access-token-expire: 150
-    refresh-token-expire: 604800
+    secret: ${EASYKAN_JWT_SECRET}
+    access-token-expire: ${EASYKAN_JWT_ACCESS_TOKEN_EXPIRE:300}
+    refresh-token-expire: ${EASYKAN_JWT_REFRESH_TOKEN_EXPIRE:43200}
   password:
-    enabled: true
-    min-length: 8
-    require-uppercase: true
-    require-lowercase: true
-    require-digit: true
-    require-special-character: true
-  client-url: http://localhost:5173
-  server-url: http://localhost:8080
+    enabled: ${EASYKAN_PASSWORD_ENABLED:true}
+    min-length: ${EASYKAN_PASSWORD_MIN_LENGTH:8}
+    require-uppercase: ${EASYKAN_PASSWORD_REQUIRE_UPPERCASE:true}
+    require-lowercase: ${EASYKAN_PASSWORD_REQUIRE_LOWERCASE:true}
+    require-digit: ${EASYKAN_PASSWORD_REQUIRE_DIGIT:true}
+    require-special-character: ${EASYKAN_PASSWORD_REQUIRE_SPECIAL_CHARACTER:true}
+  client-url: ${EASYKAN_PUBLIC_CLIENT_URL}
+  server-url: ${EASYKAN_PUBLIC_SERVER_URL}
+  create-default-admin-account: ${EASYKAN_CREATE_DEFAULT_ADMIN:true}
+  oidc:
+    enabled: ${EASYKAN_OIDC_ENABLED:false}
+    client-id: ${EASYKAN_OIDC_CLIENT_ID}
+    client-secret: ${EASYKAN_OIDC_CLIENT_SECRET}
+    issuer-uri: ${EASYKAN_OIDC_ISSUER_URI}
+    scopes: ${EASYKAN_OIDC_SCOPES:openid,email,profile,groups}
+    email-attribute: ${EASYKAN_OIDC_EMAIL_ATTRIBUTE:email}
+    name-attribute: ${EASYKAN_OIDC_NAME_ATTRIBUTE:name}
+    roles-attribute: ${EASYKAN_OIDC_ROLES_ATTRIBUTE:groups}
+    admin-roles: ${EASYKAN_OIDC_ADMIN_ROLES:admin}
