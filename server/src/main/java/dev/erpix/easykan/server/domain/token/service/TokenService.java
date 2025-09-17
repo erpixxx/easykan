@@ -1,8 +1,9 @@
 package dev.erpix.easykan.server.domain.token.service;
 
 import dev.erpix.easykan.server.config.EasyKanConfig;
+import dev.erpix.easykan.server.domain.token.AccessToken;
+import dev.erpix.easykan.server.domain.token.RawRefreshToken;
 import dev.erpix.easykan.server.domain.token.dto.TokenPairDto;
-import dev.erpix.easykan.server.domain.token.dto.CreateTokenDto;
 import dev.erpix.easykan.server.domain.token.model.RefreshToken;
 import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.token.repository.TokenRepository;
@@ -13,7 +14,6 @@ import dev.erpix.easykan.server.domain.user.service.UserService;
 import dev.erpix.easykan.server.exception.auth.InvalidTokenException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +26,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TokenService {
 
+    public static final String ACCESS_TOKEN = "access_token";
+    public static final String REFRESH_TOKEN = "refresh_token";
+
     private final EasyKanConfig config;
     private final TokenRepository tokenRepository;
     private final UserService userService;
@@ -34,13 +37,13 @@ public class TokenService {
     private final TokenGenerator tokenGenerator;
     private final JwtProvider jwtProvider;
 
-    public @NotNull CreateTokenDto createAccessToken(@NotNull UUID userId) {
+    public AccessToken createAccessToken(UUID userId) {
         String rawToken = jwtProvider.generate(userId.toString());
         Duration duration = Duration.ofSeconds(config.jwt().accessTokenExpire());
-        return new CreateTokenDto(rawToken, duration);
+        return new AccessToken(rawToken, duration);
     }
 
-    public @NotNull CreateTokenDto createRefreshToken(@NotNull UUID userId) {
+    public RawRefreshToken createRefreshToken(UUID userId) {
         User user = userService.getById(userId);
 
         TokenParts tokenParts = tokenGenerator.generate();
@@ -53,10 +56,9 @@ public class TokenService {
                 .user(user)
                 .expiresAt(Instant.now().plus(duration))
                 .build();
-
         tokenRepository.save(refreshToken);
 
-        return new CreateTokenDto(tokenParts.combine(), duration);
+        return new RawRefreshToken(tokenParts, duration);
     }
 
     public void logout(String rawRefreshToken) {
@@ -64,7 +66,7 @@ public class TokenService {
     }
 
     @Transactional
-    public void logoutAll(@NotNull JpaUserDetails userDetails) {
+    public void logoutAll(JpaUserDetails userDetails) {
         tokenRepository.revokeAllByUserAndExpiresAtAfter(userDetails.user(), Instant.now());
     }
 
@@ -81,13 +83,13 @@ public class TokenService {
                     revokeToken(oldToken);
 
                     UUID userId = oldToken.getUser().getId();
-                    CreateTokenDto newAccessToken = createAccessToken(userId);
-                    CreateTokenDto newRefreshToken = createRefreshToken(userId);
+                    AccessToken accessToken = createAccessToken(userId);
+                    RawRefreshToken refreshToken = createRefreshToken(userId);
 
-                    return new TokenPairDto(newAccessToken.rawToken(),
-                            newAccessToken.duration(),
-                            newRefreshToken.rawToken(),
-                            newRefreshToken.duration());
+                    return new TokenPairDto(accessToken.rawToken(),
+                            accessToken.duration(),
+                            refreshToken.combine(),
+                            refreshToken.duration());
                 }).orElseThrow(InvalidTokenException::new);
     }
 

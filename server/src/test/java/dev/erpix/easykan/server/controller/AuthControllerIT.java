@@ -1,6 +1,7 @@
 package dev.erpix.easykan.server.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.erpix.easykan.server.domain.auth.dto.UserAndTokenPairResponseDto;
 import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
 import dev.erpix.easykan.server.testsupport.Category;
 import dev.erpix.easykan.server.testsupport.annotation.WithMockUser;
@@ -83,8 +84,8 @@ public class AuthControllerIT extends AbstractControllerSecurityTest {
         int refreshTokenExpire = (int) refreshToken.duration().getSeconds();
 
         when(authService.loginWithPassword(any(AuthLoginRequestDto.class))).thenReturn(
-                new TokenPairDto(accessToken.rawToken(), accessToken.duration(),
-                        refreshToken.rawToken(), refreshToken.duration()));
+                new UserAndTokenPairResponseDto(null, new TokenPairDto(accessToken.rawToken(), accessToken.duration(),
+                        refreshToken.rawToken(), refreshToken.duration())));
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)

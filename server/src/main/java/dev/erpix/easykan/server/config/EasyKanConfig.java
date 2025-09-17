@@ -7,6 +7,7 @@ public record EasyKanConfig(
         String serverUrl,
         String clientUrl,
         boolean useHttps,
+        boolean createDefaultAdminAccount,
         Jwt jwt,
         Password password,
         Oidc oidc
@@ -29,11 +30,14 @@ public record EasyKanConfig(
 
     public record Oidc(
             boolean enabled,
-            String issuerUri,
             String clientId,
             String clientSecret,
+            String issuerUri,
             String[] scopes,
-            String usernameClaim
+            String emailAttribute,
+            String nameAttribute,
+            String rolesAttribute,
+            String[] adminRoles
     ) { }
 
 }

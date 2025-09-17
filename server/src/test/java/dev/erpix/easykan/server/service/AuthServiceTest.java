@@ -1,11 +1,14 @@
 package dev.erpix.easykan.server.service;
 
 import dev.erpix.easykan.server.domain.auth.dto.AuthLoginRequestDto;
+import dev.erpix.easykan.server.domain.auth.dto.UserAndTokenPairResponseDto;
 import dev.erpix.easykan.server.domain.auth.service.AuthService;
-import dev.erpix.easykan.server.domain.token.dto.CreateTokenDto;
-import dev.erpix.easykan.server.domain.token.dto.TokenPairDto;
+import dev.erpix.easykan.server.domain.token.AccessToken;
+import dev.erpix.easykan.server.domain.token.RawRefreshToken;
+import dev.erpix.easykan.server.domain.token.security.TokenParts;
 import dev.erpix.easykan.server.domain.token.service.TokenService;
 import dev.erpix.easykan.server.domain.user.model.User;
+import dev.erpix.easykan.server.domain.user.model.UserPermission;
 import dev.erpix.easykan.server.domain.user.service.UserService;
 import dev.erpix.easykan.server.exception.auth.UnsupportedAuthenticationMethodException;
 import dev.erpix.easykan.server.testsupport.Category;
@@ -50,11 +53,12 @@ public class AuthServiceTest {
                 .id(UUID.randomUUID())
                 .login(userLogin)
                 .passwordHash("hashedPassword")
+                .permissions(UserPermission.DEFAULT_PERMISSIONS.getValue())
                 .build();
 
         String accessToken = "accessToken";
         Duration accessTokenDuration = Duration.ofMinutes(15);
-        String refreshToken = "refreshToken";
+        String refreshToken = "refresh:token";
         Duration refreshTokenDuration = Duration.ofDays(7);
 
         when(userService.getByLogin(userLogin))
@@ -62,15 +66,15 @@ public class AuthServiceTest {
         when(passwordEncoder.matches("testPassword", user.getPasswordHash()))
                 .thenReturn(true);
         when(tokenService.createAccessToken(user.getId()))
-                .thenReturn(new CreateTokenDto(accessToken, accessTokenDuration));
+                .thenReturn(new AccessToken(accessToken, accessTokenDuration));
         when(tokenService.createRefreshToken(user.getId()))
-                .thenReturn(new CreateTokenDto(refreshToken, refreshTokenDuration));
+                .thenReturn(new RawRefreshToken(new TokenParts("refresh", "token"), refreshTokenDuration));
 
-        TokenPairDto tokenPair = authService.loginWithPassword(request);
-        assertEquals(accessToken, tokenPair.newAccessToken());
-        assertEquals(accessTokenDuration, tokenPair.newAccessTokenDuration());
-        assertEquals(refreshToken, tokenPair.newRawRefreshToken());
-        assertEquals(refreshTokenDuration, tokenPair.newRefreshTokenDuration());
+        UserAndTokenPairResponseDto responseDto = authService.loginWithPassword(request);
+        assertEquals(accessToken, responseDto.tokenPair().newAccessToken());
+        assertEquals(accessTokenDuration, responseDto.tokenPair().newAccessTokenDuration());
+        assertEquals(refreshToken, responseDto.tokenPair().newRawRefreshToken());
+        assertEquals(refreshTokenDuration, responseDto.tokenPair().newRefreshTokenDuration());
     }
 
     @Test

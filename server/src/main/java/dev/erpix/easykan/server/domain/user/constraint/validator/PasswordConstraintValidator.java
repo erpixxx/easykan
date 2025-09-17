@@ -19,7 +19,7 @@ public abstract class PasswordConstraintValidator<T> implements StringConstraint
             return false;
         }
 
-        EasyKanConfig.PasswordProperties props = config.password();
+        EasyKanConfig.Password props = config.password();
         boolean isValid = true;
 
         if (value.length() < props.minLength()) {

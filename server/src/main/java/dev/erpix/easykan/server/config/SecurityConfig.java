@@ -1,9 +1,11 @@
 package dev.erpix.easykan.server.config;
 
 import dev.erpix.easykan.server.config.filter.JwtAuthFilter;
+import dev.erpix.easykan.server.domain.auth.security.OidcLoginSuccessHandler;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -12,6 +14,10 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -22,7 +28,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final EasyKanConfig config;
     private final JwtAuthFilter jwtAuthFilter;
+    private final OidcLoginSuccessHandler oidcLoginSuccessHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -44,7 +52,34 @@ public class SecurityConfig {
                         .authenticationEntryPoint((req, res, ex) ->
                                 res.sendError(HttpServletResponse.SC_UNAUTHORIZED, ex.getMessage())))
                 .formLogin(AbstractHttpConfigurer::disable);
+
+        if (config.oidc() != null && config.oidc().enabled()) {
+            http.oauth2Login(oauth -> oauth
+                    .successHandler(oidcLoginSuccessHandler))
+                .authorizeHttpRequests(req -> req
+                        .requestMatchers("/oauth2/**").permitAll());
+        }
+
         return http.build();
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "easykan.oidc", name = "enabled", havingValue = "true")
+    public ClientRegistrationRepository clientRegistrationRepository() {
+        var oidc = config.oidc();
+
+        ClientRegistration clientRegistration = ClientRegistration
+                .withRegistrationId("oidc")
+                .clientId(oidc.clientId())
+                .clientSecret(oidc.clientSecret())
+                .issuerUri(oidc.issuerUri())
+                .scope(oidc.scopes())
+                .redirectUri("{baseUrl}/login/oauth2/code/{registrationId}")
+                .userNameAttributeName(oidc.nameAttribute())
+                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+                .build();
+
+        return new InMemoryClientRegistrationRepository(clientRegistration);
     }
 
     @Bean

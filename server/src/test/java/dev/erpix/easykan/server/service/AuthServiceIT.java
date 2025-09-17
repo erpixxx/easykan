@@ -2,6 +2,7 @@ package dev.erpix.easykan.server.service;
 
 import dev.erpix.easykan.server.config.EasyKanConfig;
 import dev.erpix.easykan.server.domain.auth.dto.AuthLoginRequestDto;
+import dev.erpix.easykan.server.domain.auth.dto.UserAndTokenPairResponseDto;
 import dev.erpix.easykan.server.domain.auth.service.AuthService;
 import dev.erpix.easykan.server.domain.token.dto.TokenPairDto;
 import dev.erpix.easykan.server.domain.token.model.RefreshToken;
@@ -57,24 +58,24 @@ public class AuthServiceIT {
                 WithPersistedUser.Default.LOGIN,
                 WithPersistedUser.Default.PASSWORD);
 
-        TokenPairDto result = authService.loginWithPassword(requestDto);
+        UserAndTokenPairResponseDto result = authService.loginWithPassword(requestDto);
 
         assertThat(result).isNotNull();
 
         // Access token assertions
-        assertThat(result.newAccessToken())
+        assertThat(result.tokenPair().newAccessToken())
                 .isNotBlank();
-        assertThat(result.newAccessTokenDuration().getSeconds())
+        assertThat(result.tokenPair().newAccessTokenDuration().getSeconds())
                 .isEqualTo(config.jwt().accessTokenExpire());
-        assertThat(jwtProvider.validate(result.newAccessToken()))
+        assertThat(jwtProvider.validate(result.tokenPair().newAccessToken()))
                 .isEqualTo(testUser.getId().toString());
 
         // Refresh token assertions
-        assertThat(result.newRawRefreshToken())
+        assertThat(result.tokenPair().newRawRefreshToken())
                 .isNotBlank();
-        assertThat(result.newRefreshTokenDuration().getSeconds())
+        assertThat(result.tokenPair().newRefreshTokenDuration().getSeconds())
                 .isEqualTo(config.jwt().refreshTokenExpire());
-        String[] tokenParts = result.newRawRefreshToken().split(":");
+        String[] tokenParts = result.tokenPair().newRawRefreshToken().split(":");
         assertThat(tokenParts).hasSize(2);
         String selector = tokenParts[0];
         String rawValidator = tokenParts[1];

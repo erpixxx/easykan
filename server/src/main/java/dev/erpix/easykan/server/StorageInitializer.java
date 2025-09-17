@@ -5,7 +5,7 @@ import dev.erpix.easykan.server.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Profile;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -14,7 +14,11 @@ import java.util.Base64;
 
 // TODO: This is a temporary solution to initialize the storage with a default admin user.
 @Component
-@Profile("!test")
+@ConditionalOnProperty(
+        name = "easykan.create-default-admin-account",
+        havingValue = "true",
+        matchIfMissing = true
+)
 @RequiredArgsConstructor
 @Slf4j
 public class StorageInitializer implements CommandLineRunner {

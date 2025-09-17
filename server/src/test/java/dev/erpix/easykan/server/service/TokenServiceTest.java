@@ -102,7 +102,7 @@ public class TokenServiceTest {
 
         var result = tokenService.createRefreshToken(userId);
 
-        assertThat(result.rawToken()).isEqualTo(parts.combine());
+        assertThat(result.combine()).isEqualTo(parts.combine());
         assertThat(result.duration()).isEqualTo(Duration.ofSeconds(REFRESH_TOKEN_EXPIRE));
 
         verify(tokenRepository).save(any(RefreshToken.class));

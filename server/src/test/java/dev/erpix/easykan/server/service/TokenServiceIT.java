@@ -59,7 +59,7 @@ public class TokenServiceIT {
         var savedToken = tokenRepository.findBySelector(SAMPLE_SELECTOR)
                 .orElseThrow(() -> new AssertionError("Refresh token not found in repository"));
 
-        assertThat(tokenDto.rawToken())
+        assertThat(tokenDto.combine())
                 .isNotBlank();
         assertThat(tokenDto.duration().getSeconds())
                 .isEqualTo(config.jwt().refreshTokenExpire());
@@ -85,7 +85,7 @@ public class TokenServiceIT {
 
         assertThat(tokenBeforeLogout.isRevoked()).isFalse();
 
-        tokenService.logout(tokenDto.rawToken());
+        tokenService.logout(tokenDto.combine());
 
         var revokedToken = tokenRepository.findBySelector(SAMPLE_SELECTOR)
                 .orElseThrow(() -> new AssertionError("Token not found in repository"));
@@ -127,7 +127,7 @@ public class TokenServiceIT {
         tokenToRevoke.setRevoked(true);
         tokenRepository.saveAndFlush(tokenToRevoke);
 
-        tokenService.logout(tokenDto.rawToken());
+        tokenService.logout(tokenDto.combine());
 
         var tokenInDb = tokenRepository.findBySelector(SAMPLE_SELECTOR).orElseThrow();
         assertThat(tokenInDb.isRevoked()).isTrue();
@@ -186,7 +186,7 @@ public class TokenServiceIT {
         when(tokenGenerator.generate())
                 .thenReturn(new TokenParts("newSelector", "newValidator"));
 
-        var newTokenPair = tokenService.rotateRefreshToken(oldTokenDto.rawToken());
+        var newTokenPair = tokenService.rotateRefreshToken(oldTokenDto.combine());
 
         assertThat(newTokenPair.newRawRefreshToken())
                 .isNotBlank();
