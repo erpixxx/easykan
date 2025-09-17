@@ -105,7 +105,8 @@ CREATE TABLE "tasks" (
     "name" varchar(255) NOT NULL,
     "position" int NOT NULL,
     "is_completed" boolean NOT NULL DEFAULT false,
-    "created_at" timestamptz NOT NULL DEFAULT (now())
+    "created_at" timestamptz NOT NULL DEFAULT (now()),
+    "updated_at" timestamptz NOT NULL DEFAULT (now())
 );
 
 CREATE TABLE "comments" (
