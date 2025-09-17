@@ -4,7 +4,6 @@ import dev.erpix.easykan.server.config.EasyKanConfig;
 import dev.erpix.easykan.server.domain.auth.dto.AuthLoginRequestDto;
 import dev.erpix.easykan.server.domain.auth.dto.UserAndTokenPairResponseDto;
 import dev.erpix.easykan.server.domain.auth.service.AuthService;
-import dev.erpix.easykan.server.domain.token.dto.TokenPairDto;
 import dev.erpix.easykan.server.domain.token.model.RefreshToken;
 import dev.erpix.easykan.server.domain.token.repository.TokenRepository;
 import dev.erpix.easykan.server.domain.token.service.JwtProvider;
