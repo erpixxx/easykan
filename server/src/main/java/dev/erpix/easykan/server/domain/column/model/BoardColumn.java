@@ -1,6 +1,5 @@
 package dev.erpix.easykan.server.domain.column.model;
 
-import dev.erpix.easykan.server.domain.card.model.Card;
 import dev.erpix.easykan.server.domain.board.model.Board;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -9,14 +8,13 @@ import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.time.Instant;
 import java.util.UUID;
 
 @Getter @Setter
 @Builder
-@ToString(onlyExplicitlyIncluded = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(onlyExplicitlyIncluded = true)
 @AllArgsConstructor @NoArgsConstructor
 @Entity
 @Table(name = "columns", schema = "public", indexes = {
@@ -24,8 +22,8 @@ import java.util.UUID;
 })
 public class BoardColumn {
 
-    @ToString.Include
     @EqualsAndHashCode.Include
+    @ToString.Include
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false)
@@ -47,7 +45,28 @@ public class BoardColumn {
     @Column(name = "position", nullable = false)
     private Integer position;
 
-    @OneToMany(mappedBy = "column")
-    private Set<Card> cards = new LinkedHashSet<>();
+    @NotNull
+    @Column(name = "created_at", nullable = false)
+    private Instant createdAt;
+
+    @NotNull
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        Instant now = Instant.now();
+        if (this.createdAt == null) {
+            createdAt = now;
+        }
+        if (this.updatedAt == null) {
+            updatedAt = now;
+        }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = Instant.now();
+    }
 
 }

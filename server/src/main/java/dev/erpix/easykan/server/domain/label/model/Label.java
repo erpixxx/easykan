@@ -1,8 +1,8 @@
-package dev.erpix.easykan.server.domain.board.model;
+package dev.erpix.easykan.server.domain.label.model;
 
+import dev.erpix.easykan.server.domain.project.model.Project;
 import dev.erpix.easykan.server.domain.card.model.CardLabel;
 import jakarta.persistence.*;
-import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -15,17 +15,15 @@ import java.util.UUID;
 
 @Getter @Setter
 @Builder
-@ToString(onlyExplicitlyIncluded = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(onlyExplicitlyIncluded = true)
 @AllArgsConstructor @NoArgsConstructor
 @Entity
-@Table(name = "labels", schema = "public", indexes = {
-        @Index(name = "labels_board_id_idx", columnList = "board_id")
-})
+@Table(name = "labels", schema = "public")
 public class Label {
 
-    @ToString.Include
     @EqualsAndHashCode.Include
+    @ToString.Include
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false)
@@ -34,8 +32,8 @@ public class Label {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "board_id", nullable = false)
-    private Board board;
+    @JoinColumn(name = "project_id", nullable = false)
+    private Project project;
 
     @ToString.Include
     @Size(max = 32)
@@ -43,10 +41,9 @@ public class Label {
     @Column(name = "name", nullable = false, length = 32)
     private String name;
 
-    @ToString.Include
     @Size(max = 6)
-    @Column(name = "color", length = 6)
-    private String color;
+    @Column(name = "color_hex", length = 6)
+    private String colorHex;
 
     @OneToMany(mappedBy = "label", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<CardLabel> cardLinks = new LinkedHashSet<>();

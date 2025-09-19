@@ -1,18 +1,14 @@
-package dev.erpix.easykan.server.domain.board.model;
+package dev.erpix.easykan.server.domain.comment.model;
 
-import dev.erpix.easykan.server.domain.column.model.BoardColumn;
-import dev.erpix.easykan.server.domain.project.model.Project;
+import dev.erpix.easykan.server.domain.card.model.Card;
 import dev.erpix.easykan.server.domain.user.model.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.Instant;
-import java.util.LinkedHashSet;
-import java.util.Set;
 import java.util.UUID;
 
 @Getter @Setter
@@ -21,8 +17,8 @@ import java.util.UUID;
 @ToString(onlyExplicitlyIncluded = true)
 @AllArgsConstructor @NoArgsConstructor
 @Entity
-@Table(name = "boards", schema = "public")
-public class Board {
+@Table(name = "comments", schema = "public")
+public class Comment {
 
     @EqualsAndHashCode.Include
     @ToString.Include
@@ -34,34 +30,27 @@ public class Board {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "project_id", nullable = false)
-    private Project project;
+    @JoinColumn(name = "card_id", nullable = false)
+    private Card card;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "owner_id", nullable = false)
-    private User owner;
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JoinColumn(name = "author_id", nullable = false)
+    private User author;
 
     @ToString.Include
-    @Size(max = 64)
     @NotNull
-    @Column(name = "name", nullable = false, length = 64)
-    private String name;
-
-    @NotNull
-    @Column(name = "position", nullable = false)
-    private Integer position;
+    @Column(name = "content", nullable = false, length = Integer.MAX_VALUE)
+    private String content;
 
     @NotNull
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
     @NotNull
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at")
     private Instant updatedAt;
-
-    @OneToMany(mappedBy = "board")
-    private Set<BoardColumn> columns = new LinkedHashSet<>();
 
     @PrePersist
     protected void onCreate() {

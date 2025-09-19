@@ -1,9 +1,9 @@
 package dev.erpix.easykan.server.domain.project.model;
 
 import dev.erpix.easykan.server.domain.board.model.Board;
+import dev.erpix.easykan.server.domain.label.model.Label;
 import dev.erpix.easykan.server.domain.user.model.User;
 import jakarta.persistence.*;
-import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -15,18 +15,15 @@ import java.util.UUID;
 
 @Getter @Setter
 @Builder
-@ToString(onlyExplicitlyIncluded = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(onlyExplicitlyIncluded = true)
 @AllArgsConstructor @NoArgsConstructor
 @Entity
-@Table(name = "projects", schema = "public", indexes = {
-        @Index(name = "projects_owner_id_idx", columnList = "owner_id"),
-        @Index(name = "projects_name_idx", columnList = "name")
-})
+@Table(name = "projects", schema = "public")
 public class Project {
 
-    @ToString.Include
     @EqualsAndHashCode.Include
+    @ToString.Include
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false)
@@ -47,10 +44,20 @@ public class Project {
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
-    @OneToMany(mappedBy = "project")
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<ProjectMember> members = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Board> boards = new LinkedHashSet<>();
 
-    @OneToMany(mappedBy = "project")
-    private Set<ProjectMember> projectMembers = new LinkedHashSet<>();
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Label> labels = new LinkedHashSet<>();
+
+    @PrePersist
+    protected void onCreate() {
+        if (this.createdAt == null) {
+            createdAt = Instant.now();
+        }
+    }
 
 }

@@ -1,12 +1,12 @@
-package dev.erpix.easykan.server.domain.board.model;
+package dev.erpix.easykan.server.domain.task.model;
 
-import dev.erpix.easykan.server.domain.column.model.BoardColumn;
-import dev.erpix.easykan.server.domain.project.model.Project;
+import dev.erpix.easykan.server.domain.card.model.Card;
 import dev.erpix.easykan.server.domain.user.model.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -21,8 +21,8 @@ import java.util.UUID;
 @ToString(onlyExplicitlyIncluded = true)
 @AllArgsConstructor @NoArgsConstructor
 @Entity
-@Table(name = "boards", schema = "public")
-public class Board {
+@Table(name = "tasks", schema = "public")
+public class Task {
 
     @EqualsAndHashCode.Include
     @ToString.Include
@@ -34,23 +34,41 @@ public class Board {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "project_id", nullable = false)
-    private Project project;
+    @JoinColumn(name = "card_id", nullable = false)
+    private Card card;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JoinColumn(name = "parent_task_id")
+    private Task parentTask;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "owner_id", nullable = false)
-    private User owner;
+    @JoinColumn(name = "created_by_user_id", nullable = false)
+    private User createdByUser;
 
     @ToString.Include
-    @Size(max = 64)
+    @Size(max = 255)
     @NotNull
-    @Column(name = "name", nullable = false, length = 64)
+    @Column(name = "name", nullable = false)
     private String name;
 
     @NotNull
     @Column(name = "position", nullable = false)
     private Integer position;
+
+    @NotNull
+    @ColumnDefault("false")
+    @Column(name = "is_completed", nullable = false)
+    private Boolean isCompleted = false;
+
+    @Column(name = "completed_at")
+    private Instant completedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    @JoinColumn(name = "completed_by_user_id")
+    private User completedByUser;
 
     @NotNull
     @Column(name = "created_at", nullable = false)
@@ -60,8 +78,8 @@ public class Board {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    @OneToMany(mappedBy = "board")
-    private Set<BoardColumn> columns = new LinkedHashSet<>();
+    @OneToMany(mappedBy = "parentTask", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Task> subTasks = new LinkedHashSet<>();
 
     @PrePersist
     protected void onCreate() {

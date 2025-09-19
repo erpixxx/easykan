@@ -1,4 +1,4 @@
-package dev.erpix.easykan.server.domain.card.model;
+package dev.erpix.easykan.server.domain.project.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
@@ -10,13 +10,14 @@ import java.util.UUID;
 
 @Getter @Setter
 @EqualsAndHashCode
-@AllArgsConstructor @NoArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 @Embeddable
-public class CardAssigneeId implements Serializable {
+public class ProjectMemberId implements Serializable {
 
     @NotNull
-    @Column(name = "card_id", nullable = false)
-    private UUID cardId;
+    @Column(name = "project_id", nullable = false)
+    private UUID projectId;
 
     @NotNull
     @Column(name = "user_id", nullable = false)

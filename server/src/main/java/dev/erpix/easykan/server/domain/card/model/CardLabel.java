@@ -1,18 +1,24 @@
 package dev.erpix.easykan.server.domain.card.model;
 
-import dev.erpix.easykan.server.domain.board.model.Label;
+import dev.erpix.easykan.server.domain.label.model.Label;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 @Getter @Setter
+@Builder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(onlyExplicitlyIncluded = true)
+@AllArgsConstructor @NoArgsConstructor
 @Entity
 @Table(name = "card_labels", schema = "public")
 public class CardLabel {
 
-    @EmbeddedId private CardLabelId id;
+    @EqualsAndHashCode.Include
+    @ToString.Include
+    @EmbeddedId
+    private CardLabelId id;
 
     @MapsId("cardId")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

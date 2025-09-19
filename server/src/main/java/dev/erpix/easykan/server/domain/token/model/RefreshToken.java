@@ -42,7 +42,7 @@ public class RefreshToken {
     @ToString.Include
     @Size(max = 255)
     @NotNull
-    @Column(name = "validator", nullable = false)
+    @Column(name = "validator_hash", nullable = false)
     private String validator;
 
     @NotNull

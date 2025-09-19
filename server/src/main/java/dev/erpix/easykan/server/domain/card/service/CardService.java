@@ -1,10 +1,11 @@
-package dev.erpix.easykan.server.domain.project.service;
+package dev.erpix.easykan.server.domain.card.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+@SuppressWarnings("unused")
 @Service
 @RequiredArgsConstructor
-public class ProjectService {
+public class CardService {
 
 }

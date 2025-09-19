@@ -1,11 +1,14 @@
 package dev.erpix.easykan.server.domain.user.model;
 
 import dev.erpix.easykan.server.domain.auth.model.OAuthAccount;
-import dev.erpix.easykan.server.domain.project.model.Project;
-import dev.erpix.easykan.server.domain.project.model.ProjectMember;
-import dev.erpix.easykan.server.domain.token.model.RefreshToken;
 import dev.erpix.easykan.server.domain.board.model.Board;
 import dev.erpix.easykan.server.domain.card.model.CardAssignee;
+import dev.erpix.easykan.server.domain.comment.model.Comment;
+import dev.erpix.easykan.server.domain.project.model.Project;
+import dev.erpix.easykan.server.domain.project.model.ProjectMember;
+import dev.erpix.easykan.server.domain.project.model.ProjectUserView;
+import dev.erpix.easykan.server.domain.task.model.Task;
+import dev.erpix.easykan.server.domain.token.model.RefreshToken;
 import jakarta.persistence.*;
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotNull;
@@ -65,7 +68,7 @@ public class User {
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
-    @Column(name = "last_login")
+    @Column(name = "last_login_at")
     private Instant lastLogin;
 
     @ToString.Include
@@ -74,22 +77,37 @@ public class User {
     private Long permissions;
 
     @OneToMany(mappedBy = "user")
-    private Set<CardAssignee> cardAssignments = new LinkedHashSet<>();
-
-    @OneToMany(mappedBy = "owner")
-    private Set<Board> boards = new LinkedHashSet<>();
-
-    @OneToMany(mappedBy = "member")
-    private Set<ProjectMember> projectMembers = new LinkedHashSet<>();
-
-    @OneToMany(mappedBy = "owner")
-    private Set<Project> projects = new LinkedHashSet<>();
-
-    @OneToMany(mappedBy = "user")
     private Set<OAuthAccount> OAuthAccounts = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "user")
     private Set<RefreshToken> refreshTokens = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "owner")
+    private Set<Project> ownedProjects = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
+    private Set<ProjectMember> projectMembers = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
+    private Set<ProjectUserView> projectViews = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "owner")
+    private Set<Board> ownedBoards = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "user")
+    private Set<CardAssignee> assignments = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "assignedByUser")
+    private Set<CardAssignee> createdAssignments = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "author")
+    private Set<Comment> comments = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "createdByUser")
+    private Set<Task> createdTasks = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "completedByUser")
+    private Set<Task> completedTasks = new LinkedHashSet<>();
 
     @PrePersist
     protected void onCreate() {

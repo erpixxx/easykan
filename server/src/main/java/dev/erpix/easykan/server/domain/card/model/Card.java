@@ -1,5 +1,7 @@
 package dev.erpix.easykan.server.domain.card.model;
 
+import dev.erpix.easykan.server.domain.comment.model.Comment;
+import dev.erpix.easykan.server.domain.task.model.Task;
 import dev.erpix.easykan.server.domain.column.model.BoardColumn;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -15,8 +17,8 @@ import java.util.UUID;
 
 @Getter @Setter
 @Builder
-@ToString(onlyExplicitlyIncluded = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(onlyExplicitlyIncluded = true)
 @AllArgsConstructor @NoArgsConstructor
 @Entity
 @Table(name = "cards", schema = "public", indexes = {
@@ -24,8 +26,8 @@ import java.util.UUID;
 })
 public class Card {
 
-    @ToString.Include
     @EqualsAndHashCode.Include
+    @ToString.Include
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false)
@@ -43,9 +45,15 @@ public class Card {
     @Column(name = "name", nullable = false, length = 64)
     private String name;
 
+    @Column(name = "description", length = Integer.MAX_VALUE)
+    private String description;
+
     @NotNull
     @Column(name = "position", nullable = false)
     private Integer position;
+
+    @Column(name = "due_date")
+    private Instant dueDate;
 
     @NotNull
     @Column(name = "created_at", nullable = false)
@@ -55,27 +63,32 @@ public class Card {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    @Column(name = "description", length = Integer.MAX_VALUE)
-    private String description;
-
-    @Column(name = "due_date")
-    private Instant dueDate;
-
     @OneToMany(mappedBy = "card", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<CardAssignee> users = new LinkedHashSet<>();
+    private Set<CardAssignee> assignees = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "card", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<CardLabel> labels = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "card", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Comment> comments = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "card", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Task> tasks = new LinkedHashSet<>();
 
     @PrePersist
     protected void onCreate() {
         Instant now = Instant.now();
         if (this.createdAt == null) {
-            this.createdAt = now;
+            createdAt = now;
         }
         if (this.updatedAt == null) {
-            this.updatedAt = now;
+            updatedAt = now;
         }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = Instant.now();
     }
 
 }

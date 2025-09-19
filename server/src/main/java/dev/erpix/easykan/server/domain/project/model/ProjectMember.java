@@ -1,10 +1,12 @@
-package dev.erpix.easykan.server.domain.card.model;
+package dev.erpix.easykan.server.domain.project.model;
 
 import dev.erpix.easykan.server.domain.user.model.User;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+
 
 @Getter @Setter
 @Builder
@@ -12,19 +14,19 @@ import org.hibernate.annotations.OnDeleteAction;
 @ToString(onlyExplicitlyIncluded = true)
 @AllArgsConstructor @NoArgsConstructor
 @Entity
-@Table(name = "card_assignees", schema = "public")
-public class CardAssignee {
+@Table(name = "project_members", schema = "public")
+public class ProjectMember {
 
     @EqualsAndHashCode.Include
     @ToString.Include
     @EmbeddedId
-    private CardAssigneeId id;
+    private ProjectMemberId id;
 
-    @MapsId("cardId")
+    @MapsId("projectId")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "card_id", nullable = false)
-    private Card card;
+    @JoinColumn(name = "project_id", nullable = false)
+    private Project project;
 
     @MapsId("userId")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -32,9 +34,8 @@ public class CardAssignee {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @OnDelete(action = OnDeleteAction.SET_NULL)
-    @JoinColumn(name = "assigned_by_user_id")
-    private User assignedByUser;
+    @NotNull
+    @Column(name = "permissions", nullable = false)
+    private Long permissions;
 
 }

@@ -105,6 +105,8 @@ CREATE TABLE "tasks" (
     "name" varchar(255) NOT NULL,
     "position" int NOT NULL,
     "is_completed" boolean NOT NULL DEFAULT false,
+    "completed_at" timestamptz DEFAULT NULL,
+    "completed_by_user_id" uuid DEFAULT NULL,
     "created_at" timestamptz NOT NULL DEFAULT (now()),
     "updated_at" timestamptz NOT NULL DEFAULT (now())
 );
@@ -115,7 +117,7 @@ CREATE TABLE "comments" (
     "author_id" uuid NOT NULL,
     "content" text NOT NULL,
     "created_at" timestamptz NOT NULL DEFAULT (now()),
-    "updated_at" timestamptz
+    "updated_at" timestamptz NOT NULL DEFAULT (now())
 );
 
 CREATE UNIQUE INDEX ON "user_oauth_accounts" ("provider_name", "provider_id");
