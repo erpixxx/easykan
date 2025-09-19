@@ -3,7 +3,6 @@ package dev.erpix.easykan.server.domain.user.constraint.annotation;
 import dev.erpix.easykan.server.domain.user.constraint.validator.UserPermissionConstraintValidator;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -19,5 +18,4 @@ public @interface UserPermissionMask {
     Class<?>[] groups() default {};
 
     Class<? extends Payload>[] payload() default {};
-
 }

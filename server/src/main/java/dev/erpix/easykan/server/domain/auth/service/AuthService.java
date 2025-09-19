@@ -14,14 +14,13 @@ import dev.erpix.easykan.server.domain.user.repository.UserRepository;
 import dev.erpix.easykan.server.domain.user.service.UserService;
 import dev.erpix.easykan.server.exception.auth.UnsupportedAuthenticationMethodException;
 import jakarta.transaction.Transactional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
-
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -46,8 +45,8 @@ public class AuthService {
         User user = userService.getByLogin(requestDto.login());
 
         if (user.getPasswordHash() == null) {
-            throw new UnsupportedAuthenticationMethodException("User does not have a password set. " +
-                    "Please use OAuth or other authentication methods.");
+            throw new UnsupportedAuthenticationMethodException("User does not have a password set. "
+                    + "Please use OAuth or other authentication methods.");
         }
 
         if (!passwordEncoder.matches(requestDto.password(), user.getPasswordHash())) {
@@ -57,8 +56,7 @@ public class AuthService {
         AccessToken accessToken = tokenService.createAccessToken(user.getId());
         RawRefreshToken refreshToken = tokenService.createRefreshToken(user.getId());
 
-        TokenPairDto tokenPairDto = new TokenPairDto(
-                accessToken.rawToken(), accessToken.duration(),
+        TokenPairDto tokenPairDto = new TokenPairDto(accessToken.rawToken(), accessToken.duration(),
                 refreshToken.combine(), refreshToken.duration());
         return new UserAndTokenPairResponseDto(UserResponseDto.fromUser(user), tokenPairDto);
     }
@@ -72,11 +70,8 @@ public class AuthService {
         User user = userRepository.findByEmail(email)
                 .orElseGet(() -> createNewOidcUserWithEmail(oidcUser, email));
 
-        OAuthAccount oAuthAccount = OAuthAccount.builder()
-                .providerName(registrationId)
-                .providerId(oidcUser.getName())
-                .user(user)
-                .build();
+        OAuthAccount oAuthAccount = OAuthAccount.builder().providerName(registrationId)
+                .providerId(oidcUser.getName()).user(user).build();
         oAuthAccountRepository.save(oAuthAccount);
 
         return user;
@@ -96,13 +91,8 @@ public class AuthService {
             displayName = login;
         }
 
-        User newUser = User.builder()
-                .login(login)
-                .displayName(displayName)
-                .email(email)
-                .build();
+        User newUser = User.builder().login(login).displayName(displayName).email(email).build();
 
         return userRepository.save(newUser);
     }
-
 }

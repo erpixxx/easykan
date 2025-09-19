@@ -35,29 +35,22 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(CsrfConfigurer::disable)
-                .sessionManagement(sess ->
-                        sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(
+                        sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(req -> req
-                        .requestMatchers("/api/auth/login", "/api/auth/logout", "/api/auth/refresh").permitAll()
-                        .requestMatchers("/login").permitAll()
-                        .requestMatchers(
-                                "/v3/api-docs/**",
-                                "/swagger-ui/**",
-                                "/swagger-ui.html"
-                        ).permitAll()
-                        .anyRequest().authenticated())
+                        .requestMatchers("/api/auth/login", "/api/auth/logout", "/api/auth/refresh")
+                        .permitAll().requestMatchers("/login").permitAll()
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
+                        .permitAll().anyRequest().authenticated())
                 .cors(Customizer.withDefaults())
-                .exceptionHandling(handl -> handl
-                        .authenticationEntryPoint((req, res, ex) ->
-                                res.sendError(HttpServletResponse.SC_UNAUTHORIZED, ex.getMessage())))
+                .exceptionHandling(handl -> handl.authenticationEntryPoint((req, res, ex) -> res
+                        .sendError(HttpServletResponse.SC_UNAUTHORIZED, ex.getMessage())))
                 .formLogin(AbstractHttpConfigurer::disable);
 
         if (config.oidc() != null && config.oidc().enabled()) {
-            http.oauth2Login(oauth -> oauth
-                    .successHandler(oidcLoginSuccessHandler))
-                .authorizeHttpRequests(req -> req
-                        .requestMatchers("/oauth2/**").permitAll());
+            http.oauth2Login(oauth -> oauth.successHandler(oidcLoginSuccessHandler))
+                    .authorizeHttpRequests(req -> req.requestMatchers("/oauth2/**").permitAll());
         }
 
         return http.build();
@@ -68,16 +61,12 @@ public class SecurityConfig {
     public ClientRegistrationRepository clientRegistrationRepository() {
         var oidc = config.oidc();
 
-        ClientRegistration clientRegistration = ClientRegistration
-                .withRegistrationId("oidc")
-                .clientId(oidc.clientId())
-                .clientSecret(oidc.clientSecret())
-                .issuerUri(oidc.issuerUri())
-                .scope(oidc.scopes())
+        ClientRegistration clientRegistration = ClientRegistration.withRegistrationId("oidc")
+                .clientId(oidc.clientId()).clientSecret(oidc.clientSecret())
+                .issuerUri(oidc.issuerUri()).scope(oidc.scopes())
                 .redirectUri("{baseUrl}/login/oauth2/code/{registrationId}")
                 .userNameAttributeName(oidc.nameAttribute())
-                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-                .build();
+                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE).build();
 
         return new InMemoryClientRegistrationRepository(clientRegistration);
     }
@@ -88,12 +77,10 @@ public class SecurityConfig {
             @Override
             public void addCorsMappings(@NotNull CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:5173", "http://localhost:8080", "https://easykan.dev")
-                        .allowedMethods("*")
-                        .allowCredentials(true)
-                        .maxAge(3600);
+                        .allowedOrigins("http://localhost:5173", "http://localhost:8080",
+                                "https://easykan.dev")
+                        .allowedMethods("*").allowCredentials(true).maxAge(3600);
             }
         };
     }
-
 }

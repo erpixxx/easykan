@@ -1,5 +1,9 @@
 package dev.erpix.easykan.server.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
+
 import dev.erpix.easykan.server.domain.auth.dto.AuthLoginRequestDto;
 import dev.erpix.easykan.server.domain.auth.dto.UserAndTokenPairResponseDto;
 import dev.erpix.easykan.server.domain.auth.service.AuthService;
@@ -12,6 +16,8 @@ import dev.erpix.easykan.server.domain.user.model.UserPermission;
 import dev.erpix.easykan.server.domain.user.service.UserService;
 import dev.erpix.easykan.server.exception.auth.UnsupportedAuthenticationMethodException;
 import dev.erpix.easykan.server.testsupport.Category;
+import java.time.Duration;
+import java.util.UUID;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,13 +26,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.time.Duration;
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
 
 @Tag(Category.UNIT_TEST)
 @ExtendWith(MockitoExtension.class)
@@ -49,26 +48,21 @@ public class AuthServiceTest {
         String userLogin = "testUser";
         AuthLoginRequestDto request = new AuthLoginRequestDto(userLogin, "testPassword");
 
-        User user = User.builder()
-                .id(UUID.randomUUID())
-                .login(userLogin)
-                .passwordHash("hashedPassword")
-                .permissions(UserPermission.DEFAULT_PERMISSIONS.getValue())
-                .build();
+        User user =
+                User.builder().id(UUID.randomUUID()).login(userLogin).passwordHash("hashedPassword")
+                        .permissions(UserPermission.DEFAULT_PERMISSIONS.getValue()).build();
 
         String accessToken = "accessToken";
         Duration accessTokenDuration = Duration.ofMinutes(15);
         String refreshToken = "refresh:token";
         Duration refreshTokenDuration = Duration.ofDays(7);
 
-        when(userService.getByLogin(userLogin))
-                .thenReturn(user);
-        when(passwordEncoder.matches("testPassword", user.getPasswordHash()))
-                .thenReturn(true);
+        when(userService.getByLogin(userLogin)).thenReturn(user);
+        when(passwordEncoder.matches("testPassword", user.getPasswordHash())).thenReturn(true);
         when(tokenService.createAccessToken(user.getId()))
                 .thenReturn(new AccessToken(accessToken, accessTokenDuration));
-        when(tokenService.createRefreshToken(user.getId()))
-                .thenReturn(new RawRefreshToken(new TokenParts("refresh", "token"), refreshTokenDuration));
+        when(tokenService.createRefreshToken(user.getId())).thenReturn(
+                new RawRefreshToken(new TokenParts("refresh", "token"), refreshTokenDuration));
 
         UserAndTokenPairResponseDto responseDto = authService.loginWithPassword(request);
         assertEquals(accessToken, responseDto.tokenPair().newAccessToken());
@@ -82,17 +76,13 @@ public class AuthServiceTest {
         String userLogin = "testUser";
         AuthLoginRequestDto request = new AuthLoginRequestDto(userLogin, "testPassword");
 
-        User user = User.builder()
-                .id(UUID.randomUUID())
-                .login(userLogin)
-                .passwordHash(null)
-                .build();
+        User user =
+                User.builder().id(UUID.randomUUID()).login(userLogin).passwordHash(null).build();
 
-        when(userService.getByLogin(userLogin))
-                .thenReturn(user);
+        when(userService.getByLogin(userLogin)).thenReturn(user);
 
-        assertThrows(UnsupportedAuthenticationMethodException.class, () ->
-                authService.loginWithPassword(request));
+        assertThrows(UnsupportedAuthenticationMethodException.class,
+                () -> authService.loginWithPassword(request));
     }
 
     @Test
@@ -100,19 +90,12 @@ public class AuthServiceTest {
         String userLogin = "testUser";
         AuthLoginRequestDto request = new AuthLoginRequestDto(userLogin, "wrongPassword");
 
-        User user = User.builder()
-                .id(UUID.randomUUID())
-                .login(userLogin)
-                .passwordHash("hashedPassword")
-                .build();
+        User user = User.builder().id(UUID.randomUUID()).login(userLogin)
+                .passwordHash("hashedPassword").build();
 
-        when(userService.getByLogin(userLogin))
-                .thenReturn(user);
-        when(passwordEncoder.matches("wrongPassword", user.getPasswordHash()))
-                .thenReturn(false);
+        when(userService.getByLogin(userLogin)).thenReturn(user);
+        when(passwordEncoder.matches("wrongPassword", user.getPasswordHash())).thenReturn(false);
 
-        assertThrows(BadCredentialsException.class, () ->
-                authService.loginWithPassword(request));
+        assertThrows(BadCredentialsException.class, () -> authService.loginWithPassword(request));
     }
-
 }

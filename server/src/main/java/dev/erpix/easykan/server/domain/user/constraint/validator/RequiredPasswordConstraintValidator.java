@@ -20,5 +20,4 @@ public class RequiredPasswordConstraintValidator extends PasswordConstraintValid
         return requireNonBlank(value, context, "Password is required",
                 () -> isStringContentValid(value, context));
     }
-
 }

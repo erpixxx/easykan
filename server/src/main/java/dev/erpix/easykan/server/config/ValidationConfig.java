@@ -11,5 +11,4 @@ public class ValidationConfig {
     public EmailValidator emailValidator() {
         return new EmailValidator();
     }
-
 }

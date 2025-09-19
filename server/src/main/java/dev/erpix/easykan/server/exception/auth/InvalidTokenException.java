@@ -12,5 +12,4 @@ public class InvalidTokenException extends RestException {
     public InvalidTokenException() {
         this("Invalid or expired token", HttpStatus.UNAUTHORIZED);
     }
-
 }

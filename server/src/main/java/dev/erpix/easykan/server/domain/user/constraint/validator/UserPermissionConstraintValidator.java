@@ -8,7 +8,8 @@ import jakarta.validation.ConstraintValidatorContext;
 import org.springframework.stereotype.Component;
 
 @Component
-public class UserPermissionConstraintValidator implements ConstraintValidator<UserPermissionMask, Long> {
+public class UserPermissionConstraintValidator
+        implements ConstraintValidator<UserPermissionMask, Long> {
 
     @Override
     public boolean isValid(Long value, ConstraintValidatorContext context) {
@@ -19,10 +20,8 @@ public class UserPermissionConstraintValidator implements ConstraintValidator<Us
             UserPermission.validate(value);
             return true;
         } catch (PermissionMaskValidationException e) {
-            context.buildConstraintViolationWithTemplate(e.getMessage())
-                    .addConstraintViolation();
+            context.buildConstraintViolationWithTemplate(e.getMessage()).addConstraintViolation();
             return false;
         }
     }
-
 }

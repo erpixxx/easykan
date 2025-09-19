@@ -7,5 +7,4 @@ public class UnsupportedAuthenticationMethodException extends AuthenticationExce
     public UnsupportedAuthenticationMethodException(String message) {
         super(message);
     }
-
 }

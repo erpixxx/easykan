@@ -5,25 +5,25 @@ import jakarta.persistence.*;
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.time.Instant;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import java.time.Instant;
-
-@Getter @Setter
+@Getter
+@Setter
 @Builder
 @ToString(onlyExplicitlyIncluded = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@AllArgsConstructor @NoArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
-@Table(name = "user_tokens", schema = "public", indexes = {
-        @Index(name = "user_tokens_user_id_idx", columnList = "user_id"),
-        @Index(name = "user_tokens_expires_at_idx", columnList = "expires_at")
-}, uniqueConstraints = {
-        @UniqueConstraint(name = "user_tokens_selector_key", columnNames = {"selector"})
-})
+@Table(name = "user_tokens", schema = "public",
+        indexes = {@Index(name = "user_tokens_user_id_idx", columnList = "user_id"),
+                @Index(name = "user_tokens_expires_at_idx", columnList = "expires_at")},
+        uniqueConstraints = {
+                @UniqueConstraint(name = "user_tokens_selector_key", columnNames = {"selector"})})
 public class RefreshToken {
 
     @ToString.Include
@@ -74,5 +74,4 @@ public class RefreshToken {
             this.issuedAt = Instant.now();
         }
     }
-
 }

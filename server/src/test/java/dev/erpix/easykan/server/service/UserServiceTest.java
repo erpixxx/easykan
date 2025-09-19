@@ -1,13 +1,21 @@
 package dev.erpix.easykan.server.service;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+import dev.erpix.easykan.server.domain.user.dto.UserCreateRequestDto;
 import dev.erpix.easykan.server.domain.user.dto.UserInfoUpdateRequestDto;
 import dev.erpix.easykan.server.domain.user.dto.UserPermissionsUpdateRequestDto;
 import dev.erpix.easykan.server.domain.user.model.User;
+import dev.erpix.easykan.server.domain.user.repository.UserRepository;
 import dev.erpix.easykan.server.domain.user.service.UserService;
 import dev.erpix.easykan.server.exception.user.UserNotFoundException;
-import dev.erpix.easykan.server.domain.user.dto.UserCreateRequestDto;
-import dev.erpix.easykan.server.domain.user.repository.UserRepository;
 import dev.erpix.easykan.server.testsupport.Category;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,15 +27,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 @Tag(Category.UNIT_TEST)
 @ExtendWith(MockitoExtension.class)
@@ -47,8 +46,7 @@ public class UserServiceTest {
         String hashedPassword = "hashedPassword";
         var dto = new UserCreateRequestDto("test", "Test User", "test@test.com", "password123");
 
-        when(passwordEncoder.encode("password123"))
-                .thenReturn(hashedPassword);
+        when(passwordEncoder.encode("password123")).thenReturn(hashedPassword);
         when(userRepository.save(any(User.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -65,8 +63,7 @@ public class UserServiceTest {
         var dto = new UserCreateRequestDto("oauthUser", "OAuth User", "oauth@test.com", null);
         User user = dto.toUser();
 
-        when(userRepository.save(any(User.class)))
-                .thenReturn(user);
+        when(userRepository.save(any(User.class))).thenReturn(user);
 
         User createdUser = userService.create(dto);
 
@@ -79,8 +76,7 @@ public class UserServiceTest {
     void delete_shouldDeleteUser_whenUserExists() {
         UUID userId = UUID.randomUUID();
 
-        when(userRepository.existsById(userId))
-                .thenReturn(true);
+        when(userRepository.existsById(userId)).thenReturn(true);
         doNothing().when(userRepository).deleteById(userId);
 
         userService.deleteUser(userId);
@@ -92,8 +88,7 @@ public class UserServiceTest {
     @Test
     void deleteUser_shouldThrowException_whenUserDoesNotExist() {
         UUID userId = UUID.randomUUID();
-        when(userRepository.existsById(userId))
-                .thenReturn(false);
+        when(userRepository.existsById(userId)).thenReturn(false);
 
         assertThrows(UserNotFoundException.class, () -> userService.deleteUser(userId));
         verify(userRepository, never()).deleteById(any(UUID.class));
@@ -111,10 +106,8 @@ public class UserServiceTest {
         Page<User> resultPage = userService.getAllUsers(pageable);
 
         assertThat(resultPage).isNotNull();
-        assertThat(resultPage.getTotalElements())
-                .isEqualTo(1);
-        assertThat(resultPage.getContent())
-                .isEqualTo(userList);
+        assertThat(resultPage.getTotalElements()).isEqualTo(1);
+        assertThat(resultPage.getContent()).isEqualTo(userList);
         verify(userRepository).findAll(pageable);
     }
 
@@ -122,8 +115,7 @@ public class UserServiceTest {
     void getById_shouldReturnUser_whenUserExists() {
         UUID userId = UUID.randomUUID();
         User user = User.builder().id(userId).build();
-        when(userRepository.findById(userId))
-                .thenReturn(Optional.of(user));
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
         User foundUser = userService.getById(userId);
 
@@ -133,8 +125,7 @@ public class UserServiceTest {
     @Test
     void getById_shouldThrowException_whenUserDoesNotExist() {
         UUID userId = UUID.randomUUID();
-        when(userRepository.findById(userId))
-                .thenReturn(Optional.empty());
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
         assertThrows(UserNotFoundException.class, () -> userService.getById(userId));
     }
@@ -142,12 +133,9 @@ public class UserServiceTest {
     @Test
     void getByLogin_shouldReturnUser_whenUserExists() {
         String login = "testuser";
-        User user = User.builder()
-                .login(login)
-                .build();
+        User user = User.builder().login(login).build();
 
-        when(userRepository.findByLogin(login))
-                .thenReturn(Optional.of(user));
+        when(userRepository.findByLogin(login)).thenReturn(Optional.of(user));
 
         User foundUser = userService.getByLogin(login);
 
@@ -159,8 +147,7 @@ public class UserServiceTest {
     void getByLogin_shouldThrowException_whenUserDoesNotExist() {
         String login = "nonexistent";
 
-        when(userRepository.findByLogin(login))
-                .thenReturn(Optional.empty());
+        when(userRepository.findByLogin(login)).thenReturn(Optional.empty());
 
         assertThrows(UserNotFoundException.class, () -> userService.getByLogin(login));
         verify(userRepository).findByLogin(login);
@@ -172,32 +159,20 @@ public class UserServiceTest {
         String userLogin = "testuser";
         String userDisplayName = "Test User";
         String userEmail = "test.user@easykan.dev";
-        User user = User.builder()
-                .id(userId)
-                .login(userLogin)
-                .displayName(userDisplayName)
-                .email(userEmail)
-                .build();
+        User user = User.builder().id(userId).login(userLogin).displayName(userDisplayName)
+                .email(userEmail).build();
 
         String updatedLogin = "updateduser";
         String updatedDisplayName = "Updated User";
         String updatedEmail = "updated.user@easykan.dev";
-        User updatedUser = User.builder()
-                .id(userId)
-                .login(updatedLogin)
-                .displayName(updatedDisplayName)
-                .email(updatedEmail)
-                .build();
+        User updatedUser = User.builder().id(userId).login(updatedLogin)
+                .displayName(updatedDisplayName).email(updatedEmail).build();
 
-        var requestDto = new UserInfoUpdateRequestDto(
-                Optional.of(updatedLogin),
-                Optional.of(updatedDisplayName),
-                Optional.of(updatedEmail));
+        var requestDto = new UserInfoUpdateRequestDto(Optional.of(updatedLogin),
+                Optional.of(updatedDisplayName), Optional.of(updatedEmail));
 
-        when(userRepository.findById(userId))
-                .thenReturn(Optional.of(user));
-        when(userRepository.save(any(User.class)))
-                .thenReturn(updatedUser);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(userRepository.save(any(User.class))).thenReturn(updatedUser);
 
         User result = userService.updateCurrentUserInfo(userId, requestDto);
 
@@ -209,16 +184,13 @@ public class UserServiceTest {
     @Test
     void updateCurrentUserInfo_shouldThrowException_whenUserDoesNotExist() {
         UUID userId = UUID.randomUUID();
-        var requestDto = new UserInfoUpdateRequestDto(
-                Optional.of("updateduser"),
-                Optional.of("Updated User"),
-                Optional.of("updated.user@easykan.dev"));
+        var requestDto = new UserInfoUpdateRequestDto(Optional.of("updateduser"),
+                Optional.of("Updated User"), Optional.of("updated.user@easykan.dev"));
 
-        when(userRepository.findById(userId))
-                .thenReturn(Optional.empty());
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
-        assertThrows(UserNotFoundException.class, () ->
-                userService.updateCurrentUserInfo(userId, requestDto));
+        assertThrows(UserNotFoundException.class,
+                () -> userService.updateCurrentUserInfo(userId, requestDto));
 
         verify(userRepository).findById(userId);
         verify(userRepository, never()).save(any(User.class));
@@ -232,10 +204,8 @@ public class UserServiceTest {
 
         var requestDto = new UserPermissionsUpdateRequestDto(newPermissions);
 
-        when(userRepository.findById(userId))
-                .thenReturn(Optional.of(user));
-        when(userRepository.save(any(User.class)))
-                .thenReturn(user);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(userRepository.save(any(User.class))).thenReturn(user);
 
         userService.updateUserPermissions(userId, requestDto);
 
@@ -250,14 +220,12 @@ public class UserServiceTest {
         long newPermissions = 0b0011;
         var requestDto = new UserPermissionsUpdateRequestDto(newPermissions);
 
-        when(userRepository.findById(userId))
-                .thenReturn(Optional.empty());
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
-        assertThrows(UserNotFoundException.class, () ->
-                userService.updateUserPermissions(userId, requestDto));
+        assertThrows(UserNotFoundException.class,
+                () -> userService.updateUserPermissions(userId, requestDto));
 
         verify(userRepository).findById(userId);
         verify(userRepository, never()).save(any(User.class));
     }
-
 }

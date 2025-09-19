@@ -4,22 +4,23 @@ import dev.erpix.easykan.server.domain.board.model.Board;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.time.Instant;
+import java.util.UUID;
 import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import java.time.Instant;
-import java.util.UUID;
-
-@Getter @Setter
+@Getter
+@Setter
 @Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @ToString(onlyExplicitlyIncluded = true)
-@AllArgsConstructor @NoArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
-@Table(name = "columns", schema = "public", indexes = {
-        @Index(name = "columns_board_id_position_idx", columnList = "board_id, position", unique = true)
-})
+@Table(name = "columns", schema = "public",
+        indexes = {@Index(name = "columns_board_id_position_idx", columnList = "board_id, position",
+                unique = true)})
 public class BoardColumn {
 
     @EqualsAndHashCode.Include
@@ -68,5 +69,4 @@ public class BoardColumn {
     protected void onUpdate() {
         updatedAt = Instant.now();
     }
-
 }

@@ -5,22 +5,21 @@ import dev.erpix.easykan.server.domain.token.AccessToken;
 import dev.erpix.easykan.server.domain.token.RawRefreshToken;
 import dev.erpix.easykan.server.domain.token.dto.TokenPairDto;
 import dev.erpix.easykan.server.domain.token.model.RefreshToken;
-import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.token.repository.TokenRepository;
 import dev.erpix.easykan.server.domain.token.security.TokenGenerator;
 import dev.erpix.easykan.server.domain.token.security.TokenParts;
+import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
 import dev.erpix.easykan.server.domain.user.service.UserService;
 import dev.erpix.easykan.server.exception.auth.InvalidTokenException;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
@@ -50,12 +49,9 @@ public class TokenService {
         String validatorHash = passwordEncoder.encode(tokenParts.validator());
 
         Duration duration = Duration.ofSeconds(config.jwt().refreshTokenExpire());
-        RefreshToken refreshToken = RefreshToken.builder()
-                .selector(tokenParts.selector())
-                .validator(validatorHash)
-                .user(user)
-                .expiresAt(Instant.now().plus(duration))
-                .build();
+        RefreshToken refreshToken =
+                RefreshToken.builder().selector(tokenParts.selector()).validator(validatorHash)
+                        .user(user).expiresAt(Instant.now().plus(duration)).build();
         tokenRepository.save(refreshToken);
 
         return new RawRefreshToken(tokenParts, duration);
@@ -70,27 +66,22 @@ public class TokenService {
         tokenRepository.revokeAllByUserAndExpiresAtAfter(userDetails.user(), Instant.now());
     }
 
-    /**
-     * Removes all expired tokens from the repository. To be used in CRON jobs.
-     */
+    /** Removes all expired tokens from the repository. To be used in CRON jobs. */
     public void removeExpiredTokens() {
         tokenRepository.deleteAllByExpiresAtBefore(Instant.now());
     }
 
     public TokenPairDto rotateRefreshToken(String rawOldToken) {
-        return findAndVerifyToken(rawOldToken)
-                .map(oldToken -> {
-                    revokeToken(oldToken);
+        return findAndVerifyToken(rawOldToken).map(oldToken -> {
+            revokeToken(oldToken);
 
-                    UUID userId = oldToken.getUser().getId();
-                    AccessToken accessToken = createAccessToken(userId);
-                    RawRefreshToken refreshToken = createRefreshToken(userId);
+            UUID userId = oldToken.getUser().getId();
+            AccessToken accessToken = createAccessToken(userId);
+            RawRefreshToken refreshToken = createRefreshToken(userId);
 
-                    return new TokenPairDto(accessToken.rawToken(),
-                            accessToken.duration(),
-                            refreshToken.combine(),
-                            refreshToken.duration());
-                }).orElseThrow(InvalidTokenException::new);
+            return new TokenPairDto(accessToken.rawToken(), accessToken.duration(),
+                    refreshToken.combine(), refreshToken.duration());
+        }).orElseThrow(InvalidTokenException::new);
     }
 
     private void revokeToken(RefreshToken token) {
@@ -106,9 +97,9 @@ public class TokenService {
         String selector = parts[0];
         String validator = parts[1];
 
-        return tokenRepository.findBySelectorAndRevokedFalseAndExpiresAtAfter(selector, Instant.now())
-                .filter(tokenEntity ->
-                        passwordEncoder.matches(validator, tokenEntity.getValidator()));
+        return tokenRepository
+                .findBySelectorAndRevokedFalseAndExpiresAtAfter(selector, Instant.now())
+                .filter(tokenEntity -> passwordEncoder.matches(validator,
+                        tokenEntity.getValidator()));
     }
-
 }

@@ -15,5 +15,4 @@ public class RequiredDisplayNameConstraintValidator extends DisplayNameConstrain
         return requireNonBlank(value, context, "Display name is required",
                 () -> isStringContentValid(value, context));
     }
-
 }

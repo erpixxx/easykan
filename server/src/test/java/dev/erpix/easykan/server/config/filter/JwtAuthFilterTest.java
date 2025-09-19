@@ -1,5 +1,8 @@
 package dev.erpix.easykan.server.config.filter;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
+
 import dev.erpix.easykan.server.domain.token.service.JwtProvider;
 import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
 import dev.erpix.easykan.server.domain.user.service.JpaUserDetailsService;
@@ -9,6 +12,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -18,11 +22,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
 
 @Tag(Category.UNIT_TEST)
 @ExtendWith(MockitoExtension.class)
@@ -58,12 +57,9 @@ public class JwtAuthFilterTest {
         JpaUserDetails mockUserDetails = mock(JpaUserDetails.class);
         Cookie accessTokenCookie = new Cookie("access_token", accessToken);
 
-        when(request.getCookies())
-                .thenReturn(new Cookie[]{accessTokenCookie});
-        when(jwtProvider.validate(accessToken))
-                .thenReturn(userId.toString());
-        when(userDetailsService.loadUserById(userId))
-                .thenReturn(mockUserDetails);
+        when(request.getCookies()).thenReturn(new Cookie[] {accessTokenCookie});
+        when(jwtProvider.validate(accessToken)).thenReturn(userId.toString());
+        when(userDetailsService.loadUserById(userId)).thenReturn(mockUserDetails);
 
         jwtAuthFilter.doFilterInternal(request, response, filterChain);
 
@@ -78,15 +74,12 @@ public class JwtAuthFilterTest {
         String accessToken = "invalid-token";
         Cookie accessTokenCookie = new Cookie("access_token", accessToken);
 
-        when(request.getCookies())
-                .thenReturn(new Cookie[]{accessTokenCookie});
-        when(jwtProvider.validate(accessToken))
-                .thenThrow(new InvalidTokenException());
+        when(request.getCookies()).thenReturn(new Cookie[] {accessTokenCookie});
+        when(jwtProvider.validate(accessToken)).thenThrow(new InvalidTokenException());
 
         jwtAuthFilter.doFilterInternal(request, response, filterChain);
 
-        assertThat(SecurityContextHolder.getContext().getAuthentication())
-                .isNull();
+        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
 
         verify(filterChain).doFilter(request, response);
         verify(userDetailsService, never()).loadUserById(any(UUID.class));
@@ -94,13 +87,11 @@ public class JwtAuthFilterTest {
 
     @Test
     void doFilterInternal_shouldNotAuthenticateUser_whenNoTokenPresent() throws Exception {
-        when(request.getCookies())
-                .thenReturn(null);
+        when(request.getCookies()).thenReturn(null);
 
         jwtAuthFilter.doFilterInternal(request, response, filterChain);
 
-        assertThat(SecurityContextHolder.getContext().getAuthentication())
-                .isNull();
+        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
 
         verify(filterChain).doFilter(request, response);
         verify(jwtProvider, never()).validate(anyString());
@@ -113,16 +104,14 @@ public class JwtAuthFilterTest {
         SecurityContextHolder.getContext().setAuthentication(existingAuth);
 
         Cookie accessTokenCookie = new Cookie("access_token", "access-token");
-        when(request.getCookies()).thenReturn(new Cookie[]{accessTokenCookie});
+        when(request.getCookies()).thenReturn(new Cookie[] {accessTokenCookie});
 
         jwtAuthFilter.doFilterInternal(request, response, filterChain);
 
-        assertThat(SecurityContextHolder.getContext().getAuthentication())
-                .isEqualTo(existingAuth);
+        assertThat(SecurityContextHolder.getContext().getAuthentication()).isEqualTo(existingAuth);
 
         verify(filterChain).doFilter(request, response);
         verify(jwtProvider, never()).validate(anyString());
         verify(userDetailsService, never()).loadUserById(any(UUID.class));
     }
-
 }

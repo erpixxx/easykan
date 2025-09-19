@@ -20,8 +20,8 @@ public class RequirePermissionAspect {
     public void checkPermission(RequireUserPermission requireUserPermission) {
         UserPermission[] required = requireUserPermission.value();
 
-        JpaUserDetails userDetails = userDetailsProvider.getCurrentUserDetails().orElseThrow(
-                () -> new AccessDeniedException("User not authenticated"));
+        JpaUserDetails userDetails = userDetailsProvider.getCurrentUserDetails()
+                .orElseThrow(() -> new AccessDeniedException("User not authenticated"));
 
         User user = userDetails.user();
 
@@ -32,9 +32,9 @@ public class RequirePermissionAspect {
 
         for (UserPermission permission : required) {
             if (!UserPermission.hasPermission(user, permission)) {
-                throw new AccessDeniedException("User does not have required permission: " + permission);
+                throw new AccessDeniedException(
+                        "User does not have required permission: " + permission);
             }
         }
     }
-
 }

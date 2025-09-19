@@ -15,5 +15,4 @@ public class RequiredLoginConstraintValidator extends LoginConstraintValidator<S
         return requireNonBlank(value, context, "Login is required",
                 () -> isStringContentValid(value, context));
     }
-
 }

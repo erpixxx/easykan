@@ -13,7 +13,5 @@ import org.springframework.context.annotation.Import;
 class EasyKanApplicationTests {
 
     @Test
-    void contextLoads() {
-    }
-
+    void contextLoads() {}
 }

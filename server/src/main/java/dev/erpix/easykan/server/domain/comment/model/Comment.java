@@ -4,18 +4,19 @@ import dev.erpix.easykan.server.domain.card.model.Card;
 import dev.erpix.easykan.server.domain.user.model.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import java.time.Instant;
+import java.util.UUID;
 import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import java.time.Instant;
-import java.util.UUID;
-
-@Getter @Setter
+@Getter
+@Setter
 @Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @ToString(onlyExplicitlyIncluded = true)
-@AllArgsConstructor @NoArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "comments", schema = "public")
 public class Comment {
@@ -67,5 +68,4 @@ public class Comment {
     protected void onUpdate() {
         updatedAt = Instant.now();
     }
-
 }

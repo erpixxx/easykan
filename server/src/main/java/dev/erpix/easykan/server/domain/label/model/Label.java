@@ -1,23 +1,24 @@
 package dev.erpix.easykan.server.domain.label.model;
 
-import dev.erpix.easykan.server.domain.project.model.Project;
 import dev.erpix.easykan.server.domain.card.model.CardLabel;
+import dev.erpix.easykan.server.domain.project.model.Project;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.UUID;
 import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.UUID;
-
-@Getter @Setter
+@Getter
+@Setter
 @Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @ToString(onlyExplicitlyIncluded = true)
-@AllArgsConstructor @NoArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "labels", schema = "public")
 public class Label {
@@ -47,5 +48,4 @@ public class Label {
 
     @OneToMany(mappedBy = "label", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<CardLabel> cardLinks = new LinkedHashSet<>();
-
 }

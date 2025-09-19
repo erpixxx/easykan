@@ -1,7 +1,6 @@
 package dev.erpix.easykan.server.exception.user;
 
 import dev.erpix.easykan.server.exception.resource.ResourceNotFoundException;
-
 import java.util.UUID;
 
 public class UserNotFoundException extends ResourceNotFoundException {
@@ -21,5 +20,4 @@ public class UserNotFoundException extends ResourceNotFoundException {
     public static UserNotFoundException byEmail(String email) {
         return new UserNotFoundException("User with email '" + email + "' not found");
     }
-
 }

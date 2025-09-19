@@ -9,5 +9,4 @@ public interface OptionalConstraintValidator<T> {
     default boolean validateIfPresent(Optional<T> value, Function<T, Boolean> nextValidation) {
         return value.map(nextValidation).orElse(true);
     }
-
 }

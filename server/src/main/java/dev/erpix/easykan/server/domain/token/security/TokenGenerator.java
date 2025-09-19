@@ -1,9 +1,8 @@
 package dev.erpix.easykan.server.domain.token.security;
 
-import org.springframework.stereotype.Component;
-
 import java.security.SecureRandom;
 import java.util.Base64;
+import org.springframework.stereotype.Component;
 
 @Component
 public class TokenGenerator {
@@ -29,5 +28,4 @@ public class TokenGenerator {
         SECURE_RANDOM.nextBytes(randomBytes);
         return ENCODER.encodeToString(randomBytes);
     }
-
 }

@@ -7,5 +7,4 @@ public class PermissionMaskValidationException extends ValidationException {
     public PermissionMaskValidationException(String message) {
         super(message);
     }
-
 }

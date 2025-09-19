@@ -1,18 +1,28 @@
 package dev.erpix.easykan.server.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 import dev.erpix.easykan.server.config.EasyKanConfig;
 import dev.erpix.easykan.server.domain.token.dto.TokenPairDto;
 import dev.erpix.easykan.server.domain.token.model.RefreshToken;
+import dev.erpix.easykan.server.domain.token.repository.TokenRepository;
+import dev.erpix.easykan.server.domain.token.security.TokenGenerator;
+import dev.erpix.easykan.server.domain.token.security.TokenParts;
+import dev.erpix.easykan.server.domain.token.service.JwtProvider;
 import dev.erpix.easykan.server.domain.token.service.TokenService;
 import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
 import dev.erpix.easykan.server.domain.user.service.UserService;
-import dev.erpix.easykan.server.domain.token.repository.TokenRepository;
-import dev.erpix.easykan.server.domain.token.service.JwtProvider;
-import dev.erpix.easykan.server.domain.token.security.TokenGenerator;
-import dev.erpix.easykan.server.domain.token.security.TokenParts;
 import dev.erpix.easykan.server.exception.user.UserNotFoundException;
 import dev.erpix.easykan.server.testsupport.Category;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,17 +32,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.time.Duration;
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 @Tag(Category.UNIT_TEST)
 @ExtendWith(MockitoExtension.class)
@@ -68,8 +67,7 @@ public class TokenServiceTest {
 
     private void mockConfig() {
         var jwt = new EasyKanConfig.Jwt(JWT_SECRET, ACCESS_TOKEN_EXPIRE, REFRESH_TOKEN_EXPIRE);
-        when(config.jwt())
-                .thenReturn(jwt);
+        when(config.jwt()).thenReturn(jwt);
     }
 
     @Test
@@ -77,8 +75,7 @@ public class TokenServiceTest {
         mockConfig();
 
         UUID userId = UUID.randomUUID();
-        when(jwtProvider.generate(userId.toString()))
-                .thenReturn("accessToken");
+        when(jwtProvider.generate(userId.toString())).thenReturn("accessToken");
 
         var result = tokenService.createAccessToken(userId);
         assertThat(result.rawToken()).isEqualTo("accessToken");
@@ -95,10 +92,8 @@ public class TokenServiceTest {
         String validator = "validator";
         TokenParts parts = new TokenParts(selector, validator);
 
-        when(userService.getById(userId))
-                .thenReturn(user);
-        when(tokenGenerator.generate())
-                .thenReturn(parts);
+        when(userService.getById(userId)).thenReturn(user);
+        when(tokenGenerator.generate()).thenReturn(parts);
 
         var result = tokenService.createRefreshToken(userId);
 
@@ -112,11 +107,9 @@ public class TokenServiceTest {
     void createRefreshToken_shouldThrowException_whenUserDoesNotExist() {
         UUID userId = UUID.randomUUID();
 
-        when(userService.getById(userId))
-                .thenThrow(UserNotFoundException.byId(userId));
+        when(userService.getById(userId)).thenThrow(UserNotFoundException.byId(userId));
 
-        assertThrows(UserNotFoundException.class,
-                () -> tokenService.createRefreshToken(userId));
+        assertThrows(UserNotFoundException.class, () -> tokenService.createRefreshToken(userId));
 
         verify(tokenRepository, never()).save(any(RefreshToken.class));
     }
@@ -124,15 +117,12 @@ public class TokenServiceTest {
     @Test
     void logout_shouldRevoke_whenTokenExists() {
         String rawRefreshToken = "selector:validator";
-        RefreshToken tokenToRevoke = RefreshToken.builder()
-                .revoked(false)
-                .validator("hashedValidator")
-                .build();
+        RefreshToken tokenToRevoke =
+                RefreshToken.builder().revoked(false).validator("hashedValidator").build();
 
         when(tokenRepository.findBySelectorAndRevokedFalseAndExpiresAtAfter(any(), any()))
                 .thenReturn(Optional.of(tokenToRevoke));
-        when(passwordEncoder.matches("validator", "hashedValidator"))
-                .thenReturn(true);
+        when(passwordEncoder.matches("validator", "hashedValidator")).thenReturn(true);
 
         tokenService.logout(rawRefreshToken);
 
@@ -157,8 +147,7 @@ public class TokenServiceTest {
 
         tokenService.logoutAll(new JpaUserDetails(user));
 
-        verify(tokenRepository).revokeAllByUserAndExpiresAtAfter(
-                eq(user), any(Instant.class));
+        verify(tokenRepository).revokeAllByUserAndExpiresAtAfter(eq(user), any(Instant.class));
     }
 
     @Test
@@ -167,20 +156,14 @@ public class TokenServiceTest {
 
         String rawRefreshToken = "selector:validator";
         User user = User.builder().id(UUID.randomUUID()).build();
-        RefreshToken oldToken = RefreshToken.builder()
-                .revoked(false)
-                .validator("hashedValidator")
-                .user(user)
-                .build();
+        RefreshToken oldToken = RefreshToken.builder().revoked(false).validator("hashedValidator")
+                .user(user).build();
 
         when(tokenRepository.findBySelectorAndRevokedFalseAndExpiresAtAfter(any(), any()))
                 .thenReturn(Optional.of(oldToken));
-        when(passwordEncoder.matches("validator", "hashedValidator"))
-                .thenReturn(true);
-        when(userService.getById(user.getId()))
-                .thenReturn(user);
-        when(tokenGenerator.generate())
-                .thenReturn(new TokenParts("newSelector", "newValidator"));
+        when(passwordEncoder.matches("validator", "hashedValidator")).thenReturn(true);
+        when(userService.getById(user.getId())).thenReturn(user);
+        when(tokenGenerator.generate()).thenReturn(new TokenParts("newSelector", "newValidator"));
 
         TokenPairDto tokenPairDto = tokenService.rotateRefreshToken(rawRefreshToken);
 
@@ -201,5 +184,4 @@ public class TokenServiceTest {
         assertThat(tokenPairDto.newRefreshTokenDuration())
                 .isEqualTo(Duration.ofSeconds(REFRESH_TOKEN_EXPIRE));
     }
-
 }

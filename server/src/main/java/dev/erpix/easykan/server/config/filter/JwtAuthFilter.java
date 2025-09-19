@@ -8,6 +8,10 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -18,11 +22,6 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.UUID;
-
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -32,11 +31,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final JpaUserDetailsService userDetailsService;
 
     @Override
-    protected void doFilterInternal(
-            @NotNull HttpServletRequest request,
-            @NotNull HttpServletResponse response,
-            @NotNull FilterChain filterChain
-    ) throws ServletException, IOException {
+    protected void doFilterInternal(@NotNull HttpServletRequest request,
+            @NotNull HttpServletResponse response, @NotNull FilterChain filterChain)
+            throws ServletException, IOException {
 
         getTokenFromCookie(request).ifPresent(token -> {
             try {
@@ -45,7 +42,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     UUID userId = UUID.fromString(subject);
                     UserDetails userDetails = userDetailsService.loadUserById(userId);
 
-                    var auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    var auth = new UsernamePasswordAuthenticationToken(userDetails, null,
+                            userDetails.getAuthorities());
                     auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 }
@@ -62,10 +60,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         if (cookies == null) {
             return Optional.empty();
         }
-        return Arrays.stream(cookies)
-                .filter(cookie -> cookie.getName().equals("access_token"))
-                .map(Cookie::getValue)
-                .findFirst();
+        return Arrays.stream(cookies).filter(cookie -> cookie.getName().equals("access_token"))
+                .map(Cookie::getValue).findFirst();
     }
-
 }

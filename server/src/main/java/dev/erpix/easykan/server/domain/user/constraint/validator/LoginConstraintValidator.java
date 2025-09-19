@@ -19,15 +19,16 @@ public abstract class LoginConstraintValidator<T> implements StringConstraintVal
 
         if (value.length() < ValidationConstants.LOGIN_MIN_LENGTH
                 || value.length() > ValidationConstants.LOGIN_MAX_LENGTH) {
-            context.buildConstraintViolationWithTemplate("Login must be between"
-                            + ValidationConstants.LOGIN_MIN_LENGTH + " and "
+            context.buildConstraintViolationWithTemplate(
+                    "Login must be between" + ValidationConstants.LOGIN_MIN_LENGTH + " and "
                             + ValidationConstants.LOGIN_MAX_LENGTH + " characters long")
                     .addConstraintViolation();
             return false;
         }
 
         if (!value.chars().allMatch(c -> Character.isLetterOrDigit(c) || c == '_')) {
-            context.buildConstraintViolationWithTemplate("Login can only contain lowercase letters, digits and underscores")
+            context.buildConstraintViolationWithTemplate(
+                    "Login can only contain lowercase letters, digits and underscores")
                     .addConstraintViolation();
             return false;
         }
@@ -40,5 +41,4 @@ public abstract class LoginConstraintValidator<T> implements StringConstraintVal
 
         return true;
     }
-
 }

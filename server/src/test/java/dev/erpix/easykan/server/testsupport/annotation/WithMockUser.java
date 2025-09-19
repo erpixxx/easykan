@@ -2,12 +2,11 @@ package dev.erpix.easykan.server.testsupport.annotation;
 
 import dev.erpix.easykan.server.domain.user.model.UserPermission;
 import dev.erpix.easykan.server.testsupport.annotation.context.UserSecurityContextFactory;
-import org.springframework.security.test.context.support.WithSecurityContext;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.springframework.security.test.context.support.WithSecurityContext;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.TYPE})
@@ -24,7 +23,7 @@ public @interface WithMockUser {
 
     String password() default Default.PASSWORD;
 
-    UserPermission[] permissions() default { UserPermission.DEFAULT_PERMISSIONS };
+    UserPermission[] permissions() default {UserPermission.DEFAULT_PERMISSIONS};
 
     interface Default {
 
@@ -38,8 +37,6 @@ public @interface WithMockUser {
 
         String PASSWORD = "password";
 
-        UserPermission[] PERMISSIONS = { UserPermission.DEFAULT_PERMISSIONS };
-
+        UserPermission[] PERMISSIONS = {UserPermission.DEFAULT_PERMISSIONS};
     }
-
 }

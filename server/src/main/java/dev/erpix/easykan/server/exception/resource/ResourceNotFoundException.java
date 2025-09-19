@@ -12,5 +12,4 @@ public class ResourceNotFoundException extends RestException {
     public ResourceNotFoundException(String message) {
         super(message, HttpStatus.NOT_FOUND);
     }
-
 }

@@ -1,23 +1,31 @@
 package dev.erpix.easykan.server.controller;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.erpix.easykan.server.domain.auth.dto.UserAndTokenPairResponseDto;
-import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
-import dev.erpix.easykan.server.testsupport.Category;
-import dev.erpix.easykan.server.testsupport.annotation.WithMockUser;
 import dev.erpix.easykan.server.config.EasyKanConfig;
 import dev.erpix.easykan.server.config.SecurityConfig;
+import dev.erpix.easykan.server.domain.auth.dto.AuthLoginRequestDto;
+import dev.erpix.easykan.server.domain.auth.dto.UserAndTokenPairResponseDto;
 import dev.erpix.easykan.server.domain.auth.service.AuthService;
-import dev.erpix.easykan.server.domain.token.dto.TokenPairDto;
 import dev.erpix.easykan.server.domain.token.dto.CreateTokenDto;
+import dev.erpix.easykan.server.domain.token.dto.TokenPairDto;
+import dev.erpix.easykan.server.domain.token.service.JwtProvider;
+import dev.erpix.easykan.server.domain.token.service.TokenService;
+import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
+import dev.erpix.easykan.server.domain.user.service.JpaUserDetailsService;
 import dev.erpix.easykan.server.exception.GlobalExceptionHandler;
 import dev.erpix.easykan.server.exception.auth.InvalidTokenException;
 import dev.erpix.easykan.server.exception.user.UserNotFoundException;
-import dev.erpix.easykan.server.domain.auth.dto.AuthLoginRequestDto;
-import dev.erpix.easykan.server.domain.token.service.JwtProvider;
-import dev.erpix.easykan.server.domain.user.service.JpaUserDetailsService;
-import dev.erpix.easykan.server.domain.token.service.TokenService;
+import dev.erpix.easykan.server.testsupport.Category;
+import dev.erpix.easykan.server.testsupport.annotation.WithMockUser;
 import jakarta.servlet.http.Cookie;
+import java.time.Duration;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.provider.Arguments;
@@ -28,15 +36,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.time.Duration;
-import java.util.stream.Stream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @Tag(Category.INTEGRATION_TEST)
 @WebMvcTest(AuthController.class)
@@ -84,13 +83,11 @@ public class AuthControllerIT extends AbstractControllerSecurityTest {
         int refreshTokenExpire = (int) refreshToken.duration().getSeconds();
 
         when(authService.loginWithPassword(any(AuthLoginRequestDto.class))).thenReturn(
-                new UserAndTokenPairResponseDto(null, new TokenPairDto(accessToken.rawToken(), accessToken.duration(),
-                        refreshToken.rawToken(), refreshToken.duration())));
+                new UserAndTokenPairResponseDto(null, new TokenPairDto(accessToken.rawToken(),
+                        accessToken.duration(), refreshToken.rawToken(), refreshToken.duration())));
 
-        mockMvc.perform(post("/api/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsBytes(request)))
-                .andExpect(status().isOk())
+        mockMvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(request))).andExpect(status().isOk())
                 .andExpect(cookie().exists("access_token"))
                 .andExpect(cookie().value("access_token", accessToken.rawToken()))
                 .andExpect(cookie().maxAge("access_token", accessTokenExpire))
@@ -109,10 +106,8 @@ public class AuthControllerIT extends AbstractControllerSecurityTest {
         when(authService.loginWithPassword(any(AuthLoginRequestDto.class)))
                 .thenThrow(UserNotFoundException.byLogin("nouser"));
 
-        mockMvc.perform(post("/api/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsBytes(request)))
-                .andExpect(status().isNotFound())
+        mockMvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(request))).andExpect(status().isNotFound())
                 .andExpect(result -> assertThat(result.getResolvedException())
                         .isInstanceOf(UserNotFoundException.class))
                 .andReturn();
@@ -127,9 +122,8 @@ public class AuthControllerIT extends AbstractControllerSecurityTest {
         when(authService.loginWithPassword(any(AuthLoginRequestDto.class)))
                 .thenThrow(new BadCredentialsException("Invalid login or password."));
 
-        mockMvc.perform(post("/api/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsBytes(request)))
+        mockMvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(request)))
                 .andExpect(status().isUnauthorized());
 
         verify(authService).loginWithPassword(request);
@@ -139,10 +133,8 @@ public class AuthControllerIT extends AbstractControllerSecurityTest {
     void logout_shouldClearCookies_whenTokenIsPresent() throws Exception {
         String refreshToken = "some-refresh-token";
 
-        mockMvc.perform(post("/api/auth/logout")
-                        .cookie(new Cookie("refresh_token", refreshToken)))
-                .andExpect(status().isOk())
-                .andExpect(cookie().maxAge("access_token", 0))
+        mockMvc.perform(post("/api/auth/logout").cookie(new Cookie("refresh_token", refreshToken)))
+                .andExpect(status().isOk()).andExpect(cookie().maxAge("access_token", 0))
                 .andExpect(cookie().maxAge("refresh_token", 0));
 
         verify(tokenService).logout(refreshToken);
@@ -150,8 +142,7 @@ public class AuthControllerIT extends AbstractControllerSecurityTest {
 
     @Test
     void logout_shouldClearCookies_whenTokenIsNotPresent() throws Exception {
-        mockMvc.perform(post("/api/auth/logout"))
-                .andExpect(status().isOk())
+        mockMvc.perform(post("/api/auth/logout")).andExpect(status().isOk())
                 .andExpect(cookie().maxAge("access_token", 0))
                 .andExpect(cookie().maxAge("refresh_token", 0));
 
@@ -163,10 +154,9 @@ public class AuthControllerIT extends AbstractControllerSecurityTest {
     void logoutAll_shouldClearCookies_whenTokenIsPresent() throws Exception {
         String refreshToken = "some-refresh-token";
 
-        mockMvc.perform(post("/api/auth/logout-all")
-                        .cookie(new Cookie("refresh_token", refreshToken)))
-                .andExpect(status().isOk())
-                .andExpect(cookie().maxAge("access_token", 0))
+        mockMvc.perform(
+                post("/api/auth/logout-all").cookie(new Cookie("refresh_token", refreshToken)))
+                .andExpect(status().isOk()).andExpect(cookie().maxAge("access_token", 0))
                 .andExpect(cookie().maxAge("refresh_token", 0));
 
         verify(tokenService).logoutAll(any(JpaUserDetails.class));
@@ -174,8 +164,7 @@ public class AuthControllerIT extends AbstractControllerSecurityTest {
 
     @Test
     void logoutAll_shouldReturnUnauthorized_whenTokenIsNotPresent() throws Exception {
-        mockMvc.perform(post("/api/auth/logout-all"))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(post("/api/auth/logout-all")).andExpect(status().isUnauthorized());
 
         verify(tokenService, never()).logoutAll(any(JpaUserDetails.class));
     }
@@ -183,17 +172,13 @@ public class AuthControllerIT extends AbstractControllerSecurityTest {
     @Test
     void refresh_shouldReturnOkAndNewTokens_whenTokenIsValid() throws Exception {
         String oldRefreshToken = "old-valid-token";
-        TokenPairDto rotatedTokens = new TokenPairDto(
-                "new-access-token",
-                Duration.ofMinutes(15),
-                "new-raw-refresh-token",
-                Duration.ofDays(7));
+        TokenPairDto rotatedTokens = new TokenPairDto("new-access-token", Duration.ofMinutes(15),
+                "new-raw-refresh-token", Duration.ofDays(7));
 
-        when(tokenService.rotateRefreshToken(oldRefreshToken))
-                .thenReturn(rotatedTokens);
+        when(tokenService.rotateRefreshToken(oldRefreshToken)).thenReturn(rotatedTokens);
 
-        mockMvc.perform(post("/api/auth/refresh")
-                        .cookie(new Cookie("refresh_token", oldRefreshToken)))
+        mockMvc.perform(
+                post("/api/auth/refresh").cookie(new Cookie("refresh_token", oldRefreshToken)))
                 .andExpect(status().isOk())
                 .andExpect(cookie().value("access_token", "new-access-token"))
                 .andExpect(cookie().value("refresh_token", "new-raw-refresh-token"));
@@ -205,11 +190,10 @@ public class AuthControllerIT extends AbstractControllerSecurityTest {
         when(tokenService.rotateRefreshToken(invalidRefreshToken))
                 .thenThrow(new InvalidTokenException());
 
-        mockMvc.perform(post("/api/auth/refresh")
-                        .cookie(new Cookie("refresh_token", invalidRefreshToken)))
+        mockMvc.perform(
+                post("/api/auth/refresh").cookie(new Cookie("refresh_token", invalidRefreshToken)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(result -> assertThat(result.getResolvedException())
                         .isInstanceOf(InvalidTokenException.class));
     }
-
 }

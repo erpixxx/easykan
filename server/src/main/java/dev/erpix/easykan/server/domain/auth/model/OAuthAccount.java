@@ -9,16 +9,19 @@ import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-@Getter @Setter
+@Getter
+@Setter
 @Builder
 @ToString(onlyExplicitlyIncluded = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@AllArgsConstructor @NoArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
-@Table(name = "user_oauth_accounts", schema = "public", indexes = {
-        @Index(name = "user_oauth_accounts_provider_name_provider_id_idx", columnList = "provider_name, provider_id", unique = true),
-        @Index(name = "user_oauth_accounts_user_id_idx", columnList = "user_id")
-})
+@Table(name = "user_oauth_accounts", schema = "public",
+        indexes = {
+                @Index(name = "user_oauth_accounts_provider_name_provider_id_idx",
+                        columnList = "provider_name, provider_id", unique = true),
+                @Index(name = "user_oauth_accounts_user_id_idx", columnList = "user_id")})
 public class OAuthAccount {
 
     @ToString.Include
@@ -45,5 +48,4 @@ public class OAuthAccount {
     @NotNull
     @Column(name = "provider_name", nullable = false)
     private String providerName;
-
 }

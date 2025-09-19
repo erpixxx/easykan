@@ -3,14 +3,15 @@ package dev.erpix.easykan.server.domain.card.model;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
-
 import java.io.Serializable;
 import java.util.UUID;
+import lombok.*;
 
-@Getter @Setter
+@Getter
+@Setter
 @EqualsAndHashCode
-@AllArgsConstructor @NoArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 @Embeddable
 public class CardAssigneeId implements Serializable {
 
@@ -21,5 +22,4 @@ public class CardAssigneeId implements Serializable {
     @NotNull
     @Column(name = "user_id", nullable = false)
     private UUID userId;
-
 }

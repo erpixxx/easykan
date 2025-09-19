@@ -12,5 +12,4 @@ public class ResourceAlreadyExistsException extends RestException {
     public ResourceAlreadyExistsException(String message) {
         super(message, HttpStatus.CONFLICT);
     }
-
 }

@@ -7,7 +7,8 @@ import jakarta.validation.ConstraintValidatorContext;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public abstract class PasswordConstraintValidator<T> implements StringConstraintValidator<Password, T> {
+public abstract class PasswordConstraintValidator<T>
+        implements StringConstraintValidator<Password, T> {
 
     private final EasyKanConfig config;
 
@@ -23,20 +24,21 @@ public abstract class PasswordConstraintValidator<T> implements StringConstraint
         boolean isValid = true;
 
         if (value.length() < props.minLength()) {
-            context.buildConstraintViolationWithTemplate("Password must be at least " + props.minLength() + " characters long")
+            context.buildConstraintViolationWithTemplate(
+                    "Password must be at least " + props.minLength() + " characters long")
                     .addConstraintViolation();
             isValid = false;
         }
 
         if (props.requireLowercase() && value.chars().noneMatch(Character::isLowerCase)) {
-            context.buildConstraintViolationWithTemplate("Password must contain at least one lowercase letter")
-                    .addConstraintViolation();
+            context.buildConstraintViolationWithTemplate(
+                    "Password must contain at least one lowercase letter").addConstraintViolation();
             isValid = false;
         }
 
         if (props.requireUppercase() && value.chars().noneMatch(Character::isUpperCase)) {
-            context.buildConstraintViolationWithTemplate("Password must contain at least one uppercase letter")
-                    .addConstraintViolation();
+            context.buildConstraintViolationWithTemplate(
+                    "Password must contain at least one uppercase letter").addConstraintViolation();
             isValid = false;
         }
 
@@ -47,12 +49,12 @@ public abstract class PasswordConstraintValidator<T> implements StringConstraint
         }
 
         if (props.requireSpecialCharacter() && value.chars().allMatch(Character::isLetterOrDigit)) {
-            context.buildConstraintViolationWithTemplate("Password must contain at least one special character")
+            context.buildConstraintViolationWithTemplate(
+                    "Password must contain at least one special character")
                     .addConstraintViolation();
             isValid = false;
         }
 
         return isValid;
     }
-
 }

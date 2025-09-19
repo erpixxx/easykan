@@ -6,11 +6,13 @@ import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-@Getter @Setter
+@Getter
+@Setter
 @Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @ToString(onlyExplicitlyIncluded = true)
-@AllArgsConstructor @NoArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "card_labels", schema = "public")
 public class CardLabel {
@@ -31,5 +33,4 @@ public class CardLabel {
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "label_id", nullable = false)
     private Label label;
-
 }

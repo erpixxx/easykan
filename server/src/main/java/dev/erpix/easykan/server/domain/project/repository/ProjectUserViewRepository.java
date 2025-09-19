@@ -7,6 +7,6 @@ import org.springframework.stereotype.Repository;
 
 @SuppressWarnings("unused")
 @Repository
-public interface ProjectUserViewRepository extends JpaRepository<ProjectUserView, ProjectUserViewId> {
-
+public interface ProjectUserViewRepository
+        extends JpaRepository<ProjectUserView, ProjectUserViewId> {
 }

@@ -7,12 +7,13 @@ import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-
-@Getter @Setter
+@Getter
+@Setter
 @Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @ToString(onlyExplicitlyIncluded = true)
-@AllArgsConstructor @NoArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "project_members", schema = "public")
 public class ProjectMember {
@@ -37,5 +38,4 @@ public class ProjectMember {
     @NotNull
     @Column(name = "permissions", nullable = false)
     private Long permissions;
-
 }

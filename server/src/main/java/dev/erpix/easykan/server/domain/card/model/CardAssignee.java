@@ -6,11 +6,13 @@ import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-@Getter @Setter
+@Getter
+@Setter
 @Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @ToString(onlyExplicitlyIncluded = true)
-@AllArgsConstructor @NoArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "card_assignees", schema = "public")
 public class CardAssignee {
@@ -36,5 +38,4 @@ public class CardAssignee {
     @OnDelete(action = OnDeleteAction.SET_NULL)
     @JoinColumn(name = "assigned_by_user_id")
     private User assignedByUser;
-
 }

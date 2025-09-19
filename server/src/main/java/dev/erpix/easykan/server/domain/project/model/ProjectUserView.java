@@ -7,11 +7,13 @@ import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-@Getter @Setter
+@Getter
+@Setter
 @Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @ToString(onlyExplicitlyIncluded = true)
-@AllArgsConstructor @NoArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "user_project_views", schema = "public")
 public class ProjectUserView {
@@ -34,5 +36,4 @@ public class ProjectUserView {
     @NotNull
     @Column(name = "position", nullable = false)
     private Integer position;
-
 }

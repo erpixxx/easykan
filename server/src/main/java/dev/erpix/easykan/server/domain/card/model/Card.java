@@ -1,29 +1,29 @@
 package dev.erpix.easykan.server.domain.card.model;
 
+import dev.erpix.easykan.server.domain.column.model.BoardColumn;
 import dev.erpix.easykan.server.domain.comment.model.Comment;
 import dev.erpix.easykan.server.domain.task.model.Task;
-import dev.erpix.easykan.server.domain.column.model.BoardColumn;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.*;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
-
 import java.time.Instant;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
+import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
-@Getter @Setter
+@Getter
+@Setter
 @Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @ToString(onlyExplicitlyIncluded = true)
-@AllArgsConstructor @NoArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
-@Table(name = "cards", schema = "public", indexes = {
-        @Index(name = "cards_column_id_position_idx", columnList = "column_id, position", unique = true)
-})
+@Table(name = "cards", schema = "public", indexes = {@Index(name = "cards_column_id_position_idx",
+        columnList = "column_id, position", unique = true)})
 public class Card {
 
     @EqualsAndHashCode.Include
@@ -90,5 +90,4 @@ public class Card {
     protected void onUpdate() {
         updatedAt = Instant.now();
     }
-
 }

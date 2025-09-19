@@ -13,26 +13,25 @@ import jakarta.persistence.*;
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.*;
-
 import java.time.Instant;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
+import lombok.*;
 
-@Getter @Setter
+@Getter
+@Setter
 @Builder
 @ToString(onlyExplicitlyIncluded = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@AllArgsConstructor @NoArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
-@Table(name = "users", schema = "public", indexes = {
-        @Index(name = "users_login_idx", columnList = "login"),
-        @Index(name = "users_display_name_idx", columnList = "display_name")
-}, uniqueConstraints = {
-        @UniqueConstraint(name = "users_login_key", columnNames = {"login"}),
-        @UniqueConstraint(name = "users_email_key", columnNames = {"email"})
-})
+@Table(name = "users", schema = "public",
+        indexes = {@Index(name = "users_login_idx", columnList = "login"),
+                @Index(name = "users_display_name_idx", columnList = "display_name")},
+        uniqueConstraints = {@UniqueConstraint(name = "users_login_key", columnNames = {"login"}),
+                @UniqueConstraint(name = "users_email_key", columnNames = {"email"})})
 public class User {
 
     @ToString.Include
@@ -118,5 +117,4 @@ public class User {
             this.permissions = UserPermission.DEFAULT_PERMISSIONS.getValue();
         }
     }
-
 }

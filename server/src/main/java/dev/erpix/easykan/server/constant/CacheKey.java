@@ -10,15 +10,13 @@ public interface CacheKey {
 
     static String[] getCacheKeys() {
         return Arrays.stream(CacheKey.class.getDeclaredFields())
-                .filter(field -> field.getType().equals(String.class))
-                .map(field -> {
+                .filter(field -> field.getType().equals(String.class)).map(field -> {
                     try {
                         return (String) field.get(null);
                     } catch (IllegalAccessException e) {
-                        throw new RuntimeException("Failed to access cache key: " + field.getName(), e);
+                        throw new RuntimeException("Failed to access cache key: " + field.getName(),
+                                e);
                     }
-                })
-                .toArray(String[]::new);
+                }).toArray(String[]::new);
     }
-
 }

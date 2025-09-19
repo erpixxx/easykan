@@ -3,12 +3,12 @@ package dev.erpix.easykan.server.domain.project.model;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
-
 import java.io.Serializable;
 import java.util.UUID;
+import lombok.*;
 
-@Getter @Setter
+@Getter
+@Setter
 @EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor
@@ -22,5 +22,4 @@ public class ProjectUserViewId implements Serializable {
     @NotNull
     @Column(name = "project_id", nullable = false)
     private UUID projectId;
-
 }

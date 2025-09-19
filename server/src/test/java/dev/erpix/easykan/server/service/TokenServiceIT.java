@@ -1,5 +1,8 @@
 package dev.erpix.easykan.server.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+
 import dev.erpix.easykan.server.config.EasyKanConfig;
 import dev.erpix.easykan.server.domain.token.model.RefreshToken;
 import dev.erpix.easykan.server.domain.token.repository.TokenRepository;
@@ -11,16 +14,12 @@ import dev.erpix.easykan.server.domain.user.service.UserService;
 import dev.erpix.easykan.server.testsupport.Category;
 import dev.erpix.easykan.server.testsupport.annotation.IntegrationTest;
 import dev.erpix.easykan.server.testsupport.annotation.WithPersistedUser;
+import java.time.Instant;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-
-import java.time.Instant;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
 
 @Tag(Category.INTEGRATION_TEST)
 @IntegrationTest
@@ -59,16 +58,11 @@ public class TokenServiceIT {
         var savedToken = tokenRepository.findBySelector(SAMPLE_SELECTOR)
                 .orElseThrow(() -> new AssertionError("Refresh token not found in repository"));
 
-        assertThat(tokenDto.combine())
-                .isNotBlank();
-        assertThat(tokenDto.duration().getSeconds())
-                .isEqualTo(config.jwt().refreshTokenExpire());
-        assertThat(passwordEncoder.matches(SAMPLE_VALIDATOR, savedToken.getValidator()))
-                .isTrue();
-        assertThat(savedToken.getUser().getId())
-                .isEqualTo(user.getId());
-        assertThat(savedToken.getExpiresAt())
-                .isAfter(Instant.now());
+        assertThat(tokenDto.combine()).isNotBlank();
+        assertThat(tokenDto.duration().getSeconds()).isEqualTo(config.jwt().refreshTokenExpire());
+        assertThat(passwordEncoder.matches(SAMPLE_VALIDATOR, savedToken.getValidator())).isTrue();
+        assertThat(savedToken.getUser().getId()).isEqualTo(user.getId());
+        assertThat(savedToken.getExpiresAt()).isAfter(Instant.now());
     }
 
     @Test
@@ -106,11 +100,9 @@ public class TokenServiceIT {
 
         tokenService.logout(tokenWithInvalidValidator);
 
-        var tokenInDb = tokenRepository.findBySelector(SAMPLE_SELECTOR)
-                .orElseThrow();
+        var tokenInDb = tokenRepository.findBySelector(SAMPLE_SELECTOR).orElseThrow();
 
-        assertThat(tokenInDb.isRevoked())
-                .isFalse();
+        assertThat(tokenInDb.isRevoked()).isFalse();
     }
 
     @Test
@@ -140,26 +132,20 @@ public class TokenServiceIT {
         int numberOfTokens = 3;
 
         for (int i = 0; i < numberOfTokens; i++) {
-            tokenRepository.save(RefreshToken.builder()
-                    .selector("selector" + i)
-                    .validator("validator" + i)
-                    .user(user)
+            tokenRepository.save(RefreshToken.builder().selector("selector" + i)
+                    .validator("validator" + i).user(user)
                     .expiresAt(Instant.now().plusSeconds(config.jwt().refreshTokenExpire()))
-                    .revoked(false)
-                    .build());
+                    .revoked(false).build());
         }
 
         var tokensBeforeLogout = tokenRepository.findByUserAndRevokedFalse(user);
-        assertThat(tokensBeforeLogout)
-                .hasSize(numberOfTokens);
+        assertThat(tokensBeforeLogout).hasSize(numberOfTokens);
 
         tokenService.logoutAll(new JpaUserDetails(user));
         var revokedTokens = tokenRepository.findByUserAndRevokedTrue(user);
 
-        assertThat(revokedTokens)
-                .hasSize(numberOfTokens);
-        assertThat(tokenRepository.findByUserAndRevokedFalse(user))
-                .isEmpty();
+        assertThat(revokedTokens).hasSize(numberOfTokens);
+        assertThat(tokenRepository.findByUserAndRevokedFalse(user)).isEmpty();
     }
 
     @Test
@@ -174,41 +160,30 @@ public class TokenServiceIT {
         var oldToken = tokenRepository.findBySelector(SAMPLE_SELECTOR)
                 .orElseThrow(() -> new AssertionError("Old token not found in repository"));
 
-        assertThat(oldToken.isRevoked())
-                .isFalse();
-        assertThat(oldToken.getUser().getId())
-                .isEqualTo(user.getId());
-        assertThat(oldToken.getExpiresAt())
-                .isAfter(Instant.now());
-        assertThat(passwordEncoder.matches(SAMPLE_VALIDATOR, oldToken.getValidator()))
-                .isTrue();
+        assertThat(oldToken.isRevoked()).isFalse();
+        assertThat(oldToken.getUser().getId()).isEqualTo(user.getId());
+        assertThat(oldToken.getExpiresAt()).isAfter(Instant.now());
+        assertThat(passwordEncoder.matches(SAMPLE_VALIDATOR, oldToken.getValidator())).isTrue();
 
-        when(tokenGenerator.generate())
-                .thenReturn(new TokenParts("newSelector", "newValidator"));
+        when(tokenGenerator.generate()).thenReturn(new TokenParts("newSelector", "newValidator"));
 
         var newTokenPair = tokenService.rotateRefreshToken(oldTokenDto.combine());
 
-        assertThat(newTokenPair.newRawRefreshToken())
-                .isNotBlank();
+        assertThat(newTokenPair.newRawRefreshToken()).isNotBlank();
         assertThat(newTokenPair.newRefreshTokenDuration().getSeconds())
                 .isEqualTo(config.jwt().refreshTokenExpire());
         String[] newTokenParts = newTokenPair.newRawRefreshToken().split(":");
-        assertThat(newTokenParts)
-                .hasSize(2);
+        assertThat(newTokenParts).hasSize(2);
 
         String newSelector = newTokenParts[0];
         String newRawValidator = newTokenParts[1];
         RefreshToken newTokenFromDb = tokenRepository.findBySelector(newSelector)
                 .orElseThrow(() -> new AssertionError("New refresh token not found in database"));
 
-        assertThat(newTokenFromDb.getUser().getId())
-                .isEqualTo(user.getId());
-        assertThat(newTokenFromDb.getExpiresAt())
-                .isAfter(Instant.now());
+        assertThat(newTokenFromDb.getUser().getId()).isEqualTo(user.getId());
+        assertThat(newTokenFromDb.getExpiresAt()).isAfter(Instant.now());
         assertThat(passwordEncoder.matches(newRawValidator, newTokenFromDb.getValidator()))
                 .isTrue();
-        assertThat(oldToken.isRevoked())
-                .isTrue();
+        assertThat(oldToken.isRevoked()).isTrue();
     }
-
 }

@@ -16,5 +16,4 @@ public abstract class RestException extends RuntimeException {
         super(message);
         this.status = status;
     }
-
 }

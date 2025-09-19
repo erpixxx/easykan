@@ -1,11 +1,18 @@
 package dev.erpix.easykan.server.controller;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.erpix.easykan.server.config.SecurityConfig;
 import dev.erpix.easykan.server.domain.token.service.JwtProvider;
 import dev.erpix.easykan.server.domain.user.dto.UserCreateRequestDto;
 import dev.erpix.easykan.server.domain.user.dto.UserInfoUpdateRequestDto;
 import dev.erpix.easykan.server.domain.user.dto.UserPermissionsUpdateRequestDto;
+import dev.erpix.easykan.server.domain.user.model.User;
+import dev.erpix.easykan.server.domain.user.model.UserPermission;
 import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
 import dev.erpix.easykan.server.domain.user.service.JpaUserDetailsService;
 import dev.erpix.easykan.server.domain.user.service.UserService;
@@ -13,8 +20,10 @@ import dev.erpix.easykan.server.exception.GlobalExceptionHandler;
 import dev.erpix.easykan.server.exception.user.UserNotFoundException;
 import dev.erpix.easykan.server.testsupport.Category;
 import dev.erpix.easykan.server.testsupport.annotation.WithMockUser;
-import dev.erpix.easykan.server.domain.user.model.User;
-import dev.erpix.easykan.server.domain.user.model.UserPermission;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -32,16 +41,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Stream;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @Tag(Category.INTEGRATION_TEST)
 @WebMvcTest(UserController.class)
@@ -68,37 +67,29 @@ public class UserControllerIT extends AbstractControllerSecurityTest {
 
     @Override
     protected Stream<Arguments> provideProtectedEndpoints() {
-        return Stream.of(
-                Arguments.of("GET", "/api/users/@me"),
-                Arguments.of("GET", "/api/users"),
+        return Stream.of(Arguments.of("GET", "/api/users/@me"), Arguments.of("GET", "/api/users"),
                 Arguments.of("POST", "/api/users"),
                 Arguments.of("DELETE", "/api/users/" + WithMockUser.Default.ID),
                 Arguments.of("PATCH", "/api/users/@me"),
                 Arguments.of("PATCH", "/api/users/" + WithMockUser.Default.ID),
-                Arguments.of("PUT", "/api/users/" + WithMockUser.Default.ID + "/permissions")
-        );
+                Arguments.of("PUT", "/api/users/" + WithMockUser.Default.ID + "/permissions"));
     }
 
     @Test
     @WithMockUser
     void getCurrentUser_shouldReturnCurrentUser_whenUserIsAuthenticated() throws Exception {
-        mockMvc.perform(get("/api/users/@me"))
-                .andExpect(status().isOk())
+        mockMvc.perform(get("/api/users/@me")).andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id")
-                        .value(WithMockUser.Default.ID))
-                .andExpect(jsonPath("$.login")
-                        .value(WithMockUser.Default.LOGIN))
-                .andExpect(jsonPath("$.displayName")
-                        .value(WithMockUser.Default.DISPLAY_NAME))
+                .andExpect(jsonPath("$.id").value(WithMockUser.Default.ID))
+                .andExpect(jsonPath("$.login").value(WithMockUser.Default.LOGIN))
+                .andExpect(jsonPath("$.displayName").value(WithMockUser.Default.DISPLAY_NAME))
                 .andExpect(jsonPath("$.permissions")
                         .value(UserPermission.toValue(WithMockUser.Default.PERMISSIONS)));
     }
 
     @Test
     void getCurrentUser_shouldReturnUnauthorized_whenNotAuthenticated() throws Exception {
-        mockMvc.perform(get("/api/users/@me"))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/users/@me")).andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -108,12 +99,8 @@ public class UserControllerIT extends AbstractControllerSecurityTest {
         String otherUserLogin = "otheruser";
         String otherUserDisplayName = "Other User";
         long otherUserPermissions = UserPermission.toValue(UserPermission.DEFAULT_PERMISSIONS);
-        User otherUser = User.builder()
-                .id(otherUserId)
-                .login(otherUserLogin)
-                .displayName(otherUserDisplayName)
-                .permissions(otherUserPermissions)
-                .build();
+        User otherUser = User.builder().id(otherUserId).login(otherUserLogin)
+                .displayName(otherUserDisplayName).permissions(otherUserPermissions).build();
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         JpaUserDetails principal = (JpaUserDetails) authentication.getPrincipal();
@@ -122,8 +109,7 @@ public class UserControllerIT extends AbstractControllerSecurityTest {
         when(userService.getAllUsers(any()))
                 .thenReturn(new PageImpl<>(List.of(otherUser, currentUser)));
 
-        mockMvc.perform(get("/api/users"))
-                .andExpect(status().isOk())
+        mockMvc.perform(get("/api/users")).andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.content").isArray())
                 .andExpect(jsonPath("$.content.length()").value(2))
@@ -134,17 +120,18 @@ public class UserControllerIT extends AbstractControllerSecurityTest {
                 .andExpect(jsonPath("$.content[1].id").value(currentUser.getId().toString()))
                 .andExpect(jsonPath("$.content[1].login").value(currentUser.getLogin()))
                 .andExpect(jsonPath("$.content[1].displayName").value(currentUser.getDisplayName()))
-                .andExpect(jsonPath("$.content[1].permissions").value(currentUser.getPermissions()));
+                .andExpect(
+                        jsonPath("$.content[1].permissions").value(currentUser.getPermissions()));
     }
 
     @Test
     @WithMockUser
-    void getAllUsers_shouldReturnForbidden_whenUserDoesNotHaveManageUsersPermission() throws Exception {
+    void getAllUsers_shouldReturnForbidden_whenUserDoesNotHaveManageUsersPermission()
+            throws Exception {
         when(userService.getAllUsers(any(Pageable.class)))
                 .thenThrow(new AccessDeniedException("Insufficient permissions."));
 
-        mockMvc.perform(get("/api/users")
-                        .accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/api/users").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
     }
 
@@ -155,71 +142,58 @@ public class UserControllerIT extends AbstractControllerSecurityTest {
         String newUserDisplayName = "New User";
         String newUserEmail = "new.user@easykan.dev";
         String newUserPermission = "Pa$$w0rd";
-        User newUser = User.builder()
-                .id(UUID.randomUUID())
-                .login(newUserLogin)
-                .displayName(newUserDisplayName)
-                .email(newUserEmail)
-                .passwordHash(newUserPermission)
-                .permissions(UserPermission.toValue(UserPermission.DEFAULT_PERMISSIONS))
-                .build();
+        User newUser = User.builder().id(UUID.randomUUID()).login(newUserLogin)
+                .displayName(newUserDisplayName).email(newUserEmail).passwordHash(newUserPermission)
+                .permissions(UserPermission.toValue(UserPermission.DEFAULT_PERMISSIONS)).build();
 
-        UserCreateRequestDto request = new UserCreateRequestDto(
-                newUserLogin, newUserDisplayName, newUserEmail, newUserPermission);
+        UserCreateRequestDto request = new UserCreateRequestDto(newUserLogin, newUserDisplayName,
+                newUserEmail, newUserPermission);
 
-        when(userService.create(any(UserCreateRequestDto.class)))
-                .thenReturn(newUser);
+        when(userService.create(any(UserCreateRequestDto.class))).thenReturn(newUser);
 
-        mockMvc.perform(post("/api/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsBytes(request)))
-                .andExpect(status().isCreated())
+        mockMvc.perform(post("/api/users").contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(request))).andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id")
-                        .value(newUser.getId().toString()))
-                .andExpect(jsonPath("$.login")
-                        .value(newUser.getLogin()))
-                .andExpect(jsonPath("$.displayName")
-                        .value(newUser.getDisplayName()))
+                .andExpect(jsonPath("$.id").value(newUser.getId().toString()))
+                .andExpect(jsonPath("$.login").value(newUser.getLogin()))
+                .andExpect(jsonPath("$.displayName").value(newUser.getDisplayName()))
                 .andExpect(jsonPath("$.permissions")
                         .value(UserPermission.DEFAULT_PERMISSIONS.getValue()));
     }
 
     @Test
     @WithMockUser
-    void createUser_shouldReturnForbidden_whenUserDoesNotHaveManageUsersPermission() throws Exception {
-        UserCreateRequestDto request = new UserCreateRequestDto(
-                "newuser", "New User", "new.user@easykan.dev", "Pa$$w0rd");
+    void createUser_shouldReturnForbidden_whenUserDoesNotHaveManageUsersPermission()
+            throws Exception {
+        UserCreateRequestDto request =
+                new UserCreateRequestDto("newuser", "New User", "new.user@easykan.dev", "Pa$$w0rd");
 
         when(userService.create(any(UserCreateRequestDto.class)))
                 .thenThrow(new AccessDeniedException("Insufficient permissions."));
 
-        mockMvc.perform(post("/api/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsBytes(request)))
+        mockMvc.perform(post("/api/users").contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(request)))
                 .andExpect(status().isForbidden());
     }
 
     @ParameterizedTest
-    @CsvSource({
-            "'',        'New User', 'user@test.dev', 'Pa$$w0rd''",
+    @CsvSource({"'',        'New User', 'user@test.dev', 'Pa$$w0rd''",
             "'  ',      'New User', 'user@test.dev', 'Pa$$w0rd'",
             "'$$$',     'New User', 'user@test.dev', 'Pa$$w0rd'",
             "'newuser', '',         'user@test.dev', 'Pa$$w0rd'",
             "'newuser', '  ',       'user@test.dev', 'Pa$$w0rd'",
             "'newuser', 'New User', 'not-an-email',  'Pa$$w0rd'",
             "'newuser', 'New User', 'user@test.dev', ''",
-            "'newuser', 'New User', 'user@test.dev', '1234'"
-    })
+            "'newuser', 'New User', 'user@test.dev', '1234'"})
     @WithMockUser
-    void createUser_shouldReturnBadRequest_whenInvalidDataProvided(
-            String login, String displayName, String email, String password) throws Exception {
+    void createUser_shouldReturnBadRequest_whenInvalidDataProvided(String login, String displayName,
+            String email, String password) throws Exception {
 
-        UserCreateRequestDto request = new UserCreateRequestDto(login, displayName, email, password);
+        UserCreateRequestDto request =
+                new UserCreateRequestDto(login, displayName, email, password);
 
-        mockMvc.perform(post("/api/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsBytes(request)))
+        mockMvc.perform(post("/api/users").contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(request)))
                 .andExpect(status().isBadRequest());
 
         verify(userService, never()).create(any(UserCreateRequestDto.class));
@@ -238,11 +212,12 @@ public class UserControllerIT extends AbstractControllerSecurityTest {
 
     @Test
     @WithMockUser
-    void deleteUser_shouldReturnForbidden_whenUserDoesNotHaveManageUsersPermission() throws Exception {
+    void deleteUser_shouldReturnForbidden_whenUserDoesNotHaveManageUsersPermission()
+            throws Exception {
         UUID userIdToDelete = UUID.randomUUID();
 
-        doThrow(new AccessDeniedException("Insufficient permissions."))
-                .when(userService).deleteUser(userIdToDelete);
+        doThrow(new AccessDeniedException("Insufficient permissions.")).when(userService)
+                .deleteUser(userIdToDelete);
 
         mockMvc.perform(delete("/api/users/{userId}", userIdToDelete))
                 .andExpect(status().isForbidden());
@@ -253,8 +228,8 @@ public class UserControllerIT extends AbstractControllerSecurityTest {
     void deleteUser_shouldReturnNotFound_whenUserDoesNotExist() throws Exception {
         UUID userIdToDelete = UUID.randomUUID();
 
-        doThrow(UserNotFoundException.byId(userIdToDelete))
-                .when(userService).deleteUser(userIdToDelete);
+        doThrow(UserNotFoundException.byId(userIdToDelete)).when(userService)
+                .deleteUser(userIdToDelete);
 
         mockMvc.perform(delete("/api/users/{userId}", userIdToDelete))
                 .andExpect(status().isNotFound());
@@ -263,8 +238,8 @@ public class UserControllerIT extends AbstractControllerSecurityTest {
     @Test
     @WithMockUser
     void deleteUser_shouldReturnForbidden_whenTryingToDeleteSelf() throws Exception {
-        doThrow(new AccessDeniedException("Users cannot delete themselves"))
-                .when(userService).deleteUser(UUID.fromString(WithMockUser.Default.ID));
+        doThrow(new AccessDeniedException("Users cannot delete themselves")).when(userService)
+                .deleteUser(UUID.fromString(WithMockUser.Default.ID));
 
         mockMvc.perform(delete("/api/users/{userId}", WithMockUser.Default.ID))
                 .andExpect(status().isForbidden());
@@ -275,27 +250,19 @@ public class UserControllerIT extends AbstractControllerSecurityTest {
     void updateCurrentUser_shouldReturnUpdatedUser_whenValidDataProvided() throws Exception {
         String newLogin = "updateduser";
         String newDisplayName = "Updated User";
-        UserInfoUpdateRequestDto requestDto = new UserInfoUpdateRequestDto(
-                Optional.of(newLogin),
-                Optional.of(newDisplayName),
-                Optional.empty());
+        UserInfoUpdateRequestDto requestDto = new UserInfoUpdateRequestDto(Optional.of(newLogin),
+                Optional.of(newDisplayName), Optional.empty());
 
         long permissions = UserPermission.toValue(WithMockUser.Default.PERMISSIONS);
-        User updatedUser = User.builder()
-                .id(UUID.fromString(WithMockUser.Default.ID))
-                .login(newLogin)
-                .displayName(newDisplayName)
-                .passwordHash(WithMockUser.Default.PASSWORD)
-                .permissions(permissions)
-                .build();
+        User updatedUser = User.builder().id(UUID.fromString(WithMockUser.Default.ID))
+                .login(newLogin).displayName(newDisplayName)
+                .passwordHash(WithMockUser.Default.PASSWORD).permissions(permissions).build();
 
-        when(userService.updateCurrentUserInfo(any(UUID.class), any(UserInfoUpdateRequestDto.class)))
-                .thenReturn(updatedUser);
+        when(userService.updateCurrentUserInfo(any(UUID.class),
+                any(UserInfoUpdateRequestDto.class))).thenReturn(updatedUser);
 
-        mockMvc.perform(patch("/api/users/@me")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsBytes(requestDto)))
-                .andExpect(status().isOk())
+        mockMvc.perform(patch("/api/users/@me").contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(requestDto))).andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(WithMockUser.Default.ID))
                 .andExpect(jsonPath("$.login").value(newLogin))
@@ -304,25 +271,21 @@ public class UserControllerIT extends AbstractControllerSecurityTest {
     }
 
     @ParameterizedTest
-    @CsvSource({
-            "'',            'Updated User', 'updated.user@easykan.dev'",
+    @CsvSource({"'',            'Updated User', 'updated.user@easykan.dev'",
             "'  ',          'Updated User', 'updated.user@easykan.dev'",
             "'$$$',         'Updated User', 'updated.user@easykan.dev'",
             "'updateduser', '',             'updated.user@easykan.dev'",
             "'updateduser', '  ',           'updated.user@easykan.dev'",
-            "'updateduser', 'Updated User', 'bademailformat'"
-    })
+            "'updateduser', 'Updated User', 'bademailformat'"})
     @WithMockUser
-    void updateCurrentUser_shouldReturnBadRequest_whenInvalidDataProvided(
-            String login, String displayName, String email) throws Exception {
-        UserInfoUpdateRequestDto requestDto = new UserInfoUpdateRequestDto(
-                Optional.ofNullable(login),
-                Optional.ofNullable(displayName),
-                Optional.ofNullable(email));
+    void updateCurrentUser_shouldReturnBadRequest_whenInvalidDataProvided(String login,
+            String displayName, String email) throws Exception {
+        UserInfoUpdateRequestDto requestDto =
+                new UserInfoUpdateRequestDto(Optional.ofNullable(login),
+                        Optional.ofNullable(displayName), Optional.ofNullable(email));
 
-        mockMvc.perform(patch("/api/users/@me")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsBytes(requestDto)))
+        mockMvc.perform(patch("/api/users/@me").contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(requestDto)))
                 .andExpect(status().isBadRequest());
     }
 
@@ -330,16 +293,14 @@ public class UserControllerIT extends AbstractControllerSecurityTest {
     @WithMockUser
     void updateCurrentUser_shouldReturnNotFound_whenUserDoesNotExist() throws Exception {
         UserInfoUpdateRequestDto requestDto = new UserInfoUpdateRequestDto(
-                Optional.of("updateduser"),
-                Optional.of("Updated User"),
-                Optional.empty());
+                Optional.of("updateduser"), Optional.of("Updated User"), Optional.empty());
 
-        when(userService.updateCurrentUserInfo(any(UUID.class), any(UserInfoUpdateRequestDto.class)))
+        when(userService.updateCurrentUserInfo(any(UUID.class),
+                any(UserInfoUpdateRequestDto.class)))
                 .thenThrow(UserNotFoundException.byId(UUID.fromString(WithMockUser.Default.ID)));
 
-        mockMvc.perform(patch("/api/users/@me")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsBytes(requestDto)))
+        mockMvc.perform(patch("/api/users/@me").contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(requestDto)))
                 .andExpect(status().isNotFound());
     }
 
@@ -354,13 +315,11 @@ public class UserControllerIT extends AbstractControllerSecurityTest {
         updatedUser.setId(userId);
         updatedUser.setPermissions(requestDto.permissions());
 
-        when(userService.updateUserPermissions(eq(userId), any()))
-                .thenReturn(updatedUser);
+        when(userService.updateUserPermissions(eq(userId), any())).thenReturn(updatedUser);
 
         mockMvc.perform(put("/api/users/{userId}/permissions", userId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsBytes(requestDto)))
-                .andExpect(status().isOk())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(requestDto))).andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(userId.toString()))
                 .andExpect(jsonPath("$.permissions").value(requestDto.permissions()));
 
@@ -374,26 +333,27 @@ public class UserControllerIT extends AbstractControllerSecurityTest {
         var requestDto = new UserPermissionsUpdateRequestDto(
                 UserPermission.toValue(UserPermission.MANAGE_PROJECTS));
 
-        doThrow(UserNotFoundException.byId(userId))
-                .when(userService).updateUserPermissions(eq(userId), any());
+        doThrow(UserNotFoundException.byId(userId)).when(userService)
+                .updateUserPermissions(eq(userId), any());
 
         mockMvc.perform(put("/api/users/{userId}/permissions", userId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsBytes(requestDto)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(requestDto)))
                 .andExpect(status().isNotFound());
     }
 
     @ParameterizedTest
     @MethodSource("provideInvalidPermissions")
     @WithMockUser
-    void updateUserPermissions_shouldReturnBadRequest_whenInvalidPermissionsProvided(long invalidPermissions) throws Exception {
+    void updateUserPermissions_shouldReturnBadRequest_whenInvalidPermissionsProvided(
+            long invalidPermissions) throws Exception {
         UUID userId = UUID.randomUUID();
 
         var requestDto = new UserPermissionsUpdateRequestDto(invalidPermissions);
 
         mockMvc.perform(put("/api/users/{userId}/permissions", userId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsBytes(requestDto)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(requestDto)))
                 .andExpect(status().isBadRequest());
 
         verify(userService, never()).updateUserPermissions(eq(userId), any());
@@ -401,17 +361,18 @@ public class UserControllerIT extends AbstractControllerSecurityTest {
 
     @Test
     @WithMockUser
-    void updateUserPermissions_shouldReturnForbidden_whenUserDoesNotHaveAdminPermission() throws Exception {
+    void updateUserPermissions_shouldReturnForbidden_whenUserDoesNotHaveAdminPermission()
+            throws Exception {
         UUID userId = UUID.randomUUID();
         var requestDto = new UserPermissionsUpdateRequestDto(
                 UserPermission.toValue(UserPermission.MANAGE_PROJECTS));
 
-        doThrow(new AccessDeniedException("Insufficient permissions."))
-                .when(userService).updateUserPermissions(eq(userId), any());
+        doThrow(new AccessDeniedException("Insufficient permissions.")).when(userService)
+                .updateUserPermissions(eq(userId), any());
 
         mockMvc.perform(put("/api/users/{userId}/permissions", userId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsBytes(requestDto)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(requestDto)))
                 .andExpect(status().isForbidden());
     }
 
@@ -421,11 +382,6 @@ public class UserControllerIT extends AbstractControllerSecurityTest {
         long allValidBits = UserPermission.ALL_PERMISSIONS_MASK;
         long invalidBit = Long.highestOneBit(allValidBits) << 1;
 
-        return Stream.of(
-                -1L,
-                invalidBit,
-                allValidBits | invalidBit
-        );
+        return Stream.of(-1L, invalidBit, allValidBits | invalidBit);
     }
-
 }

@@ -1,15 +1,16 @@
 package dev.erpix.easykan.server.domain.user.service;
 
 import dev.erpix.easykan.server.constant.CacheKey;
+import dev.erpix.easykan.server.domain.user.dto.UserCreateRequestDto;
 import dev.erpix.easykan.server.domain.user.dto.UserInfoUpdateRequestDto;
 import dev.erpix.easykan.server.domain.user.dto.UserPermissionsUpdateRequestDto;
 import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.model.UserPermission;
+import dev.erpix.easykan.server.domain.user.repository.UserRepository;
 import dev.erpix.easykan.server.domain.user.security.RequireUserPermission;
 import dev.erpix.easykan.server.exception.user.UserNotFoundException;
-import dev.erpix.easykan.server.domain.user.dto.UserCreateRequestDto;
-import dev.erpix.easykan.server.domain.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.cache.annotation.CacheEvict;
@@ -21,8 +22,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -56,10 +55,8 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    @Caching(evict = {
-            @CacheEvict(value = CacheKey.USERS_ID, key = "#userId"),
-            @CacheEvict(value = CacheKey.USERS_LOGIN, allEntries = true) // Clear all login cache for consistency
-    })
+    @Caching(evict = {@CacheEvict(value = CacheKey.USERS_ID, key = "#userId"),
+            @CacheEvict(value = CacheKey.USERS_LOGIN, allEntries = true)})
     @PreAuthorize("#userId != authentication.principal.getId()")
     @RequireUserPermission(UserPermission.MANAGE_USERS)
     public void deleteUser(@NotNull UUID userId) {
@@ -70,24 +67,17 @@ public class UserService {
     }
 
     @Transactional
-    @Caching(put = {
-            @CachePut(value = CacheKey.USERS_ID, key = "#result.id"),
-            @CachePut(value = CacheKey.USERS_LOGIN, key = "#result.login")
-    })
-    public User updateCurrentUserInfo(
-            @NotNull UUID userId,
-            @NotNull UserInfoUpdateRequestDto dto
-    ) {
+    @Caching(put = {@CachePut(value = CacheKey.USERS_ID, key = "#result.id"),
+            @CachePut(value = CacheKey.USERS_LOGIN, key = "#result.login")})
+    public User updateCurrentUserInfo(@NotNull UUID userId, @NotNull UserInfoUpdateRequestDto dto) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> UserNotFoundException.byId(userId));
         return updateUserInfoAndSave(user, dto);
     }
 
     @Transactional
-    @Caching(put = {
-            @CachePut(value = CacheKey.USERS_ID, key = "#result.id"),
-            @CachePut(value = CacheKey.USERS_LOGIN, key = "#result.login")
-    })
+    @Caching(put = {@CachePut(value = CacheKey.USERS_ID, key = "#result.id"),
+            @CachePut(value = CacheKey.USERS_LOGIN, key = "#result.login")})
     @RequireUserPermission(UserPermission.MANAGE_USERS)
     public User updateUserInfo(@NotNull UUID userId, @NotNull UserInfoUpdateRequestDto dto) {
         User user = userRepository.findById(userId)
@@ -96,16 +86,12 @@ public class UserService {
     }
 
     @Transactional
-    @Caching(put = {
-            @CachePut(value = CacheKey.USERS_ID, key = "#result.id"),
-            @CachePut(value = CacheKey.USERS_LOGIN, key = "#result.login")
-    })
+    @Caching(put = {@CachePut(value = CacheKey.USERS_ID, key = "#result.id"),
+            @CachePut(value = CacheKey.USERS_LOGIN, key = "#result.login")})
     @PreAuthorize("#userId != authentication.principal.getId()")
     @RequireUserPermission(UserPermission.ADMIN)
-    public User updateUserPermissions(
-            @NotNull UUID userId,
-            @NotNull UserPermissionsUpdateRequestDto dto
-    ) {
+    public User updateUserPermissions(@NotNull UUID userId,
+            @NotNull UserPermissionsUpdateRequestDto dto) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> UserNotFoundException.byId(userId));
 
@@ -113,12 +99,12 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    protected @NotNull User updateUserInfoAndSave(@NotNull User user, @NotNull UserInfoUpdateRequestDto dto) {
+    protected @NotNull User updateUserInfoAndSave(@NotNull User user,
+            @NotNull UserInfoUpdateRequestDto dto) {
         dto.login().ifPresent(user::setLogin);
         dto.displayName().ifPresent(user::setDisplayName);
         dto.email().ifPresent(user::setEmail);
 
         return userRepository.save(user);
     }
-
 }
