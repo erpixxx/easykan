@@ -27,40 +27,43 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Slf4j
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-    private final JwtProvider jwtProvider;
-    private final JpaUserDetailsService userDetailsService;
+	private final JwtProvider jwtProvider;
 
-    @Override
-    protected void doFilterInternal(@NotNull HttpServletRequest request,
-            @NotNull HttpServletResponse response, @NotNull FilterChain filterChain)
-            throws ServletException, IOException {
+	private final JpaUserDetailsService userDetailsService;
 
-        getTokenFromCookie(request).ifPresent(token -> {
-            try {
-                if (SecurityContextHolder.getContext().getAuthentication() == null) {
-                    String subject = jwtProvider.validate(token);
-                    UUID userId = UUID.fromString(subject);
-                    UserDetails userDetails = userDetailsService.loadUserById(userId);
+	@Override
+	protected void doFilterInternal(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response,
+			@NotNull FilterChain filterChain) throws ServletException, IOException {
 
-                    var auth = new UsernamePasswordAuthenticationToken(userDetails, null,
-                            userDetails.getAuthorities());
-                    auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(auth);
-                }
-            } catch (InvalidTokenException e) {
-                log.warn("Invalid JWT token received: {}", e.getMessage());
-            }
-        });
+		getTokenFromCookie(request).ifPresent(token -> {
+			try {
+				if (SecurityContextHolder.getContext().getAuthentication() == null) {
+					String subject = jwtProvider.validate(token);
+					UUID userId = UUID.fromString(subject);
+					UserDetails userDetails = userDetailsService.loadUserById(userId);
 
-        filterChain.doFilter(request, response);
-    }
+					var auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+					auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+					SecurityContextHolder.getContext().setAuthentication(auth);
+				}
+			}
+			catch (InvalidTokenException e) {
+				log.warn("Invalid JWT token received: {}", e.getMessage());
+			}
+		});
 
-    private Optional<String> getTokenFromCookie(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies == null) {
-            return Optional.empty();
-        }
-        return Arrays.stream(cookies).filter(cookie -> cookie.getName().equals("access_token"))
-                .map(Cookie::getValue).findFirst();
-    }
+		filterChain.doFilter(request, response);
+	}
+
+	private Optional<String> getTokenFromCookie(HttpServletRequest request) {
+		Cookie[] cookies = request.getCookies();
+		if (cookies == null) {
+			return Optional.empty();
+		}
+		return Arrays.stream(cookies)
+			.filter(cookie -> cookie.getName().equals("access_token"))
+			.map(Cookie::getValue)
+			.findFirst();
+	}
+
 }

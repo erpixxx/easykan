@@ -19,54 +19,54 @@ import org.hibernate.annotations.OnDeleteAction;
 @NoArgsConstructor
 @Entity
 @Table(name = "columns", schema = "public",
-        indexes = {@Index(name = "columns_board_id_position_idx", columnList = "board_id, position",
-                unique = true)})
+		indexes = { @Index(name = "columns_board_id_position_idx", columnList = "board_id, position", unique = true) })
 public class BoardColumn {
 
-    @EqualsAndHashCode.Include
-    @ToString.Include
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id", nullable = false)
-    private UUID id;
+	@EqualsAndHashCode.Include
+	@ToString.Include
+	@Id
+	@GeneratedValue(strategy = GenerationType.UUID)
+	@Column(name = "id", nullable = false)
+	private UUID id;
 
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "board_id", nullable = false)
-    private Board board;
+	@NotNull
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	@JoinColumn(name = "board_id", nullable = false)
+	private Board board;
 
-    @ToString.Include
-    @Size(max = 64)
-    @NotNull
-    @Column(name = "name", nullable = false, length = 64)
-    private String name;
+	@ToString.Include
+	@Size(max = 64)
+	@NotNull
+	@Column(name = "name", nullable = false, length = 64)
+	private String name;
 
-    @NotNull
-    @Column(name = "position", nullable = false)
-    private Integer position;
+	@NotNull
+	@Column(name = "position", nullable = false)
+	private Integer position;
 
-    @NotNull
-    @Column(name = "created_at", nullable = false)
-    private Instant createdAt;
+	@NotNull
+	@Column(name = "created_at", nullable = false)
+	private Instant createdAt;
 
-    @NotNull
-    @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt;
+	@NotNull
+	@Column(name = "updated_at", nullable = false)
+	private Instant updatedAt;
 
-    @PrePersist
-    protected void onCreate() {
-        Instant now = Instant.now();
-        if (this.createdAt == null) {
-            createdAt = now;
-        }
-        if (this.updatedAt == null) {
-            updatedAt = now;
-        }
-    }
+	@PrePersist
+	protected void onCreate() {
+		Instant now = Instant.now();
+		if (this.createdAt == null) {
+			createdAt = now;
+		}
+		if (this.updatedAt == null) {
+			updatedAt = now;
+		}
+	}
 
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = Instant.now();
-    }
+	@PreUpdate
+	protected void onUpdate() {
+		updatedAt = Instant.now();
+	}
+
 }

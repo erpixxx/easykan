@@ -13,40 +13,45 @@ import org.springframework.stereotype.Component;
 
 // TODO: This is a temporary solution to initialize the storage with a default admin user.
 @Component
-@ConditionalOnProperty(name = "easykan.create-default-admin-account", havingValue = "true",
-        matchIfMissing = true)
+@ConditionalOnProperty(name = "easykan.create-default-admin-account", havingValue = "true", matchIfMissing = true)
 @RequiredArgsConstructor
 @Slf4j
 public class StorageInitializer implements CommandLineRunner {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+	private final UserRepository userRepository;
 
-    @Override
-    public void run(String... args) throws Exception {
-        log.info("Initializing storage...");
-        if (userRepository.count() == 0) {
-            String passwd = generateRandomPassword(16);
+	private final PasswordEncoder passwordEncoder;
 
-            User admin = User.builder().login("admin").displayName("Administrator")
-                    .email("admin@example.com").passwordHash(passwordEncoder.encode(passwd))
-                    .permissions(1L).build();
+	@Override
+	public void run(String... args) throws Exception {
+		log.info("Initializing storage...");
+		if (userRepository.count() == 0) {
+			String passwd = generateRandomPassword(16);
 
-            userRepository.save(admin);
+			User admin = User.builder()
+				.login("admin")
+				.displayName("Administrator")
+				.email("admin@example.com")
+				.passwordHash(passwordEncoder.encode(passwd))
+				.permissions(1L)
+				.build();
 
-            log.info("========================================");
-            log.info("Storage initialized with default admin user.");
-            log.info("");
-            log.info("Admin login: {}", admin.getLogin());
-            log.info("Admin password: {}", passwd);
-            log.info("=========================================");
-        }
-    }
+			userRepository.save(admin);
 
-    private String generateRandomPassword(int length) {
-        SecureRandom random = new SecureRandom();
-        byte[] bytes = new byte[length];
-        random.nextBytes(bytes);
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
-    }
+			log.info("========================================");
+			log.info("Storage initialized with default admin user.");
+			log.info("");
+			log.info("Admin login: {}", admin.getLogin());
+			log.info("Admin password: {}", passwd);
+			log.info("=========================================");
+		}
+	}
+
+	private String generateRandomPassword(int length) {
+		SecureRandom random = new SecureRandom();
+		byte[] bytes = new byte[length];
+		random.nextBytes(bytes);
+		return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+	}
+
 }

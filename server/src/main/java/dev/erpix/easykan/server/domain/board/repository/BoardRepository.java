@@ -8,4 +8,5 @@ import org.springframework.stereotype.Repository;
 @SuppressWarnings("unused")
 @Repository
 public interface BoardRepository extends JpaRepository<Board, UUID> {
+
 }

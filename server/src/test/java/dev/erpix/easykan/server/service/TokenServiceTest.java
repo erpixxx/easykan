@@ -37,151 +37,150 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @ExtendWith(MockitoExtension.class)
 public class TokenServiceTest {
 
-    @InjectMocks
-    private TokenService tokenService;
+	@InjectMocks
+	private TokenService tokenService;
 
-    @Mock
-    private EasyKanConfig config;
+	@Mock
+	private EasyKanConfig config;
 
-    @Mock
-    private TokenRepository tokenRepository;
+	@Mock
+	private TokenRepository tokenRepository;
 
-    @Mock
-    private UserService userService;
+	@Mock
+	private UserService userService;
 
-    @Mock
-    private PasswordEncoder passwordEncoder;
+	@Mock
+	private PasswordEncoder passwordEncoder;
 
-    @Mock
-    private TokenGenerator tokenGenerator;
+	@Mock
+	private TokenGenerator tokenGenerator;
 
-    @Mock
-    private JwtProvider jwtProvider;
+	@Mock
+	private JwtProvider jwtProvider;
 
-    @Captor
-    private ArgumentCaptor<RefreshToken> refreshTokenCaptor;
+	@Captor
+	private ArgumentCaptor<RefreshToken> refreshTokenCaptor;
 
-    private static final String JWT_SECRET = "secret";
-    private static final int ACCESS_TOKEN_EXPIRE = 180;
-    private static final int REFRESH_TOKEN_EXPIRE = 3600;
+	private static final String JWT_SECRET = "secret";
 
-    private void mockConfig() {
-        var jwt = new EasyKanConfig.Jwt(JWT_SECRET, ACCESS_TOKEN_EXPIRE, REFRESH_TOKEN_EXPIRE);
-        when(config.jwt()).thenReturn(jwt);
-    }
+	private static final int ACCESS_TOKEN_EXPIRE = 180;
 
-    @Test
-    void createAccessToken_shouldReturnToken_forAnyId() {
-        mockConfig();
+	private static final int REFRESH_TOKEN_EXPIRE = 3600;
 
-        UUID userId = UUID.randomUUID();
-        when(jwtProvider.generate(userId.toString())).thenReturn("accessToken");
+	private void mockConfig() {
+		var jwt = new EasyKanConfig.Jwt(JWT_SECRET, ACCESS_TOKEN_EXPIRE, REFRESH_TOKEN_EXPIRE);
+		when(config.jwt()).thenReturn(jwt);
+	}
 
-        var result = tokenService.createAccessToken(userId);
-        assertThat(result.rawToken()).isEqualTo("accessToken");
-        assertThat(result.duration()).isEqualTo(Duration.ofSeconds(ACCESS_TOKEN_EXPIRE));
-    }
+	@Test
+	void createAccessToken_shouldReturnToken_forAnyId() {
+		mockConfig();
 
-    @Test
-    void createRefreshToken_shouldReturnNewToken_whenUserExists() {
-        mockConfig();
+		UUID userId = UUID.randomUUID();
+		when(jwtProvider.generate(userId.toString())).thenReturn("accessToken");
 
-        UUID userId = UUID.randomUUID();
-        User user = User.builder().id(userId).build();
-        String selector = "selector";
-        String validator = "validator";
-        TokenParts parts = new TokenParts(selector, validator);
+		var result = tokenService.createAccessToken(userId);
+		assertThat(result.rawToken()).isEqualTo("accessToken");
+		assertThat(result.duration()).isEqualTo(Duration.ofSeconds(ACCESS_TOKEN_EXPIRE));
+	}
 
-        when(userService.getById(userId)).thenReturn(user);
-        when(tokenGenerator.generate()).thenReturn(parts);
+	@Test
+	void createRefreshToken_shouldReturnNewToken_whenUserExists() {
+		mockConfig();
 
-        var result = tokenService.createRefreshToken(userId);
+		UUID userId = UUID.randomUUID();
+		User user = User.builder().id(userId).build();
+		String selector = "selector";
+		String validator = "validator";
+		TokenParts parts = new TokenParts(selector, validator);
 
-        assertThat(result.combine()).isEqualTo(parts.combine());
-        assertThat(result.duration()).isEqualTo(Duration.ofSeconds(REFRESH_TOKEN_EXPIRE));
+		when(userService.getById(userId)).thenReturn(user);
+		when(tokenGenerator.generate()).thenReturn(parts);
 
-        verify(tokenRepository).save(any(RefreshToken.class));
-    }
+		var result = tokenService.createRefreshToken(userId);
 
-    @Test
-    void createRefreshToken_shouldThrowException_whenUserDoesNotExist() {
-        UUID userId = UUID.randomUUID();
+		assertThat(result.combine()).isEqualTo(parts.combine());
+		assertThat(result.duration()).isEqualTo(Duration.ofSeconds(REFRESH_TOKEN_EXPIRE));
 
-        when(userService.getById(userId)).thenThrow(UserNotFoundException.byId(userId));
+		verify(tokenRepository).save(any(RefreshToken.class));
+	}
 
-        assertThrows(UserNotFoundException.class, () -> tokenService.createRefreshToken(userId));
+	@Test
+	void createRefreshToken_shouldThrowException_whenUserDoesNotExist() {
+		UUID userId = UUID.randomUUID();
 
-        verify(tokenRepository, never()).save(any(RefreshToken.class));
-    }
+		when(userService.getById(userId)).thenThrow(UserNotFoundException.byId(userId));
 
-    @Test
-    void logout_shouldRevoke_whenTokenExists() {
-        String rawRefreshToken = "selector:validator";
-        RefreshToken tokenToRevoke =
-                RefreshToken.builder().revoked(false).validator("hashedValidator").build();
+		assertThrows(UserNotFoundException.class, () -> tokenService.createRefreshToken(userId));
 
-        when(tokenRepository.findBySelectorAndRevokedFalseAndExpiresAtAfter(any(), any()))
-                .thenReturn(Optional.of(tokenToRevoke));
-        when(passwordEncoder.matches("validator", "hashedValidator")).thenReturn(true);
+		verify(tokenRepository, never()).save(any(RefreshToken.class));
+	}
 
-        tokenService.logout(rawRefreshToken);
+	@Test
+	void logout_shouldRevoke_whenTokenExists() {
+		String rawRefreshToken = "selector:validator";
+		RefreshToken tokenToRevoke = RefreshToken.builder().revoked(false).validator("hashedValidator").build();
 
-        verify(tokenRepository).save(refreshTokenCaptor.capture());
+		when(tokenRepository.findBySelectorAndRevokedFalseAndExpiresAtAfter(any(), any()))
+			.thenReturn(Optional.of(tokenToRevoke));
+		when(passwordEncoder.matches("validator", "hashedValidator")).thenReturn(true);
 
-        RefreshToken captured = refreshTokenCaptor.getValue();
-        assertThat(captured.isRevoked()).isTrue();
-    }
+		tokenService.logout(rawRefreshToken);
 
-    @Test
-    void logout_shouldDoNothing_whenTokenIsInvalid() {
-        String rawRefreshToken = "invalid-token";
+		verify(tokenRepository).save(refreshTokenCaptor.capture());
 
-        tokenService.logout(rawRefreshToken);
+		RefreshToken captured = refreshTokenCaptor.getValue();
+		assertThat(captured.isRevoked()).isTrue();
+	}
 
-        verify(tokenRepository, never()).save(any(RefreshToken.class));
-    }
+	@Test
+	void logout_shouldDoNothing_whenTokenIsInvalid() {
+		String rawRefreshToken = "invalid-token";
 
-    @Test
-    void logoutAll_shouldRevokeAllTokens_whenTokenExists() {
-        User user = User.builder().id(UUID.randomUUID()).build();
+		tokenService.logout(rawRefreshToken);
 
-        tokenService.logoutAll(new JpaUserDetails(user));
+		verify(tokenRepository, never()).save(any(RefreshToken.class));
+	}
 
-        verify(tokenRepository).revokeAllByUserAndExpiresAtAfter(eq(user), any(Instant.class));
-    }
+	@Test
+	void logoutAll_shouldRevokeAllTokens_whenTokenExists() {
+		User user = User.builder().id(UUID.randomUUID()).build();
 
-    @Test
-    void rotateRefreshToken_shouldReturnNewTokens_whenOldTokenIsValid() {
-        mockConfig();
+		tokenService.logoutAll(new JpaUserDetails(user));
 
-        String rawRefreshToken = "selector:validator";
-        User user = User.builder().id(UUID.randomUUID()).build();
-        RefreshToken oldToken = RefreshToken.builder().revoked(false).validator("hashedValidator")
-                .user(user).build();
+		verify(tokenRepository).revokeAllByUserAndExpiresAtAfter(eq(user), any(Instant.class));
+	}
 
-        when(tokenRepository.findBySelectorAndRevokedFalseAndExpiresAtAfter(any(), any()))
-                .thenReturn(Optional.of(oldToken));
-        when(passwordEncoder.matches("validator", "hashedValidator")).thenReturn(true);
-        when(userService.getById(user.getId())).thenReturn(user);
-        when(tokenGenerator.generate()).thenReturn(new TokenParts("newSelector", "newValidator"));
+	@Test
+	void rotateRefreshToken_shouldReturnNewTokens_whenOldTokenIsValid() {
+		mockConfig();
 
-        TokenPairDto tokenPairDto = tokenService.rotateRefreshToken(rawRefreshToken);
+		String rawRefreshToken = "selector:validator";
+		User user = User.builder().id(UUID.randomUUID()).build();
+		RefreshToken oldToken = RefreshToken.builder().revoked(false).validator("hashedValidator").user(user).build();
 
-        verify(tokenRepository, times(2)).save(refreshTokenCaptor.capture());
-        List<RefreshToken> capturedTokens = refreshTokenCaptor.getAllValues();
-        assertThat(capturedTokens).hasSize(2);
+		when(tokenRepository.findBySelectorAndRevokedFalseAndExpiresAtAfter(any(), any()))
+			.thenReturn(Optional.of(oldToken));
+		when(passwordEncoder.matches("validator", "hashedValidator")).thenReturn(true);
+		when(userService.getById(user.getId())).thenReturn(user);
+		when(tokenGenerator.generate()).thenReturn(new TokenParts("newSelector", "newValidator"));
 
-        RefreshToken revokedToken = capturedTokens.getFirst();
-        assertThat(revokedToken.isRevoked()).isTrue();
-        assertThat(revokedToken).isEqualTo(oldToken);
+		TokenPairDto tokenPairDto = tokenService.rotateRefreshToken(rawRefreshToken);
 
-        RefreshToken newToken = capturedTokens.get(1);
-        assertThat(newToken.isRevoked()).isFalse();
-        assertThat(newToken.getSelector()).isEqualTo("newSelector");
+		verify(tokenRepository, times(2)).save(refreshTokenCaptor.capture());
+		List<RefreshToken> capturedTokens = refreshTokenCaptor.getAllValues();
+		assertThat(capturedTokens).hasSize(2);
 
-        assertThat(tokenPairDto.newAccessTokenDuration())
-                .isEqualTo(Duration.ofSeconds(ACCESS_TOKEN_EXPIRE));
-        assertThat(tokenPairDto.newRefreshTokenDuration())
-                .isEqualTo(Duration.ofSeconds(REFRESH_TOKEN_EXPIRE));
-    }
+		RefreshToken revokedToken = capturedTokens.getFirst();
+		assertThat(revokedToken.isRevoked()).isTrue();
+		assertThat(revokedToken).isEqualTo(oldToken);
+
+		RefreshToken newToken = capturedTokens.get(1);
+		assertThat(newToken.isRevoked()).isFalse();
+		assertThat(newToken.getSelector()).isEqualTo("newSelector");
+
+		assertThat(tokenPairDto.newAccessTokenDuration()).isEqualTo(Duration.ofSeconds(ACCESS_TOKEN_EXPIRE));
+		assertThat(tokenPairDto.newRefreshTokenDuration()).isEqualTo(Duration.ofSeconds(REFRESH_TOKEN_EXPIRE));
+	}
+
 }

@@ -12,21 +12,25 @@ import org.springframework.security.test.context.support.WithSecurityContextFact
 
 public class UserSecurityContextFactory implements WithSecurityContextFactory<WithMockUser> {
 
-    @Override
-    public SecurityContext createSecurityContext(WithMockUser annotation) {
-        SecurityContext context = SecurityContextHolder.createEmptyContext();
+	@Override
+	public SecurityContext createSecurityContext(WithMockUser annotation) {
+		SecurityContext context = SecurityContextHolder.createEmptyContext();
 
-        User user = User.builder().id(UUID.fromString(annotation.id())).login(annotation.login())
-                .displayName(annotation.displayName()).email(annotation.email())
-                .passwordHash(annotation.password())
-                .permissions(UserPermission.toValue(annotation.permissions())).build();
+		User user = User.builder()
+			.id(UUID.fromString(annotation.id()))
+			.login(annotation.login())
+			.displayName(annotation.displayName())
+			.email(annotation.email())
+			.passwordHash(annotation.password())
+			.permissions(UserPermission.toValue(annotation.permissions()))
+			.build();
 
-        JpaUserDetails userDetails = new JpaUserDetails(user);
+		JpaUserDetails userDetails = new JpaUserDetails(user);
 
-        var auth = new UsernamePasswordAuthenticationToken(userDetails, null,
-                userDetails.getAuthorities());
+		var auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
-        context.setAuthentication(auth);
-        return context;
-    }
+		context.setAuthentication(auth);
+		return context;
+	}
+
 }

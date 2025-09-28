@@ -25,81 +25,88 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class TokenService {
 
-    public static final String ACCESS_TOKEN = "access_token";
-    public static final String REFRESH_TOKEN = "refresh_token";
+	public static final String ACCESS_TOKEN = "access_token";
 
-    private final EasyKanConfig config;
-    private final TokenRepository tokenRepository;
-    private final UserService userService;
-    private final PasswordEncoder passwordEncoder;
+	public static final String REFRESH_TOKEN = "refresh_token";
 
-    private final TokenGenerator tokenGenerator;
-    private final JwtProvider jwtProvider;
+	private final EasyKanConfig config;
 
-    public AccessToken createAccessToken(UUID userId) {
-        String rawToken = jwtProvider.generate(userId.toString());
-        Duration duration = Duration.ofSeconds(config.jwt().accessTokenExpire());
-        return new AccessToken(rawToken, duration);
-    }
+	private final TokenRepository tokenRepository;
 
-    public RawRefreshToken createRefreshToken(UUID userId) {
-        User user = userService.getById(userId);
+	private final UserService userService;
 
-        TokenParts tokenParts = tokenGenerator.generate();
-        String validatorHash = passwordEncoder.encode(tokenParts.validator());
+	private final PasswordEncoder passwordEncoder;
 
-        Duration duration = Duration.ofSeconds(config.jwt().refreshTokenExpire());
-        RefreshToken refreshToken =
-                RefreshToken.builder().selector(tokenParts.selector()).validator(validatorHash)
-                        .user(user).expiresAt(Instant.now().plus(duration)).build();
-        tokenRepository.save(refreshToken);
+	private final TokenGenerator tokenGenerator;
 
-        return new RawRefreshToken(tokenParts, duration);
-    }
+	private final JwtProvider jwtProvider;
 
-    public void logout(String rawRefreshToken) {
-        findAndVerifyToken(rawRefreshToken).ifPresent(this::revokeToken);
-    }
+	public AccessToken createAccessToken(UUID userId) {
+		String rawToken = jwtProvider.generate(userId.toString());
+		Duration duration = Duration.ofSeconds(config.jwt().accessTokenExpire());
+		return new AccessToken(rawToken, duration);
+	}
 
-    @Transactional
-    public void logoutAll(JpaUserDetails userDetails) {
-        tokenRepository.revokeAllByUserAndExpiresAtAfter(userDetails.user(), Instant.now());
-    }
+	public RawRefreshToken createRefreshToken(UUID userId) {
+		User user = userService.getById(userId);
 
-    /** Removes all expired tokens from the repository. To be used in CRON jobs. */
-    public void removeExpiredTokens() {
-        tokenRepository.deleteAllByExpiresAtBefore(Instant.now());
-    }
+		TokenParts tokenParts = tokenGenerator.generate();
+		String validatorHash = passwordEncoder.encode(tokenParts.validator());
 
-    public TokenPairDto rotateRefreshToken(String rawOldToken) {
-        return findAndVerifyToken(rawOldToken).map(oldToken -> {
-            revokeToken(oldToken);
+		Duration duration = Duration.ofSeconds(config.jwt().refreshTokenExpire());
+		RefreshToken refreshToken = RefreshToken.builder()
+			.selector(tokenParts.selector())
+			.validator(validatorHash)
+			.user(user)
+			.expiresAt(Instant.now().plus(duration))
+			.build();
+		tokenRepository.save(refreshToken);
 
-            UUID userId = oldToken.getUser().getId();
-            AccessToken accessToken = createAccessToken(userId);
-            RawRefreshToken refreshToken = createRefreshToken(userId);
+		return new RawRefreshToken(tokenParts, duration);
+	}
 
-            return new TokenPairDto(accessToken.rawToken(), accessToken.duration(),
-                    refreshToken.combine(), refreshToken.duration());
-        }).orElseThrow(InvalidTokenException::new);
-    }
+	public void logout(String rawRefreshToken) {
+		findAndVerifyToken(rawRefreshToken).ifPresent(this::revokeToken);
+	}
 
-    private void revokeToken(RefreshToken token) {
-        token.setRevoked(true);
-        tokenRepository.save(token);
-    }
+	@Transactional
+	public void logoutAll(JpaUserDetails userDetails) {
+		tokenRepository.revokeAllByUserAndExpiresAtAfter(userDetails.user(), Instant.now());
+	}
 
-    private Optional<RefreshToken> findAndVerifyToken(String combinedToken) {
-        if (combinedToken == null || combinedToken.indexOf(':') == -1) {
-            return Optional.empty();
-        }
-        String[] parts = combinedToken.split(":", 2);
-        String selector = parts[0];
-        String validator = parts[1];
+	/** Removes all expired tokens from the repository. To be used in CRON jobs. */
+	public void removeExpiredTokens() {
+		tokenRepository.deleteAllByExpiresAtBefore(Instant.now());
+	}
 
-        return tokenRepository
-                .findBySelectorAndRevokedFalseAndExpiresAtAfter(selector, Instant.now())
-                .filter(tokenEntity -> passwordEncoder.matches(validator,
-                        tokenEntity.getValidator()));
-    }
+	public TokenPairDto rotateRefreshToken(String rawOldToken) {
+		return findAndVerifyToken(rawOldToken).map(oldToken -> {
+			revokeToken(oldToken);
+
+			UUID userId = oldToken.getUser().getId();
+			AccessToken accessToken = createAccessToken(userId);
+			RawRefreshToken refreshToken = createRefreshToken(userId);
+
+			return new TokenPairDto(accessToken.rawToken(), accessToken.duration(), refreshToken.combine(),
+					refreshToken.duration());
+		}).orElseThrow(InvalidTokenException::new);
+	}
+
+	private void revokeToken(RefreshToken token) {
+		token.setRevoked(true);
+		tokenRepository.save(token);
+	}
+
+	private Optional<RefreshToken> findAndVerifyToken(String combinedToken) {
+		if (combinedToken == null || combinedToken.indexOf(':') == -1) {
+			return Optional.empty();
+		}
+		String[] parts = combinedToken.split(":", 2);
+		String selector = parts[0];
+		String validator = parts[1];
+
+		return tokenRepository.findBySelectorAndRevokedFalseAndExpiresAtAfter(selector, Instant.now())
+			.filter(tokenEntity -> passwordEncoder.matches(validator, tokenEntity.getValidator()));
+	}
+
 }

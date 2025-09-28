@@ -14,27 +14,27 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class RequirePermissionAspect {
 
-    private final UserDetailsProvider userDetailsProvider;
+	private final UserDetailsProvider userDetailsProvider;
 
-    @Before("@annotation(requireUserPermission)")
-    public void checkPermission(RequireUserPermission requireUserPermission) {
-        UserPermission[] required = requireUserPermission.value();
+	@Before("@annotation(requireUserPermission)")
+	public void checkPermission(RequireUserPermission requireUserPermission) {
+		UserPermission[] required = requireUserPermission.value();
 
-        JpaUserDetails userDetails = userDetailsProvider.getCurrentUserDetails()
-                .orElseThrow(() -> new AccessDeniedException("User not authenticated"));
+		JpaUserDetails userDetails = userDetailsProvider.getCurrentUserDetails()
+			.orElseThrow(() -> new AccessDeniedException("User not authenticated"));
 
-        User user = userDetails.user();
+		User user = userDetails.user();
 
-        if (UserPermission.hasPermission(user, UserPermission.ADMIN)) {
-            // Admins bypass permission checks
-            return;
-        }
+		if (UserPermission.hasPermission(user, UserPermission.ADMIN)) {
+			// Admins bypass permission checks
+			return;
+		}
 
-        for (UserPermission permission : required) {
-            if (!UserPermission.hasPermission(user, permission)) {
-                throw new AccessDeniedException(
-                        "User does not have required permission: " + permission);
-            }
-        }
-    }
+		for (UserPermission permission : required) {
+			if (!UserPermission.hasPermission(user, permission)) {
+				throw new AccessDeniedException("User does not have required permission: " + permission);
+			}
+		}
+	}
+
 }

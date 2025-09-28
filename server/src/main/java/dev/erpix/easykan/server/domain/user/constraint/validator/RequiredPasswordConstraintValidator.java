@@ -7,17 +7,17 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class RequiredPasswordConstraintValidator extends PasswordConstraintValidator<String>
-        implements RequiredStringConstraintValidator {
+		implements RequiredStringConstraintValidator {
 
-    public RequiredPasswordConstraintValidator(EasyKanConfig config) {
-        super(config);
-    }
+	public RequiredPasswordConstraintValidator(EasyKanConfig config) {
+		super(config);
+	}
 
-    @Override
-    public boolean isValid(String value, ConstraintValidatorContext context) {
-        context.disableDefaultConstraintViolation();
+	@Override
+	public boolean isValid(String value, ConstraintValidatorContext context) {
+		context.disableDefaultConstraintViolation();
 
-        return requireNonBlank(value, context, "Password is required",
-                () -> isStringContentValid(value, context));
-    }
+		return requireNonBlank(value, context, "Password is required", () -> isStringContentValid(value, context));
+	}
+
 }

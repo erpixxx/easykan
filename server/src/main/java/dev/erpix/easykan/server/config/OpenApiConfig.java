@@ -11,14 +11,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@OpenAPIDefinition(info = @Info(title = "EasyKan API", version = "1.0.0",
-        description = "API documentation for EasyKan."))
+@OpenAPIDefinition(
+		info = @Info(title = "EasyKan API", version = "1.0.0", description = "API documentation for EasyKan."))
 @SecurityScheme(name = "cookieAuth", type = SecuritySchemeType.APIKEY, in = SecuritySchemeIn.COOKIE,
-        paramName = "access_token")
+		paramName = "access_token")
 public class OpenApiConfig {
 
-    @Bean
-    public OpenAPI openApi() {
-        return new OpenAPI().addSecurityItem(new SecurityRequirement().addList("cookieAuth"));
-    }
+	@Bean
+	public OpenAPI openApi() {
+		return new OpenAPI().addSecurityItem(new SecurityRequirement().addList("cookieAuth"));
+	}
+
 }

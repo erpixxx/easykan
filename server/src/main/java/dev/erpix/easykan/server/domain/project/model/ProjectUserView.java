@@ -18,22 +18,23 @@ import org.hibernate.annotations.OnDeleteAction;
 @Table(name = "user_project_views", schema = "public")
 public class ProjectUserView {
 
-    @EmbeddedId
-    private ProjectUserViewId id;
+	@EmbeddedId
+	private ProjectUserViewId id;
 
-    @MapsId("userId")
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+	@MapsId("userId")
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	@JoinColumn(name = "user_id", nullable = false)
+	private User user;
 
-    @MapsId("projectId")
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "project_id", nullable = false)
-    private Project project;
+	@MapsId("projectId")
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	@JoinColumn(name = "project_id", nullable = false)
+	private Project project;
 
-    @NotNull
-    @Column(name = "position", nullable = false)
-    private Integer position;
+	@NotNull
+	@Column(name = "position", nullable = false)
+	private Integer position;
+
 }

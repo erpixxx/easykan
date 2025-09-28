@@ -4,7 +4,8 @@ import org.springframework.security.core.AuthenticationException;
 
 public class UnsupportedAuthenticationMethodException extends AuthenticationException {
 
-    public UnsupportedAuthenticationMethodException(String message) {
-        super(message);
-    }
+	public UnsupportedAuthenticationMethodException(String message) {
+		super(message);
+	}
+
 }

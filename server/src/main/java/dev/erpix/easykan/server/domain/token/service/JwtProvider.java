@@ -18,27 +18,33 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class JwtProvider {
 
-    private final EasyKanConfig config;
-    private SecretKey key;
+	private final EasyKanConfig config;
 
-    @PostConstruct
-    public void init() {
-        this.key = Keys.hmacShaKeyFor(config.jwt().secret().getBytes(StandardCharsets.UTF_8));
-    }
+	private SecretKey key;
 
-    public @NotNull String generate(@NotNull String subject) {
-        Instant now = Instant.now();
-        long expirationSeconds = config.jwt().accessTokenExpire();
-        return Jwts.builder().subject(subject).issuedAt(Date.from(now))
-                .expiration(Date.from(now.plusSeconds(expirationSeconds))).signWith(key).compact();
-    }
+	@PostConstruct
+	public void init() {
+		this.key = Keys.hmacShaKeyFor(config.jwt().secret().getBytes(StandardCharsets.UTF_8));
+	}
 
-    public @NotNull String validate(@NotNull String token) {
-        try {
-            return Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload()
-                    .getSubject();
-        } catch (JwtException e) {
-            throw new InvalidTokenException();
-        }
-    }
+	public @NotNull String generate(@NotNull String subject) {
+		Instant now = Instant.now();
+		long expirationSeconds = config.jwt().accessTokenExpire();
+		return Jwts.builder()
+			.subject(subject)
+			.issuedAt(Date.from(now))
+			.expiration(Date.from(now.plusSeconds(expirationSeconds)))
+			.signWith(key)
+			.compact();
+	}
+
+	public @NotNull String validate(@NotNull String token) {
+		try {
+			return Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload().getSubject();
+		}
+		catch (JwtException e) {
+			throw new InvalidTokenException();
+		}
+	}
+
 }

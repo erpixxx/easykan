@@ -11,9 +11,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface OAuthAccountRepository extends JpaRepository<OAuthAccount, Long> {
 
-    boolean existsByUserIdAndProviderId(UUID userId, @Size(max = 255) @NotNull String providerId);
+	boolean existsByUserIdAndProviderId(UUID userId, @Size(max = 255) @NotNull String providerId);
 
-    Optional<OAuthAccount> findByProviderIdAndProviderName(
-            @Size(max = 255) @NotNull String providerId,
-            @Size(max = 255) @NotNull String providerName);
+	Optional<OAuthAccount> findByProviderIdAndProviderName(@Size(max = 255) @NotNull String providerId,
+			@Size(max = 255) @NotNull String providerName);
+
 }

@@ -27,84 +27,79 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserService {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+	private final UserRepository userRepository;
 
-    @RequireUserPermission(UserPermission.MANAGE_USERS)
-    public @NotNull Page<User> getAllUsers(Pageable pageable) {
-        return userRepository.findAll(pageable);
-    }
+	private final PasswordEncoder passwordEncoder;
 
-    @Cacheable(value = CacheKey.USERS_ID, key = "#userId")
-    public @NotNull User getById(@NotNull UUID userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> UserNotFoundException.byId(userId));
-    }
+	@RequireUserPermission(UserPermission.MANAGE_USERS)
+	public @NotNull Page<User> getAllUsers(Pageable pageable) {
+		return userRepository.findAll(pageable);
+	}
 
-    @Cacheable(value = CacheKey.USERS_LOGIN, key = "#login")
-    public @NotNull User getByLogin(@NotNull String login) {
-        return userRepository.findByLogin(login)
-                .orElseThrow(() -> UserNotFoundException.byLogin(login));
-    }
+	@Cacheable(value = CacheKey.USERS_ID, key = "#userId")
+	public @NotNull User getById(@NotNull UUID userId) {
+		return userRepository.findById(userId).orElseThrow(() -> UserNotFoundException.byId(userId));
+	}
 
-    @RequireUserPermission(UserPermission.MANAGE_USERS)
-    public @NotNull User create(@NotNull UserCreateRequestDto dto) {
-        User user = dto.toUser();
-        if (user.getPasswordHash() != null)
-            user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
-        return userRepository.save(user);
-    }
+	@Cacheable(value = CacheKey.USERS_LOGIN, key = "#login")
+	public @NotNull User getByLogin(@NotNull String login) {
+		return userRepository.findByLogin(login).orElseThrow(() -> UserNotFoundException.byLogin(login));
+	}
 
-    @Caching(evict = {@CacheEvict(value = CacheKey.USERS_ID, key = "#userId"),
-            @CacheEvict(value = CacheKey.USERS_LOGIN, allEntries = true)})
-    @PreAuthorize("#userId != authentication.principal.getId()")
-    @RequireUserPermission(UserPermission.MANAGE_USERS)
-    public void deleteUser(@NotNull UUID userId) {
-        if (!userRepository.existsById(userId)) {
-            throw UserNotFoundException.byId(userId);
-        }
-        userRepository.deleteById(userId);
-    }
+	@RequireUserPermission(UserPermission.MANAGE_USERS)
+	public @NotNull User create(@NotNull UserCreateRequestDto dto) {
+		User user = dto.toUser();
+		if (user.getPasswordHash() != null)
+			user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
+		return userRepository.save(user);
+	}
 
-    @Transactional
-    @Caching(put = {@CachePut(value = CacheKey.USERS_ID, key = "#result.id"),
-            @CachePut(value = CacheKey.USERS_LOGIN, key = "#result.login")})
-    public User updateCurrentUserInfo(@NotNull UUID userId, @NotNull UserInfoUpdateRequestDto dto) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> UserNotFoundException.byId(userId));
-        return updateUserInfoAndSave(user, dto);
-    }
+	@Caching(evict = { @CacheEvict(value = CacheKey.USERS_ID, key = "#userId"),
+			@CacheEvict(value = CacheKey.USERS_LOGIN, allEntries = true) })
+	@PreAuthorize("#userId != authentication.principal.getId()")
+	@RequireUserPermission(UserPermission.MANAGE_USERS)
+	public void deleteUser(@NotNull UUID userId) {
+		if (!userRepository.existsById(userId)) {
+			throw UserNotFoundException.byId(userId);
+		}
+		userRepository.deleteById(userId);
+	}
 
-    @Transactional
-    @Caching(put = {@CachePut(value = CacheKey.USERS_ID, key = "#result.id"),
-            @CachePut(value = CacheKey.USERS_LOGIN, key = "#result.login")})
-    @RequireUserPermission(UserPermission.MANAGE_USERS)
-    public User updateUserInfo(@NotNull UUID userId, @NotNull UserInfoUpdateRequestDto dto) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> UserNotFoundException.byId(userId));
-        return updateUserInfoAndSave(user, dto);
-    }
+	@Transactional
+	@Caching(put = { @CachePut(value = CacheKey.USERS_ID, key = "#result.id"),
+			@CachePut(value = CacheKey.USERS_LOGIN, key = "#result.login") })
+	public User updateCurrentUserInfo(@NotNull UUID userId, @NotNull UserInfoUpdateRequestDto dto) {
+		User user = userRepository.findById(userId).orElseThrow(() -> UserNotFoundException.byId(userId));
+		return updateUserInfoAndSave(user, dto);
+	}
 
-    @Transactional
-    @Caching(put = {@CachePut(value = CacheKey.USERS_ID, key = "#result.id"),
-            @CachePut(value = CacheKey.USERS_LOGIN, key = "#result.login")})
-    @PreAuthorize("#userId != authentication.principal.getId()")
-    @RequireUserPermission(UserPermission.ADMIN)
-    public User updateUserPermissions(@NotNull UUID userId,
-            @NotNull UserPermissionsUpdateRequestDto dto) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> UserNotFoundException.byId(userId));
+	@Transactional
+	@Caching(put = { @CachePut(value = CacheKey.USERS_ID, key = "#result.id"),
+			@CachePut(value = CacheKey.USERS_LOGIN, key = "#result.login") })
+	@RequireUserPermission(UserPermission.MANAGE_USERS)
+	public User updateUserInfo(@NotNull UUID userId, @NotNull UserInfoUpdateRequestDto dto) {
+		User user = userRepository.findById(userId).orElseThrow(() -> UserNotFoundException.byId(userId));
+		return updateUserInfoAndSave(user, dto);
+	}
 
-        user.setPermissions(dto.permissions());
-        return userRepository.save(user);
-    }
+	@Transactional
+	@Caching(put = { @CachePut(value = CacheKey.USERS_ID, key = "#result.id"),
+			@CachePut(value = CacheKey.USERS_LOGIN, key = "#result.login") })
+	@PreAuthorize("#userId != authentication.principal.getId()")
+	@RequireUserPermission(UserPermission.ADMIN)
+	public User updateUserPermissions(@NotNull UUID userId, @NotNull UserPermissionsUpdateRequestDto dto) {
+		User user = userRepository.findById(userId).orElseThrow(() -> UserNotFoundException.byId(userId));
 
-    protected @NotNull User updateUserInfoAndSave(@NotNull User user,
-            @NotNull UserInfoUpdateRequestDto dto) {
-        dto.login().ifPresent(user::setLogin);
-        dto.displayName().ifPresent(user::setDisplayName);
-        dto.email().ifPresent(user::setEmail);
+		user.setPermissions(dto.permissions());
+		return userRepository.save(user);
+	}
 
-        return userRepository.save(user);
-    }
+	protected @NotNull User updateUserInfoAndSave(@NotNull User user, @NotNull UserInfoUpdateRequestDto dto) {
+		dto.login().ifPresent(user::setLogin);
+		dto.displayName().ifPresent(user::setDisplayName);
+		dto.email().ifPresent(user::setEmail);
+
+		return userRepository.save(user);
+	}
+
 }

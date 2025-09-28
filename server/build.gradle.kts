@@ -4,7 +4,7 @@ plugins {
     java
     id("org.springframework.boot") version "3.5.3"
     id("io.spring.dependency-management") version "1.1.7"
-    id("com.diffplug.spotless") version "7.2.1"
+    id("io.spring.javaformat") version "0.0.47"
 }
 
 group = "dev.erpix.easykan.server"
@@ -19,16 +19,6 @@ java {
 configurations {
     compileOnly {
         extendsFrom(configurations.annotationProcessor.get())
-    }
-}
-
-spotless {
-    java {
-        eclipse().configFile("${projectDir}/config/formatter.xml")
-
-        removeUnusedImports()
-        trimTrailingWhitespace()
-        endWithNewline()
     }
 }
 

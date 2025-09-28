@@ -9,43 +9,45 @@ import org.springframework.security.core.GrantedAuthority;
 
 @Getter
 public enum UserPermission implements GrantedAuthority {
-    DEFAULT_PERMISSIONS(0L), ADMIN(1L), MANAGE_PROJECTS(1L << 1), MANAGE_USERS(1L << 2);
 
-    public static final long ALL_PERMISSIONS_MASK =
-            Arrays.stream(values()).mapToLong(UserPermission::getValue).reduce(0, (a, b) -> a | b);
+	DEFAULT_PERMISSIONS(0L), ADMIN(1L), MANAGE_PROJECTS(1L << 1), MANAGE_USERS(1L << 2);
 
-    private final long value;
+	public static final long ALL_PERMISSIONS_MASK = Arrays.stream(values())
+		.mapToLong(UserPermission::getValue)
+		.reduce(0, (a, b) -> a | b);
 
-    UserPermission(long value) {
-        this.value = value;
-    }
+	private final long value;
 
-    @Override
-    public String getAuthority() {
-        return name();
-    }
+	UserPermission(long value) {
+		this.value = value;
+	}
 
-    public static List<UserPermission> fromValue(long value) {
-        return Stream.of(UserPermission.values())
-                .filter(permission -> (permission.value & value) == permission.value).toList();
-    }
+	@Override
+	public String getAuthority() {
+		return name();
+	}
 
-    public static long toValue(UserPermission... permissions) {
-        return Arrays.stream(permissions).mapToLong(UserPermission::getValue).reduce(0,
-                (a, b) -> a | b);
-    }
+	public static List<UserPermission> fromValue(long value) {
+		return Stream.of(UserPermission.values())
+			.filter(permission -> (permission.value & value) == permission.value)
+			.toList();
+	}
 
-    public static boolean hasPermission(User user, UserPermission permission) {
-        return (user.getPermissions() & permission.getValue()) == permission.getValue();
-    }
+	public static long toValue(UserPermission... permissions) {
+		return Arrays.stream(permissions).mapToLong(UserPermission::getValue).reduce(0, (a, b) -> a | b);
+	}
 
-    public static void validate(long permissions) throws PermissionMaskValidationException {
-        if (permissions < 0) {
-            throw new PermissionMaskValidationException("Permissions value cannot be negative");
-        }
-        if ((permissions & ~UserPermission.ALL_PERMISSIONS_MASK) != 0) {
-            throw new PermissionMaskValidationException(
-                    "Invalid permissions value: " + permissions);
-        }
-    }
+	public static boolean hasPermission(User user, UserPermission permission) {
+		return (user.getPermissions() & permission.getValue()) == permission.getValue();
+	}
+
+	public static void validate(long permissions) throws PermissionMaskValidationException {
+		if (permissions < 0) {
+			throw new PermissionMaskValidationException("Permissions value cannot be negative");
+		}
+		if ((permissions & ~UserPermission.ALL_PERMISSIONS_MASK) != 0) {
+			throw new PermissionMaskValidationException("Invalid permissions value: " + permissions);
+		}
+	}
+
 }

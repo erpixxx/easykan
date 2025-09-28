@@ -11,9 +11,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface UserRepository extends JpaRepository<User, UUID> {
 
-    boolean existsByLogin(@Size(max = 64) @NotNull String login);
+	boolean existsByLogin(@Size(max = 64) @NotNull String login);
 
-    Optional<User> findByLogin(String login);
+	Optional<User> findByLogin(String login);
 
-    Optional<User> findByEmail(@Size(max = 255) @NotNull String email);
+	Optional<User> findByEmail(@Size(max = 255) @NotNull String email);
+
 }

@@ -23,29 +23,30 @@ import org.hibernate.annotations.OnDeleteAction;
 @Table(name = "labels", schema = "public")
 public class Label {
 
-    @EqualsAndHashCode.Include
-    @ToString.Include
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id", nullable = false)
-    private UUID id;
+	@EqualsAndHashCode.Include
+	@ToString.Include
+	@Id
+	@GeneratedValue(strategy = GenerationType.UUID)
+	@Column(name = "id", nullable = false)
+	private UUID id;
 
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "project_id", nullable = false)
-    private Project project;
+	@NotNull
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	@JoinColumn(name = "project_id", nullable = false)
+	private Project project;
 
-    @ToString.Include
-    @Size(max = 32)
-    @NotNull
-    @Column(name = "name", nullable = false, length = 32)
-    private String name;
+	@ToString.Include
+	@Size(max = 32)
+	@NotNull
+	@Column(name = "name", nullable = false, length = 32)
+	private String name;
 
-    @Size(max = 6)
-    @Column(name = "color_hex", length = 6)
-    private String colorHex;
+	@Size(max = 6)
+	@Column(name = "color_hex", length = 6)
+	private String colorHex;
 
-    @OneToMany(mappedBy = "label", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<CardLabel> cardLinks = new LinkedHashSet<>();
+	@OneToMany(mappedBy = "label", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<CardLabel> cardLinks = new LinkedHashSet<>();
+
 }

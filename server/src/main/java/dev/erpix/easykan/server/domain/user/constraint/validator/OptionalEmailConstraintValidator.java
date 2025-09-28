@@ -10,13 +10,13 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class OptionalEmailConstraintValidator
-        implements ConstraintValidator<OptionalEmail, Optional<String>> {
+public class OptionalEmailConstraintValidator implements ConstraintValidator<OptionalEmail, Optional<String>> {
 
-    private final EmailValidator emailValidator = new EmailValidator();
+	private final EmailValidator emailValidator = new EmailValidator();
 
-    @Override
-    public boolean isValid(Optional<String> value, ConstraintValidatorContext context) {
-        return value.map(s -> emailValidator.isValid(s, context)).orElse(true);
-    }
+	@Override
+	public boolean isValid(Optional<String> value, ConstraintValidatorContext context) {
+		return value.map(s -> emailValidator.isValid(s, context)).orElse(true);
+	}
+
 }

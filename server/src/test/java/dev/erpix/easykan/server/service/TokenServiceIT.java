@@ -25,165 +25,163 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 @IntegrationTest
 public class TokenServiceIT {
 
-    @Autowired
-    private TokenService tokenService;
+	@Autowired
+	private TokenService tokenService;
 
-    @Autowired
-    private EasyKanConfig config;
+	@Autowired
+	private EasyKanConfig config;
 
-    @Autowired
-    private TokenRepository tokenRepository;
+	@Autowired
+	private TokenRepository tokenRepository;
 
-    @Autowired
-    private UserService userService;
+	@Autowired
+	private UserService userService;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
-    @MockitoBean
-    private TokenGenerator tokenGenerator;
+	@MockitoBean
+	private TokenGenerator tokenGenerator;
 
-    private static final String SAMPLE_SELECTOR = "selector";
-    private static final String SAMPLE_VALIDATOR = "validator";
+	private static final String SAMPLE_SELECTOR = "selector";
 
-    @Test
-    @WithPersistedUser
-    void createRefreshToken_shouldSaveRefreshTokenAndReturnDto() {
-        var user = userService.getByLogin(WithPersistedUser.Default.LOGIN);
+	private static final String SAMPLE_VALIDATOR = "validator";
 
-        when(tokenGenerator.generate())
-                .thenReturn(new TokenParts(SAMPLE_SELECTOR, SAMPLE_VALIDATOR));
+	@Test
+	@WithPersistedUser
+	void createRefreshToken_shouldSaveRefreshTokenAndReturnDto() {
+		var user = userService.getByLogin(WithPersistedUser.Default.LOGIN);
 
-        var tokenDto = tokenService.createRefreshToken(user.getId());
-        var savedToken = tokenRepository.findBySelector(SAMPLE_SELECTOR)
-                .orElseThrow(() -> new AssertionError("Refresh token not found in repository"));
+		when(tokenGenerator.generate()).thenReturn(new TokenParts(SAMPLE_SELECTOR, SAMPLE_VALIDATOR));
 
-        assertThat(tokenDto.combine()).isNotBlank();
-        assertThat(tokenDto.duration().getSeconds()).isEqualTo(config.jwt().refreshTokenExpire());
-        assertThat(passwordEncoder.matches(SAMPLE_VALIDATOR, savedToken.getValidator())).isTrue();
-        assertThat(savedToken.getUser().getId()).isEqualTo(user.getId());
-        assertThat(savedToken.getExpiresAt()).isAfter(Instant.now());
-    }
+		var tokenDto = tokenService.createRefreshToken(user.getId());
+		var savedToken = tokenRepository.findBySelector(SAMPLE_SELECTOR)
+			.orElseThrow(() -> new AssertionError("Refresh token not found in repository"));
 
-    @Test
-    @WithPersistedUser
-    void logout_shouldRevokeCurrentUserToken() {
-        var user = userService.getByLogin(WithPersistedUser.Default.LOGIN);
+		assertThat(tokenDto.combine()).isNotBlank();
+		assertThat(tokenDto.duration().getSeconds()).isEqualTo(config.jwt().refreshTokenExpire());
+		assertThat(passwordEncoder.matches(SAMPLE_VALIDATOR, savedToken.getValidator())).isTrue();
+		assertThat(savedToken.getUser().getId()).isEqualTo(user.getId());
+		assertThat(savedToken.getExpiresAt()).isAfter(Instant.now());
+	}
 
-        when(tokenGenerator.generate())
-                .thenReturn(new TokenParts(SAMPLE_SELECTOR, SAMPLE_VALIDATOR));
+	@Test
+	@WithPersistedUser
+	void logout_shouldRevokeCurrentUserToken() {
+		var user = userService.getByLogin(WithPersistedUser.Default.LOGIN);
 
-        var tokenDto = tokenService.createRefreshToken(user.getId());
-        var tokenBeforeLogout = tokenRepository.findBySelector(SAMPLE_SELECTOR)
-                .orElseThrow(() -> new AssertionError("Token not found in repository"));
+		when(tokenGenerator.generate()).thenReturn(new TokenParts(SAMPLE_SELECTOR, SAMPLE_VALIDATOR));
 
-        assertThat(tokenBeforeLogout.isRevoked()).isFalse();
+		var tokenDto = tokenService.createRefreshToken(user.getId());
+		var tokenBeforeLogout = tokenRepository.findBySelector(SAMPLE_SELECTOR)
+			.orElseThrow(() -> new AssertionError("Token not found in repository"));
 
-        tokenService.logout(tokenDto.combine());
+		assertThat(tokenBeforeLogout.isRevoked()).isFalse();
 
-        var revokedToken = tokenRepository.findBySelector(SAMPLE_SELECTOR)
-                .orElseThrow(() -> new AssertionError("Token not found in repository"));
+		tokenService.logout(tokenDto.combine());
 
-        assertThat(revokedToken.isRevoked()).isTrue();
-    }
+		var revokedToken = tokenRepository.findBySelector(SAMPLE_SELECTOR)
+			.orElseThrow(() -> new AssertionError("Token not found in repository"));
 
-    @Test
-    @WithPersistedUser
-    void logout_shouldDoNothing_whenValidatorIsIncorrect() {
-        var user = userService.getByLogin(WithPersistedUser.Default.LOGIN);
+		assertThat(revokedToken.isRevoked()).isTrue();
+	}
 
-        when(tokenGenerator.generate())
-                .thenReturn(new TokenParts(SAMPLE_SELECTOR, SAMPLE_VALIDATOR));
+	@Test
+	@WithPersistedUser
+	void logout_shouldDoNothing_whenValidatorIsIncorrect() {
+		var user = userService.getByLogin(WithPersistedUser.Default.LOGIN);
 
-        tokenService.createRefreshToken(user.getId());
-        String tokenWithInvalidValidator = SAMPLE_SELECTOR + ":wrong-validator";
+		when(tokenGenerator.generate()).thenReturn(new TokenParts(SAMPLE_SELECTOR, SAMPLE_VALIDATOR));
 
-        tokenService.logout(tokenWithInvalidValidator);
+		tokenService.createRefreshToken(user.getId());
+		String tokenWithInvalidValidator = SAMPLE_SELECTOR + ":wrong-validator";
 
-        var tokenInDb = tokenRepository.findBySelector(SAMPLE_SELECTOR).orElseThrow();
+		tokenService.logout(tokenWithInvalidValidator);
 
-        assertThat(tokenInDb.isRevoked()).isFalse();
-    }
+		var tokenInDb = tokenRepository.findBySelector(SAMPLE_SELECTOR).orElseThrow();
 
-    @Test
-    @WithPersistedUser
-    void logout_shouldDoNothing_whenTokenIsAlreadyRevoked() {
-        var user = userService.getByLogin(WithPersistedUser.Default.LOGIN);
+		assertThat(tokenInDb.isRevoked()).isFalse();
+	}
 
-        when(tokenGenerator.generate())
-                .thenReturn(new TokenParts(SAMPLE_SELECTOR, SAMPLE_VALIDATOR));
+	@Test
+	@WithPersistedUser
+	void logout_shouldDoNothing_whenTokenIsAlreadyRevoked() {
+		var user = userService.getByLogin(WithPersistedUser.Default.LOGIN);
 
-        var tokenDto = tokenService.createRefreshToken(user.getId());
+		when(tokenGenerator.generate()).thenReturn(new TokenParts(SAMPLE_SELECTOR, SAMPLE_VALIDATOR));
 
-        var tokenToRevoke = tokenRepository.findBySelector(SAMPLE_SELECTOR).orElseThrow();
-        tokenToRevoke.setRevoked(true);
-        tokenRepository.saveAndFlush(tokenToRevoke);
+		var tokenDto = tokenService.createRefreshToken(user.getId());
 
-        tokenService.logout(tokenDto.combine());
+		var tokenToRevoke = tokenRepository.findBySelector(SAMPLE_SELECTOR).orElseThrow();
+		tokenToRevoke.setRevoked(true);
+		tokenRepository.saveAndFlush(tokenToRevoke);
 
-        var tokenInDb = tokenRepository.findBySelector(SAMPLE_SELECTOR).orElseThrow();
-        assertThat(tokenInDb.isRevoked()).isTrue();
-    }
+		tokenService.logout(tokenDto.combine());
 
-    @Test
-    @WithPersistedUser
-    void logoutAll_shouldRevokeAllTokensForUser() {
-        var user = userService.getByLogin(WithPersistedUser.Default.LOGIN);
-        int numberOfTokens = 3;
+		var tokenInDb = tokenRepository.findBySelector(SAMPLE_SELECTOR).orElseThrow();
+		assertThat(tokenInDb.isRevoked()).isTrue();
+	}
 
-        for (int i = 0; i < numberOfTokens; i++) {
-            tokenRepository.save(RefreshToken.builder().selector("selector" + i)
-                    .validator("validator" + i).user(user)
-                    .expiresAt(Instant.now().plusSeconds(config.jwt().refreshTokenExpire()))
-                    .revoked(false).build());
-        }
+	@Test
+	@WithPersistedUser
+	void logoutAll_shouldRevokeAllTokensForUser() {
+		var user = userService.getByLogin(WithPersistedUser.Default.LOGIN);
+		int numberOfTokens = 3;
 
-        var tokensBeforeLogout = tokenRepository.findByUserAndRevokedFalse(user);
-        assertThat(tokensBeforeLogout).hasSize(numberOfTokens);
+		for (int i = 0; i < numberOfTokens; i++) {
+			tokenRepository.save(RefreshToken.builder()
+				.selector("selector" + i)
+				.validator("validator" + i)
+				.user(user)
+				.expiresAt(Instant.now().plusSeconds(config.jwt().refreshTokenExpire()))
+				.revoked(false)
+				.build());
+		}
 
-        tokenService.logoutAll(new JpaUserDetails(user));
-        var revokedTokens = tokenRepository.findByUserAndRevokedTrue(user);
+		var tokensBeforeLogout = tokenRepository.findByUserAndRevokedFalse(user);
+		assertThat(tokensBeforeLogout).hasSize(numberOfTokens);
 
-        assertThat(revokedTokens).hasSize(numberOfTokens);
-        assertThat(tokenRepository.findByUserAndRevokedFalse(user)).isEmpty();
-    }
+		tokenService.logoutAll(new JpaUserDetails(user));
+		var revokedTokens = tokenRepository.findByUserAndRevokedTrue(user);
 
-    @Test
-    @WithPersistedUser
-    void rotateRefreshToken_shouldRevokeOldTokenAndCreateNewOne() {
-        var user = userService.getByLogin(WithPersistedUser.Default.LOGIN);
+		assertThat(revokedTokens).hasSize(numberOfTokens);
+		assertThat(tokenRepository.findByUserAndRevokedFalse(user)).isEmpty();
+	}
 
-        when(tokenGenerator.generate())
-                .thenReturn(new TokenParts(SAMPLE_SELECTOR, SAMPLE_VALIDATOR));
+	@Test
+	@WithPersistedUser
+	void rotateRefreshToken_shouldRevokeOldTokenAndCreateNewOne() {
+		var user = userService.getByLogin(WithPersistedUser.Default.LOGIN);
 
-        var oldTokenDto = tokenService.createRefreshToken(user.getId());
-        var oldToken = tokenRepository.findBySelector(SAMPLE_SELECTOR)
-                .orElseThrow(() -> new AssertionError("Old token not found in repository"));
+		when(tokenGenerator.generate()).thenReturn(new TokenParts(SAMPLE_SELECTOR, SAMPLE_VALIDATOR));
 
-        assertThat(oldToken.isRevoked()).isFalse();
-        assertThat(oldToken.getUser().getId()).isEqualTo(user.getId());
-        assertThat(oldToken.getExpiresAt()).isAfter(Instant.now());
-        assertThat(passwordEncoder.matches(SAMPLE_VALIDATOR, oldToken.getValidator())).isTrue();
+		var oldTokenDto = tokenService.createRefreshToken(user.getId());
+		var oldToken = tokenRepository.findBySelector(SAMPLE_SELECTOR)
+			.orElseThrow(() -> new AssertionError("Old token not found in repository"));
 
-        when(tokenGenerator.generate()).thenReturn(new TokenParts("newSelector", "newValidator"));
+		assertThat(oldToken.isRevoked()).isFalse();
+		assertThat(oldToken.getUser().getId()).isEqualTo(user.getId());
+		assertThat(oldToken.getExpiresAt()).isAfter(Instant.now());
+		assertThat(passwordEncoder.matches(SAMPLE_VALIDATOR, oldToken.getValidator())).isTrue();
 
-        var newTokenPair = tokenService.rotateRefreshToken(oldTokenDto.combine());
+		when(tokenGenerator.generate()).thenReturn(new TokenParts("newSelector", "newValidator"));
 
-        assertThat(newTokenPair.newRawRefreshToken()).isNotBlank();
-        assertThat(newTokenPair.newRefreshTokenDuration().getSeconds())
-                .isEqualTo(config.jwt().refreshTokenExpire());
-        String[] newTokenParts = newTokenPair.newRawRefreshToken().split(":");
-        assertThat(newTokenParts).hasSize(2);
+		var newTokenPair = tokenService.rotateRefreshToken(oldTokenDto.combine());
 
-        String newSelector = newTokenParts[0];
-        String newRawValidator = newTokenParts[1];
-        RefreshToken newTokenFromDb = tokenRepository.findBySelector(newSelector)
-                .orElseThrow(() -> new AssertionError("New refresh token not found in database"));
+		assertThat(newTokenPair.newRawRefreshToken()).isNotBlank();
+		assertThat(newTokenPair.newRefreshTokenDuration().getSeconds()).isEqualTo(config.jwt().refreshTokenExpire());
+		String[] newTokenParts = newTokenPair.newRawRefreshToken().split(":");
+		assertThat(newTokenParts).hasSize(2);
 
-        assertThat(newTokenFromDb.getUser().getId()).isEqualTo(user.getId());
-        assertThat(newTokenFromDb.getExpiresAt()).isAfter(Instant.now());
-        assertThat(passwordEncoder.matches(newRawValidator, newTokenFromDb.getValidator()))
-                .isTrue();
-        assertThat(oldToken.isRevoked()).isTrue();
-    }
+		String newSelector = newTokenParts[0];
+		String newRawValidator = newTokenParts[1];
+		RefreshToken newTokenFromDb = tokenRepository.findBySelector(newSelector)
+			.orElseThrow(() -> new AssertionError("New refresh token not found in database"));
+
+		assertThat(newTokenFromDb.getUser().getId()).isEqualTo(user.getId());
+		assertThat(newTokenFromDb.getExpiresAt()).isAfter(Instant.now());
+		assertThat(passwordEncoder.matches(newRawValidator, newTokenFromDb.getValidator())).isTrue();
+		assertThat(oldToken.isRevoked()).isTrue();
+	}
+
 }

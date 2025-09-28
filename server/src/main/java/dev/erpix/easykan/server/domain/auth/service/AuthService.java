@@ -26,73 +26,80 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final PasswordEncoder passwordEncoder;
-    private final TokenService tokenService;
-    private final UserRepository userRepository;
-    private final UserService userService;
-    private final OAuthAccountRepository oAuthAccountRepository;
+	private final PasswordEncoder passwordEncoder;
 
-    @Transactional
-    public User processOidcLogin(String registrationId, OAuth2User oAuth2User) {
-        String providerId = oAuth2User.getName();
+	private final TokenService tokenService;
 
-        return oAuthAccountRepository.findByProviderIdAndProviderName(providerId, registrationId)
-                .map(OAuthAccount::getUser)
-                .orElseGet(() -> findOrCreateUserAndLinkAccount(registrationId, oAuth2User));
-    }
+	private final UserRepository userRepository;
 
-    public UserAndTokenPairResponseDto loginWithPassword(@NotNull AuthLoginRequestDto requestDto) {
-        User user = userService.getByLogin(requestDto.login());
+	private final UserService userService;
 
-        if (user.getPasswordHash() == null) {
-            throw new UnsupportedAuthenticationMethodException("User does not have a password set. "
-                    + "Please use OAuth or other authentication methods.");
-        }
+	private final OAuthAccountRepository oAuthAccountRepository;
 
-        if (!passwordEncoder.matches(requestDto.password(), user.getPasswordHash())) {
-            throw new BadCredentialsException("Invalid login or password.");
-        }
+	@Transactional
+	public User processOidcLogin(String registrationId, OAuth2User oAuth2User) {
+		String providerId = oAuth2User.getName();
 
-        AccessToken accessToken = tokenService.createAccessToken(user.getId());
-        RawRefreshToken refreshToken = tokenService.createRefreshToken(user.getId());
+		return oAuthAccountRepository.findByProviderIdAndProviderName(providerId, registrationId)
+			.map(OAuthAccount::getUser)
+			.orElseGet(() -> findOrCreateUserAndLinkAccount(registrationId, oAuth2User));
+	}
 
-        TokenPairDto tokenPairDto = new TokenPairDto(accessToken.rawToken(), accessToken.duration(),
-                refreshToken.combine(), refreshToken.duration());
-        return new UserAndTokenPairResponseDto(UserResponseDto.fromUser(user), tokenPairDto);
-    }
+	public UserAndTokenPairResponseDto loginWithPassword(@NotNull AuthLoginRequestDto requestDto) {
+		User user = userService.getByLogin(requestDto.login());
 
-    private User findOrCreateUserAndLinkAccount(String registrationId, OAuth2User oidcUser) {
-        String email = oidcUser.getAttribute("email");
-        if (email == null) {
-            throw new IllegalStateException("Email not found from OAuth2 provider");
-        }
+		if (user.getPasswordHash() == null) {
+			throw new UnsupportedAuthenticationMethodException(
+					"User does not have a password set. " + "Please use OAuth or other authentication methods.");
+		}
 
-        User user = userRepository.findByEmail(email)
-                .orElseGet(() -> createNewOidcUserWithEmail(oidcUser, email));
+		if (!passwordEncoder.matches(requestDto.password(), user.getPasswordHash())) {
+			throw new BadCredentialsException("Invalid login or password.");
+		}
 
-        OAuthAccount oAuthAccount = OAuthAccount.builder().providerName(registrationId)
-                .providerId(oidcUser.getName()).user(user).build();
-        oAuthAccountRepository.save(oAuthAccount);
+		AccessToken accessToken = tokenService.createAccessToken(user.getId());
+		RawRefreshToken refreshToken = tokenService.createRefreshToken(user.getId());
 
-        return user;
-    }
+		TokenPairDto tokenPairDto = new TokenPairDto(accessToken.rawToken(), accessToken.duration(),
+				refreshToken.combine(), refreshToken.duration());
+		return new UserAndTokenPairResponseDto(UserResponseDto.fromUser(user), tokenPairDto);
+	}
 
-    private User createNewOidcUserWithEmail(OAuth2User oidcUser, String email) {
-        String login = oidcUser.getAttribute("preferred_username");
-        if (login == null || login.isBlank() || userRepository.existsByLogin(login)) {
-            login = email.split("@")[0] + "_" + UUID.randomUUID().toString().substring(0, 5);
-        }
+	private User findOrCreateUserAndLinkAccount(String registrationId, OAuth2User oidcUser) {
+		String email = oidcUser.getAttribute("email");
+		if (email == null) {
+			throw new IllegalStateException("Email not found from OAuth2 provider");
+		}
 
-        String displayName = oidcUser.getAttribute("name");
-        if (displayName == null || displayName.isBlank()) {
-            displayName = oidcUser.getAttribute("nickname");
-        }
-        if (displayName == null || displayName.isBlank()) {
-            displayName = login;
-        }
+		User user = userRepository.findByEmail(email).orElseGet(() -> createNewOidcUserWithEmail(oidcUser, email));
 
-        User newUser = User.builder().login(login).displayName(displayName).email(email).build();
+		OAuthAccount oAuthAccount = OAuthAccount.builder()
+			.providerName(registrationId)
+			.providerId(oidcUser.getName())
+			.user(user)
+			.build();
+		oAuthAccountRepository.save(oAuthAccount);
 
-        return userRepository.save(newUser);
-    }
+		return user;
+	}
+
+	private User createNewOidcUserWithEmail(OAuth2User oidcUser, String email) {
+		String login = oidcUser.getAttribute("preferred_username");
+		if (login == null || login.isBlank() || userRepository.existsByLogin(login)) {
+			login = email.split("@")[0] + "_" + UUID.randomUUID().toString().substring(0, 5);
+		}
+
+		String displayName = oidcUser.getAttribute("name");
+		if (displayName == null || displayName.isBlank()) {
+			displayName = oidcUser.getAttribute("nickname");
+		}
+		if (displayName == null || displayName.isBlank()) {
+			displayName = login;
+		}
+
+		User newUser = User.builder().login(login).displayName(displayName).email(email).build();
+
+		return userRepository.save(newUser);
+	}
+
 }

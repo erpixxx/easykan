@@ -18,34 +18,35 @@ import org.hibernate.annotations.OnDeleteAction;
 @NoArgsConstructor
 @Entity
 @Table(name = "user_oauth_accounts", schema = "public",
-        indexes = {
-                @Index(name = "user_oauth_accounts_provider_name_provider_id_idx",
-                        columnList = "provider_name, provider_id", unique = true),
-                @Index(name = "user_oauth_accounts_user_id_idx", columnList = "user_id")})
+		indexes = {
+				@Index(name = "user_oauth_accounts_provider_name_provider_id_idx",
+						columnList = "provider_name, provider_id", unique = true),
+				@Index(name = "user_oauth_accounts_user_id_idx", columnList = "user_id") })
 public class OAuthAccount {
 
-    @ToString.Include
-    @EqualsAndHashCode.Include
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    private Long id;
+	@ToString.Include
+	@EqualsAndHashCode.Include
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id", nullable = false)
+	private Long id;
 
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+	@NotNull
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	@JoinColumn(name = "user_id", nullable = false)
+	private User user;
 
-    @ToString.Include
-    @Size(max = 255)
-    @NotNull
-    @Column(name = "provider_id", nullable = false)
-    private String providerId;
+	@ToString.Include
+	@Size(max = 255)
+	@NotNull
+	@Column(name = "provider_id", nullable = false)
+	private String providerId;
 
-    @ToString.Include
-    @Size(max = 255)
-    @NotNull
-    @Column(name = "provider_name", nullable = false)
-    private String providerName;
+	@ToString.Include
+	@Size(max = 255)
+	@NotNull
+	@Column(name = "provider_name", nullable = false)
+	private String providerName;
+
 }

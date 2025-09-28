@@ -10,19 +10,20 @@ import org.springframework.stereotype.Component;
 @Component
 public class UserDetailsProvider {
 
-    public @NotNull Optional<JpaUserDetails> getCurrentUserDetails() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Object principal = auth.getPrincipal();
+	public @NotNull Optional<JpaUserDetails> getCurrentUserDetails() {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		Object principal = auth.getPrincipal();
 
-        if (principal instanceof JpaUserDetails userDetails) {
-            return Optional.of(userDetails);
-        }
+		if (principal instanceof JpaUserDetails userDetails) {
+			return Optional.of(userDetails);
+		}
 
-        return Optional.empty();
-    }
+		return Optional.empty();
+	}
 
-    public @NotNull JpaUserDetails getRequiredCurrentUserDetails() {
-        return getCurrentUserDetails().orElseThrow(() -> new IllegalStateException(
-                "Could not find authenticated user details in security context"));
-    }
+	public @NotNull JpaUserDetails getRequiredCurrentUserDetails() {
+		return getCurrentUserDetails().orElseThrow(
+				() -> new IllegalStateException("Could not find authenticated user details in security context"));
+	}
+
 }

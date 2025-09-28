@@ -14,22 +14,22 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface TokenRepository extends JpaRepository<RefreshToken, Long> {
 
-    void deleteAllByExpiresAtBefore(Instant expiresAtBefore);
+	void deleteAllByExpiresAtBefore(Instant expiresAtBefore);
 
-    Optional<RefreshToken> findBySelector(String selector);
+	Optional<RefreshToken> findBySelector(String selector);
 
-    Optional<RefreshToken> findBySelectorAndRevokedFalseAndExpiresAtAfter(String selector,
-            Instant expiresAtAfter);
+	Optional<RefreshToken> findBySelectorAndRevokedFalseAndExpiresAtAfter(String selector, Instant expiresAtAfter);
 
-    List<RefreshToken> findByUserAndRevokedFalse(User user);
+	List<RefreshToken> findByUserAndRevokedFalse(User user);
 
-    List<RefreshToken> findByUserAndRevokedTrue(User user);
+	List<RefreshToken> findByUserAndRevokedTrue(User user);
 
-    @Modifying(clearAutomatically = true)
-    @Query("""
-            UPDATE RefreshToken rt SET rt.revoked = true
-                WHERE rt.revoked = false
-                    AND rt.user = :user
-                    AND rt.expiresAt > :expiresAtAfter""")
-    void revokeAllByUserAndExpiresAtAfter(@NotNull User user, @NotNull Instant expiresAtAfter);
+	@Modifying(clearAutomatically = true)
+	@Query("""
+			UPDATE RefreshToken rt SET rt.revoked = true
+			    WHERE rt.revoked = false
+			        AND rt.user = :user
+			        AND rt.expiresAt > :expiresAtAfter""")
+	void revokeAllByUserAndExpiresAtAfter(@NotNull User user, @NotNull Instant expiresAtAfter);
+
 }

@@ -6,13 +6,13 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class RequiredDisplayNameConstraintValidator extends DisplayNameConstraintValidator<String>
-        implements RequiredStringConstraintValidator {
+		implements RequiredStringConstraintValidator {
 
-    @Override
-    public boolean isValid(String value, ConstraintValidatorContext context) {
-        context.disableDefaultConstraintViolation();
+	@Override
+	public boolean isValid(String value, ConstraintValidatorContext context) {
+		context.disableDefaultConstraintViolation();
 
-        return requireNonBlank(value, context, "Display name is required",
-                () -> isStringContentValid(value, context));
-    }
+		return requireNonBlank(value, context, "Display name is required", () -> isStringContentValid(value, context));
+	}
+
 }

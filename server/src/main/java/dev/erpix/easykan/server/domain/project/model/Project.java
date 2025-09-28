@@ -23,41 +23,45 @@ import lombok.*;
 @Table(name = "projects", schema = "public")
 public class Project {
 
-    @EqualsAndHashCode.Include
-    @ToString.Include
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id", nullable = false)
-    private UUID id;
+	@EqualsAndHashCode.Include
+	@ToString.Include
+	@Id
+	@GeneratedValue(strategy = GenerationType.UUID)
+	@Column(name = "id", nullable = false)
+	private UUID id;
 
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "owner_id", nullable = false)
-    private User owner;
+	@NotNull
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@JoinColumn(name = "owner_id", nullable = false)
+	private User owner;
 
-    @ToString.Include
-    @Size(max = 255)
-    @NotNull
-    @Column(name = "name", nullable = false)
-    private String name;
+	@ToString.Include
+	@Size(max = 255)
+	@NotNull
+	@Column(name = "name", nullable = false)
+	private String name;
 
-    @NotNull
-    @Column(name = "created_at", nullable = false)
-    private Instant createdAt;
+	@NotNull
+	@Column(name = "created_at", nullable = false)
+	private Instant createdAt;
 
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<ProjectMember> members = new LinkedHashSet<>();
+	@OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<ProjectMember> members = new LinkedHashSet<>();
 
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Board> boards = new LinkedHashSet<>();
+	@OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<Board> boards = new LinkedHashSet<>();
 
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Label> labels = new LinkedHashSet<>();
+	@OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<Label> labels = new LinkedHashSet<>();
 
-    @PrePersist
-    protected void onCreate() {
-        if (this.createdAt == null) {
-            createdAt = Instant.now();
-        }
-    }
+	@OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<ProjectUserView> userViews = new LinkedHashSet<>();
+
+	@PrePersist
+	protected void onCreate() {
+		if (this.createdAt == null) {
+			createdAt = Instant.now();
+		}
+	}
+
 }

@@ -12,14 +12,15 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class JpaUserDetailsService implements UserDetailsService {
 
-    private final UserService userService;
+	private final UserService userService;
 
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return new JpaUserDetails(userService.getByLogin(username));
-    }
+	@Override
+	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+		return new JpaUserDetails(userService.getByLogin(username));
+	}
 
-    public UserDetails loadUserById(UUID userId) throws UsernameNotFoundException {
-        return new JpaUserDetails(userService.getById(userId));
-    }
+	public UserDetails loadUserById(UUID userId) throws UsernameNotFoundException {
+		return new JpaUserDetails(userService.getById(userId));
+	}
+
 }

@@ -18,24 +18,25 @@ import org.hibernate.annotations.OnDeleteAction;
 @Table(name = "project_members", schema = "public")
 public class ProjectMember {
 
-    @EqualsAndHashCode.Include
-    @ToString.Include
-    @EmbeddedId
-    private ProjectMemberId id;
+	@EqualsAndHashCode.Include
+	@ToString.Include
+	@EmbeddedId
+	private ProjectMemberId id;
 
-    @MapsId("projectId")
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "project_id", nullable = false)
-    private Project project;
+	@MapsId("projectId")
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	@JoinColumn(name = "project_id", nullable = false)
+	private Project project;
 
-    @MapsId("userId")
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+	@MapsId("userId")
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	@JoinColumn(name = "user_id", nullable = false)
+	private User user;
 
-    @NotNull
-    @Column(name = "permissions", nullable = false)
-    private Long permissions;
+	@NotNull
+	@Column(name = "permissions", nullable = false)
+	private Long permissions;
+
 }

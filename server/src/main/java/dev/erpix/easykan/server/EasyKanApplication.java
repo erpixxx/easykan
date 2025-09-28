@@ -8,13 +8,14 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 
-@SpringBootApplication(exclude = {UserDetailsServiceAutoConfiguration.class})
+@SpringBootApplication(exclude = { UserDetailsServiceAutoConfiguration.class })
 @EnableCaching
 @EnableMethodSecurity
 @EnableConfigurationProperties(EasyKanConfig.class)
 public class EasyKanApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(EasyKanApplication.class, args);
-    }
+	public static void main(String[] args) {
+		SpringApplication.run(EasyKanApplication.class, args);
+	}
+
 }

@@ -15,11 +15,12 @@ import lombok.*;
 @Embeddable
 public class CardLabelId implements Serializable {
 
-    @NotNull
-    @Column(name = "card_id", nullable = false)
-    private UUID cardId;
+	@NotNull
+	@Column(name = "card_id", nullable = false)
+	private UUID cardId;
 
-    @NotNull
-    @Column(name = "label_id", nullable = false)
-    private UUID labelId;
+	@NotNull
+	@Column(name = "label_id", nullable = false)
+	private UUID labelId;
+
 }

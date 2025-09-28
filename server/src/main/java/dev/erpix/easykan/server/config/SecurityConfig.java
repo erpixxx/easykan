@@ -28,59 +28,69 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final EasyKanConfig config;
-    private final JwtAuthFilter jwtAuthFilter;
-    private final OidcLoginSuccessHandler oidcLoginSuccessHandler;
+	private final EasyKanConfig config;
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(CsrfConfigurer::disable)
-                .sessionManagement(
-                        sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                .authorizeHttpRequests(req -> req
-                        .requestMatchers("/api/auth/login", "/api/auth/logout", "/api/auth/refresh")
-                        .permitAll().requestMatchers("/login").permitAll()
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
-                        .permitAll().anyRequest().authenticated())
-                .cors(Customizer.withDefaults())
-                .exceptionHandling(handl -> handl.authenticationEntryPoint((req, res, ex) -> res
-                        .sendError(HttpServletResponse.SC_UNAUTHORIZED, ex.getMessage())))
-                .formLogin(AbstractHttpConfigurer::disable);
+	private final JwtAuthFilter jwtAuthFilter;
 
-        if (config.oidc() != null && config.oidc().enabled()) {
-            http.oauth2Login(oauth -> oauth.successHandler(oidcLoginSuccessHandler))
-                    .authorizeHttpRequests(req -> req.requestMatchers("/oauth2/**").permitAll());
-        }
+	private final OidcLoginSuccessHandler oidcLoginSuccessHandler;
 
-        return http.build();
-    }
+	@Bean
+	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+		http.csrf(CsrfConfigurer::disable)
+			.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+			.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+			.authorizeHttpRequests(
+					req -> req.requestMatchers("/api/auth/login", "/api/auth/logout", "/api/auth/refresh")
+						.permitAll()
+						.requestMatchers("/login")
+						.permitAll()
+						.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
+						.permitAll()
+						.anyRequest()
+						.authenticated())
+			.cors(Customizer.withDefaults())
+			.exceptionHandling(handl -> handl.authenticationEntryPoint(
+					(req, res, ex) -> res.sendError(HttpServletResponse.SC_UNAUTHORIZED, ex.getMessage())))
+			.formLogin(AbstractHttpConfigurer::disable);
 
-    @Bean
-    @ConditionalOnProperty(prefix = "easykan.oidc", name = "enabled", havingValue = "true")
-    public ClientRegistrationRepository clientRegistrationRepository() {
-        var oidc = config.oidc();
+		if (config.oidc() != null && config.oidc().enabled()) {
+			http.oauth2Login(oauth -> oauth.successHandler(oidcLoginSuccessHandler))
+				.authorizeHttpRequests(req -> req.requestMatchers("/oauth2/**").permitAll());
+		}
 
-        ClientRegistration clientRegistration = ClientRegistration.withRegistrationId("oidc")
-                .clientId(oidc.clientId()).clientSecret(oidc.clientSecret())
-                .issuerUri(oidc.issuerUri()).scope(oidc.scopes())
-                .redirectUri("{baseUrl}/login/oauth2/code/{registrationId}")
-                .userNameAttributeName(oidc.nameAttribute())
-                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE).build();
+		return http.build();
+	}
 
-        return new InMemoryClientRegistrationRepository(clientRegistration);
-    }
+	@Bean
+	@ConditionalOnProperty(prefix = "easykan.oidc", name = "enabled", havingValue = "true")
+	public ClientRegistrationRepository clientRegistrationRepository() {
+		var oidc = config.oidc();
 
-    @Bean
-    public WebMvcConfigurer corsConfigurer() {
-        return new WebMvcConfigurer() {
-            @Override
-            public void addCorsMappings(@NotNull CorsRegistry registry) {
-                registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:5173", "http://localhost:8080",
-                                "https://easykan.dev")
-                        .allowedMethods("*").allowCredentials(true).maxAge(3600);
-            }
-        };
-    }
+		ClientRegistration clientRegistration = ClientRegistration.withRegistrationId("oidc")
+			.clientId(oidc.clientId())
+			.clientSecret(oidc.clientSecret())
+			.issuerUri(oidc.issuerUri())
+			.scope(oidc.scopes())
+			.redirectUri("{baseUrl}/login/oauth2/code/{registrationId}")
+			.userNameAttributeName(oidc.nameAttribute())
+			.authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+			.build();
+
+		return new InMemoryClientRegistrationRepository(clientRegistration);
+	}
+
+	@Bean
+	public WebMvcConfigurer corsConfigurer() {
+		return new WebMvcConfigurer() {
+			@Override
+			public void addCorsMappings(@NotNull CorsRegistry registry) {
+				registry.addMapping("/**")
+					.allowedOrigins("http://localhost:5173", "http://localhost:8080", "https://easykan.dev")
+					.allowedMethods("*")
+					.allowCredentials(true)
+					.maxAge(3600);
+			}
+		};
+	}
+
 }

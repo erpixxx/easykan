@@ -12,6 +12,8 @@ import org.springframework.context.annotation.Import;
 @Import(TestcontainersConfig.class)
 class EasyKanApplicationTests {
 
-    @Test
-    void contextLoads() {}
+	@Test
+	void contextLoads() {
+	}
+
 }

@@ -25,76 +25,77 @@ import org.hibernate.annotations.OnDeleteAction;
 @Table(name = "tasks", schema = "public")
 public class Task {
 
-    @EqualsAndHashCode.Include
-    @ToString.Include
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id", nullable = false)
-    private UUID id;
+	@EqualsAndHashCode.Include
+	@ToString.Include
+	@Id
+	@GeneratedValue(strategy = GenerationType.UUID)
+	@Column(name = "id", nullable = false)
+	private UUID id;
 
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "card_id", nullable = false)
-    private Card card;
+	@NotNull
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	@JoinColumn(name = "card_id", nullable = false)
+	private Card card;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "parent_task_id")
-    private Task parentTask;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	@JoinColumn(name = "parent_task_id")
+	private Task parentTask;
 
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "created_by_user_id", nullable = false)
-    private User createdByUser;
+	@NotNull
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@JoinColumn(name = "created_by_user_id", nullable = false)
+	private User createdByUser;
 
-    @ToString.Include
-    @Size(max = 255)
-    @NotNull
-    @Column(name = "name", nullable = false)
-    private String name;
+	@ToString.Include
+	@Size(max = 255)
+	@NotNull
+	@Column(name = "name", nullable = false)
+	private String name;
 
-    @NotNull
-    @Column(name = "position", nullable = false)
-    private Integer position;
+	@NotNull
+	@Column(name = "position", nullable = false)
+	private Integer position;
 
-    @NotNull
-    @ColumnDefault("false")
-    @Column(name = "is_completed", nullable = false)
-    private Boolean isCompleted = false;
+	@NotNull
+	@ColumnDefault("false")
+	@Column(name = "is_completed", nullable = false)
+	private Boolean isCompleted = false;
 
-    @Column(name = "completed_at")
-    private Instant completedAt;
+	@Column(name = "completed_at")
+	private Instant completedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @OnDelete(action = OnDeleteAction.SET_NULL)
-    @JoinColumn(name = "completed_by_user_id")
-    private User completedByUser;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@OnDelete(action = OnDeleteAction.SET_NULL)
+	@JoinColumn(name = "completed_by_user_id")
+	private User completedByUser;
 
-    @NotNull
-    @Column(name = "created_at", nullable = false)
-    private Instant createdAt;
+	@NotNull
+	@Column(name = "created_at", nullable = false)
+	private Instant createdAt;
 
-    @NotNull
-    @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt;
+	@NotNull
+	@Column(name = "updated_at", nullable = false)
+	private Instant updatedAt;
 
-    @OneToMany(mappedBy = "parentTask", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Task> subTasks = new LinkedHashSet<>();
+	@OneToMany(mappedBy = "parentTask", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<Task> subTasks = new LinkedHashSet<>();
 
-    @PrePersist
-    protected void onCreate() {
-        Instant now = Instant.now();
-        if (this.createdAt == null) {
-            createdAt = now;
-        }
-        if (this.updatedAt == null) {
-            updatedAt = now;
-        }
-    }
+	@PrePersist
+	protected void onCreate() {
+		Instant now = Instant.now();
+		if (this.createdAt == null) {
+			createdAt = now;
+		}
+		if (this.updatedAt == null) {
+			updatedAt = now;
+		}
+	}
 
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = Instant.now();
-    }
+	@PreUpdate
+	protected void onUpdate() {
+		updatedAt = Instant.now();
+	}
+
 }

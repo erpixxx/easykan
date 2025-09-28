@@ -17,20 +17,21 @@ import org.hibernate.annotations.OnDeleteAction;
 @Table(name = "card_labels", schema = "public")
 public class CardLabel {
 
-    @EqualsAndHashCode.Include
-    @ToString.Include
-    @EmbeddedId
-    private CardLabelId id;
+	@EqualsAndHashCode.Include
+	@ToString.Include
+	@EmbeddedId
+	private CardLabelId id;
 
-    @MapsId("cardId")
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "card_id", nullable = false)
-    private Card card;
+	@MapsId("cardId")
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	@JoinColumn(name = "card_id", nullable = false)
+	private Card card;
 
-    @MapsId("labelId")
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "label_id", nullable = false)
-    private Label label;
+	@MapsId("labelId")
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	@JoinColumn(name = "label_id", nullable = false)
+	private Label label;
+
 }

@@ -25,58 +25,59 @@ import org.hibernate.annotations.OnDeleteAction;
 @Table(name = "boards", schema = "public")
 public class Board {
 
-    @EqualsAndHashCode.Include
-    @ToString.Include
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id", nullable = false)
-    private UUID id;
+	@EqualsAndHashCode.Include
+	@ToString.Include
+	@Id
+	@GeneratedValue(strategy = GenerationType.UUID)
+	@Column(name = "id", nullable = false)
+	private UUID id;
 
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "project_id", nullable = false)
-    private Project project;
+	@NotNull
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	@JoinColumn(name = "project_id", nullable = false)
+	private Project project;
 
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "owner_id", nullable = false)
-    private User owner;
+	@NotNull
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@JoinColumn(name = "owner_id", nullable = false)
+	private User owner;
 
-    @ToString.Include
-    @Size(max = 64)
-    @NotNull
-    @Column(name = "name", nullable = false, length = 64)
-    private String name;
+	@ToString.Include
+	@Size(max = 64)
+	@NotNull
+	@Column(name = "name", nullable = false, length = 64)
+	private String name;
 
-    @NotNull
-    @Column(name = "position", nullable = false)
-    private Integer position;
+	@NotNull
+	@Column(name = "position", nullable = false)
+	private Integer position;
 
-    @NotNull
-    @Column(name = "created_at", nullable = false)
-    private Instant createdAt;
+	@NotNull
+	@Column(name = "created_at", nullable = false)
+	private Instant createdAt;
 
-    @NotNull
-    @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt;
+	@NotNull
+	@Column(name = "updated_at", nullable = false)
+	private Instant updatedAt;
 
-    @OneToMany(mappedBy = "board")
-    private Set<BoardColumn> columns = new LinkedHashSet<>();
+	@OneToMany(mappedBy = "board")
+	private Set<BoardColumn> columns = new LinkedHashSet<>();
 
-    @PrePersist
-    protected void onCreate() {
-        Instant now = Instant.now();
-        if (this.createdAt == null) {
-            createdAt = now;
-        }
-        if (this.updatedAt == null) {
-            updatedAt = now;
-        }
-    }
+	@PrePersist
+	protected void onCreate() {
+		Instant now = Instant.now();
+		if (this.createdAt == null) {
+			createdAt = now;
+		}
+		if (this.updatedAt == null) {
+			updatedAt = now;
+		}
+	}
 
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = Instant.now();
-    }
+	@PreUpdate
+	protected void onUpdate() {
+		updatedAt = Instant.now();
+	}
+
 }

@@ -17,4 +17,5 @@ import org.springframework.test.context.ActiveProfiles;
 @Import(TestcontainersConfig.class)
 @Transactional
 public @interface IntegrationTest {
+
 }

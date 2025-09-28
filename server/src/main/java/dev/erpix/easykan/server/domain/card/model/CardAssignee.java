@@ -17,25 +17,26 @@ import org.hibernate.annotations.OnDeleteAction;
 @Table(name = "card_assignees", schema = "public")
 public class CardAssignee {
 
-    @EqualsAndHashCode.Include
-    @ToString.Include
-    @EmbeddedId
-    private CardAssigneeId id;
+	@EqualsAndHashCode.Include
+	@ToString.Include
+	@EmbeddedId
+	private CardAssigneeId id;
 
-    @MapsId("cardId")
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "card_id", nullable = false)
-    private Card card;
+	@MapsId("cardId")
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	@JoinColumn(name = "card_id", nullable = false)
+	private Card card;
 
-    @MapsId("userId")
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+	@MapsId("userId")
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	@JoinColumn(name = "user_id", nullable = false)
+	private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @OnDelete(action = OnDeleteAction.SET_NULL)
-    @JoinColumn(name = "assigned_by_user_id")
-    private User assignedByUser;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@OnDelete(action = OnDeleteAction.SET_NULL)
+	@JoinColumn(name = "assigned_by_user_id")
+	private User assignedByUser;
+
 }

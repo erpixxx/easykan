@@ -23,40 +23,49 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class OidcLoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-    private final TokenService tokenService;
-    private final AuthService authService;
-    private final EasyKanConfig config;
+	private final TokenService tokenService;
 
-    @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
-            Authentication authentication) throws IOException, ServletException {
-        if (!(authentication instanceof OAuth2AuthenticationToken token)) {
-            super.onAuthenticationSuccess(request, response, authentication);
-            return;
-        }
+	private final AuthService authService;
 
-        String registrationId = token.getAuthorizedClientRegistrationId();
-        OAuth2User oidcUser = (OAuth2User) authentication.getPrincipal();
+	private final EasyKanConfig config;
 
-        User user = authService.processOidcLogin(registrationId, oidcUser);
+	@Override
+	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
+			Authentication authentication) throws IOException, ServletException {
+		if (!(authentication instanceof OAuth2AuthenticationToken token)) {
+			super.onAuthenticationSuccess(request, response, authentication);
+			return;
+		}
 
-        AccessToken accessToken = tokenService.createAccessToken(user.getId());
-        RawRefreshToken refreshToken = tokenService.createRefreshToken(user.getId());
+		String registrationId = token.getAuthorizedClientRegistrationId();
+		OAuth2User oidcUser = (OAuth2User) authentication.getPrincipal();
 
-        ResponseCookie accessTokenCookie =
-                ResponseCookie.from(TokenService.ACCESS_TOKEN, accessToken.rawToken())
-                        .httpOnly(true).secure(config.useHttps()).path("/").sameSite("Strict")
-                        .maxAge(accessToken.duration()).build();
-        ResponseCookie refreshTokenCookie =
-                ResponseCookie.from(TokenService.REFRESH_TOKEN, refreshToken.combine())
-                        .httpOnly(true).secure(config.useHttps()).path("/").sameSite("Strict")
-                        .maxAge(refreshToken.duration()).build();
+		User user = authService.processOidcLogin(registrationId, oidcUser);
 
-        response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
-        response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
+		AccessToken accessToken = tokenService.createAccessToken(user.getId());
+		RawRefreshToken refreshToken = tokenService.createRefreshToken(user.getId());
 
-        clearAuthenticationAttributes(request);
+		ResponseCookie accessTokenCookie = ResponseCookie.from(TokenService.ACCESS_TOKEN, accessToken.rawToken())
+			.httpOnly(true)
+			.secure(config.useHttps())
+			.path("/")
+			.sameSite("Strict")
+			.maxAge(accessToken.duration())
+			.build();
+		ResponseCookie refreshTokenCookie = ResponseCookie.from(TokenService.REFRESH_TOKEN, refreshToken.combine())
+			.httpOnly(true)
+			.secure(config.useHttps())
+			.path("/")
+			.sameSite("Strict")
+			.maxAge(refreshToken.duration())
+			.build();
 
-        getRedirectStrategy().sendRedirect(request, response, config.clientUrl());
-    }
+		response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
+		response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
+
+		clearAuthenticationAttributes(request);
+
+		getRedirectStrategy().sendRedirect(request, response, config.clientUrl());
+	}
+
 }

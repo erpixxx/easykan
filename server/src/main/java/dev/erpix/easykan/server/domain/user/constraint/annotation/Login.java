@@ -10,14 +10,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER})
-@Constraint(validatedBy = {OptionalLoginConstraintValidator.class,
-        RequiredLoginConstraintValidator.class})
+@Target({ ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER })
+@Constraint(validatedBy = { OptionalLoginConstraintValidator.class, RequiredLoginConstraintValidator.class })
 public @interface Login {
 
-    String message() default "Invalid login format";
+	String message() default "Invalid login format";
 
-    Class<?>[] groups() default {};
+	Class<?>[] groups() default {};
 
-    Class<? extends Payload>[] payload() default {};
+	Class<? extends Payload>[] payload() default {};
+
 }

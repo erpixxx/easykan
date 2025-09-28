@@ -32,200 +32,201 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
 
-    @InjectMocks
-    private UserService userService;
+	@InjectMocks
+	private UserService userService;
 
-    @Mock
-    private UserRepository userRepository;
+	@Mock
+	private UserRepository userRepository;
 
-    @Mock
-    private PasswordEncoder passwordEncoder;
+	@Mock
+	private PasswordEncoder passwordEncoder;
 
-    @Test
-    void create_shouldEncodePasswordAndSaveChanges() {
-        String hashedPassword = "hashedPassword";
-        var dto = new UserCreateRequestDto("test", "Test User", "test@test.com", "password123");
+	@Test
+	void create_shouldEncodePasswordAndSaveChanges() {
+		String hashedPassword = "hashedPassword";
+		var dto = new UserCreateRequestDto("test", "Test User", "test@test.com", "password123");
 
-        when(passwordEncoder.encode("password123")).thenReturn(hashedPassword);
-        when(userRepository.save(any(User.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+		when(passwordEncoder.encode("password123")).thenReturn(hashedPassword);
+		when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        User createdUser = userService.create(dto);
+		User createdUser = userService.create(dto);
 
-        assertThat(createdUser).isNotNull();
-        assertThat(createdUser.getPasswordHash()).isEqualTo(hashedPassword);
-        verify(passwordEncoder, times(1)).encode("password123");
-        verify(userRepository, times(1)).save(any(User.class));
-    }
+		assertThat(createdUser).isNotNull();
+		assertThat(createdUser.getPasswordHash()).isEqualTo(hashedPassword);
+		verify(passwordEncoder, times(1)).encode("password123");
+		verify(userRepository, times(1)).save(any(User.class));
+	}
 
-    @Test
-    void create_shouldNotEncodePassword_whenPasswordIsNull() {
-        var dto = new UserCreateRequestDto("oauthUser", "OAuth User", "oauth@test.com", null);
-        User user = dto.toUser();
+	@Test
+	void create_shouldNotEncodePassword_whenPasswordIsNull() {
+		var dto = new UserCreateRequestDto("oauthUser", "OAuth User", "oauth@test.com", null);
+		User user = dto.toUser();
 
-        when(userRepository.save(any(User.class))).thenReturn(user);
+		when(userRepository.save(any(User.class))).thenReturn(user);
 
-        User createdUser = userService.create(dto);
+		User createdUser = userService.create(dto);
 
-        assertThat(createdUser).isNotNull();
-        verify(passwordEncoder, never()).encode(anyString());
-        verify(userRepository, times(1)).save(any(User.class));
-    }
+		assertThat(createdUser).isNotNull();
+		verify(passwordEncoder, never()).encode(anyString());
+		verify(userRepository, times(1)).save(any(User.class));
+	}
 
-    @Test
-    void delete_shouldDeleteUser_whenUserExists() {
-        UUID userId = UUID.randomUUID();
+	@Test
+	void delete_shouldDeleteUser_whenUserExists() {
+		UUID userId = UUID.randomUUID();
 
-        when(userRepository.existsById(userId)).thenReturn(true);
-        doNothing().when(userRepository).deleteById(userId);
+		when(userRepository.existsById(userId)).thenReturn(true);
+		doNothing().when(userRepository).deleteById(userId);
 
-        userService.deleteUser(userId);
+		userService.deleteUser(userId);
 
-        verify(userRepository, times(1)).existsById(userId);
-        verify(userRepository, times(1)).deleteById(userId);
-    }
+		verify(userRepository, times(1)).existsById(userId);
+		verify(userRepository, times(1)).deleteById(userId);
+	}
 
-    @Test
-    void deleteUser_shouldThrowException_whenUserDoesNotExist() {
-        UUID userId = UUID.randomUUID();
-        when(userRepository.existsById(userId)).thenReturn(false);
+	@Test
+	void deleteUser_shouldThrowException_whenUserDoesNotExist() {
+		UUID userId = UUID.randomUUID();
+		when(userRepository.existsById(userId)).thenReturn(false);
 
-        assertThrows(UserNotFoundException.class, () -> userService.deleteUser(userId));
-        verify(userRepository, never()).deleteById(any(UUID.class));
-    }
+		assertThrows(UserNotFoundException.class, () -> userService.deleteUser(userId));
+		verify(userRepository, never()).deleteById(any(UUID.class));
+	}
 
-    @Test
-    void getAllUsers_shouldReturnPageOfUsers() {
-        Pageable pageable = PageRequest.of(0, 10);
-        User user1 = User.builder().build();
-        List<User> userList = List.of(user1);
-        Page<User> expectedPage = new PageImpl<>(userList, pageable, 1);
+	@Test
+	void getAllUsers_shouldReturnPageOfUsers() {
+		Pageable pageable = PageRequest.of(0, 10);
+		User user1 = User.builder().build();
+		List<User> userList = List.of(user1);
+		Page<User> expectedPage = new PageImpl<>(userList, pageable, 1);
 
-        when(userRepository.findAll(pageable)).thenReturn(expectedPage);
+		when(userRepository.findAll(pageable)).thenReturn(expectedPage);
 
-        Page<User> resultPage = userService.getAllUsers(pageable);
+		Page<User> resultPage = userService.getAllUsers(pageable);
 
-        assertThat(resultPage).isNotNull();
-        assertThat(resultPage.getTotalElements()).isEqualTo(1);
-        assertThat(resultPage.getContent()).isEqualTo(userList);
-        verify(userRepository).findAll(pageable);
-    }
+		assertThat(resultPage).isNotNull();
+		assertThat(resultPage.getTotalElements()).isEqualTo(1);
+		assertThat(resultPage.getContent()).isEqualTo(userList);
+		verify(userRepository).findAll(pageable);
+	}
 
-    @Test
-    void getById_shouldReturnUser_whenUserExists() {
-        UUID userId = UUID.randomUUID();
-        User user = User.builder().id(userId).build();
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+	@Test
+	void getById_shouldReturnUser_whenUserExists() {
+		UUID userId = UUID.randomUUID();
+		User user = User.builder().id(userId).build();
+		when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
-        User foundUser = userService.getById(userId);
+		User foundUser = userService.getById(userId);
 
-        assertThat(foundUser).isEqualTo(user);
-    }
+		assertThat(foundUser).isEqualTo(user);
+	}
 
-    @Test
-    void getById_shouldThrowException_whenUserDoesNotExist() {
-        UUID userId = UUID.randomUUID();
-        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+	@Test
+	void getById_shouldThrowException_whenUserDoesNotExist() {
+		UUID userId = UUID.randomUUID();
+		when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
-        assertThrows(UserNotFoundException.class, () -> userService.getById(userId));
-    }
+		assertThrows(UserNotFoundException.class, () -> userService.getById(userId));
+	}
 
-    @Test
-    void getByLogin_shouldReturnUser_whenUserExists() {
-        String login = "testuser";
-        User user = User.builder().login(login).build();
+	@Test
+	void getByLogin_shouldReturnUser_whenUserExists() {
+		String login = "testuser";
+		User user = User.builder().login(login).build();
 
-        when(userRepository.findByLogin(login)).thenReturn(Optional.of(user));
+		when(userRepository.findByLogin(login)).thenReturn(Optional.of(user));
 
-        User foundUser = userService.getByLogin(login);
+		User foundUser = userService.getByLogin(login);
 
-        assertThat(foundUser).isEqualTo(user);
-        verify(userRepository).findByLogin(login);
-    }
+		assertThat(foundUser).isEqualTo(user);
+		verify(userRepository).findByLogin(login);
+	}
 
-    @Test
-    void getByLogin_shouldThrowException_whenUserDoesNotExist() {
-        String login = "nonexistent";
+	@Test
+	void getByLogin_shouldThrowException_whenUserDoesNotExist() {
+		String login = "nonexistent";
 
-        when(userRepository.findByLogin(login)).thenReturn(Optional.empty());
+		when(userRepository.findByLogin(login)).thenReturn(Optional.empty());
 
-        assertThrows(UserNotFoundException.class, () -> userService.getByLogin(login));
-        verify(userRepository).findByLogin(login);
-    }
+		assertThrows(UserNotFoundException.class, () -> userService.getByLogin(login));
+		verify(userRepository).findByLogin(login);
+	}
 
-    @Test
-    void updateCurrentUserInfo_shouldUpdateUserInfoAndReturnUpdatedUser() {
-        UUID userId = UUID.randomUUID();
-        String userLogin = "testuser";
-        String userDisplayName = "Test User";
-        String userEmail = "test.user@easykan.dev";
-        User user = User.builder().id(userId).login(userLogin).displayName(userDisplayName)
-                .email(userEmail).build();
+	@Test
+	void updateCurrentUserInfo_shouldUpdateUserInfoAndReturnUpdatedUser() {
+		UUID userId = UUID.randomUUID();
+		String userLogin = "testuser";
+		String userDisplayName = "Test User";
+		String userEmail = "test.user@easykan.dev";
+		User user = User.builder().id(userId).login(userLogin).displayName(userDisplayName).email(userEmail).build();
 
-        String updatedLogin = "updateduser";
-        String updatedDisplayName = "Updated User";
-        String updatedEmail = "updated.user@easykan.dev";
-        User updatedUser = User.builder().id(userId).login(updatedLogin)
-                .displayName(updatedDisplayName).email(updatedEmail).build();
+		String updatedLogin = "updateduser";
+		String updatedDisplayName = "Updated User";
+		String updatedEmail = "updated.user@easykan.dev";
+		User updatedUser = User.builder()
+			.id(userId)
+			.login(updatedLogin)
+			.displayName(updatedDisplayName)
+			.email(updatedEmail)
+			.build();
 
-        var requestDto = new UserInfoUpdateRequestDto(Optional.of(updatedLogin),
-                Optional.of(updatedDisplayName), Optional.of(updatedEmail));
+		var requestDto = new UserInfoUpdateRequestDto(Optional.of(updatedLogin), Optional.of(updatedDisplayName),
+				Optional.of(updatedEmail));
 
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(userRepository.save(any(User.class))).thenReturn(updatedUser);
+		when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+		when(userRepository.save(any(User.class))).thenReturn(updatedUser);
 
-        User result = userService.updateCurrentUserInfo(userId, requestDto);
+		User result = userService.updateCurrentUserInfo(userId, requestDto);
 
-        assertThat(result).isEqualTo(updatedUser);
-        verify(userRepository).findById(userId);
-        verify(userRepository).save(any(User.class));
-    }
+		assertThat(result).isEqualTo(updatedUser);
+		verify(userRepository).findById(userId);
+		verify(userRepository).save(any(User.class));
+	}
 
-    @Test
-    void updateCurrentUserInfo_shouldThrowException_whenUserDoesNotExist() {
-        UUID userId = UUID.randomUUID();
-        var requestDto = new UserInfoUpdateRequestDto(Optional.of("updateduser"),
-                Optional.of("Updated User"), Optional.of("updated.user@easykan.dev"));
+	@Test
+	void updateCurrentUserInfo_shouldThrowException_whenUserDoesNotExist() {
+		UUID userId = UUID.randomUUID();
+		var requestDto = new UserInfoUpdateRequestDto(Optional.of("updateduser"), Optional.of("Updated User"),
+				Optional.of("updated.user@easykan.dev"));
 
-        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+		when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
-        assertThrows(UserNotFoundException.class,
-                () -> userService.updateCurrentUserInfo(userId, requestDto));
+		assertThrows(UserNotFoundException.class, () -> userService.updateCurrentUserInfo(userId, requestDto));
 
-        verify(userRepository).findById(userId);
-        verify(userRepository, never()).save(any(User.class));
-    }
+		verify(userRepository).findById(userId);
+		verify(userRepository, never()).save(any(User.class));
+	}
 
-    @Test
-    void updateUserPermissions_shouldUpdatePermissionsForUser() {
-        UUID userId = UUID.randomUUID();
-        long newPermissions = 0b0011;
-        User user = User.builder().id(userId).build();
+	@Test
+	void updateUserPermissions_shouldUpdatePermissionsForUser() {
+		UUID userId = UUID.randomUUID();
+		long newPermissions = 0b0011;
+		User user = User.builder().id(userId).build();
 
-        var requestDto = new UserPermissionsUpdateRequestDto(newPermissions);
+		var requestDto = new UserPermissionsUpdateRequestDto(newPermissions);
 
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(userRepository.save(any(User.class))).thenReturn(user);
+		when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+		when(userRepository.save(any(User.class))).thenReturn(user);
 
-        userService.updateUserPermissions(userId, requestDto);
+		userService.updateUserPermissions(userId, requestDto);
 
-        assertThat(user.getPermissions()).isEqualTo(newPermissions);
-        verify(userRepository).findById(userId);
-        verify(userRepository).save(any(User.class));
-    }
+		assertThat(user.getPermissions()).isEqualTo(newPermissions);
+		verify(userRepository).findById(userId);
+		verify(userRepository).save(any(User.class));
+	}
 
-    @Test
-    void updateUserPermissions_shouldThrowException_whenUserDoesNotExist() {
-        UUID userId = UUID.randomUUID();
-        long newPermissions = 0b0011;
-        var requestDto = new UserPermissionsUpdateRequestDto(newPermissions);
+	@Test
+	void updateUserPermissions_shouldThrowException_whenUserDoesNotExist() {
+		UUID userId = UUID.randomUUID();
+		long newPermissions = 0b0011;
+		var requestDto = new UserPermissionsUpdateRequestDto(newPermissions);
 
-        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+		when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
-        assertThrows(UserNotFoundException.class,
-                () -> userService.updateUserPermissions(userId, requestDto));
+		assertThrows(UserNotFoundException.class, () -> userService.updateUserPermissions(userId, requestDto));
 
-        verify(userRepository).findById(userId);
-        verify(userRepository, never()).save(any(User.class));
-    }
+		verify(userRepository).findById(userId);
+		verify(userRepository, never()).save(any(User.class));
+	}
+
 }

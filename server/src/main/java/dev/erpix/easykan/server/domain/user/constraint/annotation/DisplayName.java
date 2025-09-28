@@ -10,14 +10,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER})
-@Constraint(validatedBy = {OptionalDisplayNameConstraintValidator.class,
-        RequiredDisplayNameConstraintValidator.class})
+@Target({ ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER })
+@Constraint(
+		validatedBy = { OptionalDisplayNameConstraintValidator.class, RequiredDisplayNameConstraintValidator.class })
 public @interface DisplayName {
 
-    String message() default "Invalid display name format";
+	String message() default "Invalid display name format";
 
-    Class<?>[] groups() default {};
+	Class<?>[] groups() default {};
 
-    Class<? extends Payload>[] payload() default {};
+	Class<? extends Payload>[] payload() default {};
+
 }

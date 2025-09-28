@@ -9,34 +9,36 @@ import java.lang.annotation.Target;
 import org.springframework.security.test.context.support.WithSecurityContext;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD, ElementType.TYPE})
+@Target({ ElementType.METHOD, ElementType.TYPE })
 @WithSecurityContext(factory = UserSecurityContextFactory.class)
 public @interface WithMockUser {
 
-    String id() default Default.ID;
+	String id() default Default.ID;
 
-    String login() default Default.LOGIN;
+	String login() default Default.LOGIN;
 
-    String displayName() default Default.DISPLAY_NAME;
+	String displayName() default Default.DISPLAY_NAME;
 
-    String email() default Default.EMAIL;
+	String email() default Default.EMAIL;
 
-    String password() default Default.PASSWORD;
+	String password() default Default.PASSWORD;
 
-    UserPermission[] permissions() default {UserPermission.DEFAULT_PERMISSIONS};
+	UserPermission[] permissions() default { UserPermission.DEFAULT_PERMISSIONS };
 
-    interface Default {
+	interface Default {
 
-        String ID = "00000000-0000-0000-0000-000000000000";
+		String ID = "00000000-0000-0000-0000-000000000000";
 
-        String LOGIN = "user";
+		String LOGIN = "user";
 
-        String DISPLAY_NAME = "User";
+		String DISPLAY_NAME = "User";
 
-        String EMAIL = "user@easykan.dev";
+		String EMAIL = "user@easykan.dev";
 
-        String PASSWORD = "password";
+		String PASSWORD = "password";
 
-        UserPermission[] PERMISSIONS = {UserPermission.DEFAULT_PERMISSIONS};
-    }
+		UserPermission[] PERMISSIONS = { UserPermission.DEFAULT_PERMISSIONS };
+
+	}
+
 }

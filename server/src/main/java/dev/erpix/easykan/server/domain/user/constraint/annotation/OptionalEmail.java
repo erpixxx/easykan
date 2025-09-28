@@ -9,13 +9,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER})
-@Constraint(validatedBy = {OptionalEmailConstraintValidator.class})
+@Target({ ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER })
+@Constraint(validatedBy = { OptionalEmailConstraintValidator.class })
 public @interface OptionalEmail {
 
-    String message() default "Invalid email format";
+	String message() default "Invalid email format";
 
-    Class<?>[] groups() default {};
+	Class<?>[] groups() default {};
 
-    Class<? extends Payload>[] payload() default {};
+	Class<? extends Payload>[] payload() default {};
+
 }

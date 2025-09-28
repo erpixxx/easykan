@@ -7,16 +7,16 @@ import java.util.Optional;
 import org.springframework.stereotype.Component;
 
 @Component
-public class OptionalPasswordConstraintValidator
-        extends PasswordConstraintValidator<Optional<String>>
-        implements OptionalConstraintValidator<String> {
+public class OptionalPasswordConstraintValidator extends PasswordConstraintValidator<Optional<String>>
+		implements OptionalConstraintValidator<String> {
 
-    public OptionalPasswordConstraintValidator(EasyKanConfig config) {
-        super(config);
-    }
+	public OptionalPasswordConstraintValidator(EasyKanConfig config) {
+		super(config);
+	}
 
-    @Override
-    public boolean isValid(Optional<String> value, ConstraintValidatorContext context) {
-        return validateIfPresent(value, v -> isStringContentValid(v, context));
-    }
+	@Override
+	public boolean isValid(Optional<String> value, ConstraintValidatorContext context) {
+		return validateIfPresent(value, v -> isStringContentValid(v, context));
+	}
+
 }

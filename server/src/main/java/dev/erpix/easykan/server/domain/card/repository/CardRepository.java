@@ -8,4 +8,5 @@ import org.springframework.stereotype.Repository;
 @SuppressWarnings("unused")
 @Repository
 public interface CardRepository extends JpaRepository<Card, UUID> {
+
 }

@@ -7,8 +7,9 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ValidationConfig {
 
-    @Bean
-    public EmailValidator emailValidator() {
-        return new EmailValidator();
-    }
+	@Bean
+	public EmailValidator emailValidator() {
+		return new EmailValidator();
+	}
+
 }

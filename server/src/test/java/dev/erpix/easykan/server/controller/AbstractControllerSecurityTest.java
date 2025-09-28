@@ -16,23 +16,23 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public abstract class AbstractControllerSecurityTest {
 
-    @Autowired
-    protected MockMvc mockMvc;
+	@Autowired
+	protected MockMvc mockMvc;
 
-    protected abstract Stream<Arguments> provideProtectedEndpoints();
+	protected abstract Stream<Arguments> provideProtectedEndpoints();
 
-    @ParameterizedTest
-    @MethodSource("provideProtectedEndpoints")
-    void protectedEndpoints_shouldReturnUnauthorized_whenUserIsNotAuthenticated(String httpMethod,
-            String endpointPath) throws Exception {
+	@ParameterizedTest
+	@MethodSource("provideProtectedEndpoints")
+	void protectedEndpoints_shouldReturnUnauthorized_whenUserIsNotAuthenticated(String httpMethod, String endpointPath)
+			throws Exception {
 
-        var requestBuilder =
-                MockMvcRequestBuilders.request(HttpMethod.valueOf(httpMethod), endpointPath);
+		var requestBuilder = MockMvcRequestBuilders.request(HttpMethod.valueOf(httpMethod), endpointPath);
 
-        if (httpMethod.equals("POST") || httpMethod.equals("PUT") || httpMethod.equals("PATCH")) {
-            requestBuilder.contentType(MediaType.APPLICATION_JSON).content("{}");
-        }
+		if (httpMethod.equals("POST") || httpMethod.equals("PUT") || httpMethod.equals("PATCH")) {
+			requestBuilder.contentType(MediaType.APPLICATION_JSON).content("{}");
+		}
 
-        mockMvc.perform(requestBuilder).andExpect(status().isUnauthorized());
-    }
+		mockMvc.perform(requestBuilder).andExpect(status().isUnauthorized());
+	}
+
 }

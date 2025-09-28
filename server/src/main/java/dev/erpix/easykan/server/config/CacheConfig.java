@@ -11,11 +11,11 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class CacheConfig {
 
-    @Bean
-    public CacheManager cacheManager() {
-        CaffeineCacheManager manager = new CaffeineCacheManager(CacheKey.getCacheKeys());
-        manager.setCaffeine(
-                Caffeine.newBuilder().recordStats().expireAfterWrite(10, TimeUnit.MINUTES));
-        return manager;
-    }
+	@Bean
+	public CacheManager cacheManager() {
+		CaffeineCacheManager manager = new CaffeineCacheManager(CacheKey.getCacheKeys());
+		manager.setCaffeine(Caffeine.newBuilder().recordStats().expireAfterWrite(10, TimeUnit.MINUTES));
+		return manager;
+	}
+
 }

@@ -15,11 +15,12 @@ import lombok.*;
 @Embeddable
 public class ProjectUserViewId implements Serializable {
 
-    @NotNull
-    @Column(name = "user_id", nullable = false)
-    private UUID userId;
+	@NotNull
+	@Column(name = "user_id", nullable = false)
+	private UUID userId;
 
-    @NotNull
-    @Column(name = "project_id", nullable = false)
-    private UUID projectId;
+	@NotNull
+	@Column(name = "project_id", nullable = false)
+	private UUID projectId;
+
 }

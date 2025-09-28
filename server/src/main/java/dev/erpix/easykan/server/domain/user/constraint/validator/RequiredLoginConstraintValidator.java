@@ -6,13 +6,13 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class RequiredLoginConstraintValidator extends LoginConstraintValidator<String>
-        implements RequiredStringConstraintValidator {
+		implements RequiredStringConstraintValidator {
 
-    @Override
-    public boolean isValid(String value, ConstraintValidatorContext context) {
-        context.disableDefaultConstraintViolation();
+	@Override
+	public boolean isValid(String value, ConstraintValidatorContext context) {
+		context.disableDefaultConstraintViolation();
 
-        return requireNonBlank(value, context, "Login is required",
-                () -> isStringContentValid(value, context));
-    }
+		return requireNonBlank(value, context, "Login is required", () -> isStringContentValid(value, context));
+	}
+
 }

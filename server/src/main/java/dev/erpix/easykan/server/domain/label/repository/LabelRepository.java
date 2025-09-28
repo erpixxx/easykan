@@ -8,4 +8,5 @@ import org.springframework.stereotype.Repository;
 @SuppressWarnings("unused")
 @Repository
 public interface LabelRepository extends JpaRepository<Label, UUID> {
+
 }

@@ -10,5 +10,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface RequireUserPermission {
 
-    UserPermission[] value();
+	UserPermission[] value();
+
 }
