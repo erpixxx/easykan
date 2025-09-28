@@ -23,6 +23,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.util.Optional;
+
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -32,7 +34,7 @@ public class SecurityConfig {
 
 	private final JwtAuthFilter jwtAuthFilter;
 
-	private final OidcLoginSuccessHandler oidcLoginSuccessHandler;
+	private final Optional<OidcLoginSuccessHandler> oidcLoginSuccessHandler;
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -54,8 +56,10 @@ public class SecurityConfig {
 			.formLogin(AbstractHttpConfigurer::disable);
 
 		if (config.oidc() != null && config.oidc().enabled()) {
-			http.oauth2Login(oauth -> oauth.successHandler(oidcLoginSuccessHandler))
-				.authorizeHttpRequests(req -> req.requestMatchers("/oauth2/**").permitAll());
+			if (oidcLoginSuccessHandler.isPresent()) {
+				http.oauth2Login(oauth -> oauth.successHandler(oidcLoginSuccessHandler.get()))
+					.authorizeHttpRequests(req -> req.requestMatchers("/oauth2/**").permitAll());
+			}
 		}
 
 		return http.build();

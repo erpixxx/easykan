@@ -8,7 +8,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.erpix.easykan.server.config.EasyKanConfig;
-import dev.erpix.easykan.server.config.SecurityConfig;
 import dev.erpix.easykan.server.domain.auth.dto.AuthLoginRequestDto;
 import dev.erpix.easykan.server.domain.auth.dto.UserAndTokenPairResponseDto;
 import dev.erpix.easykan.server.domain.auth.service.AuthService;
@@ -18,10 +17,10 @@ import dev.erpix.easykan.server.domain.token.service.JwtProvider;
 import dev.erpix.easykan.server.domain.token.service.TokenService;
 import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
 import dev.erpix.easykan.server.domain.user.service.JpaUserDetailsService;
-import dev.erpix.easykan.server.exception.GlobalExceptionHandler;
 import dev.erpix.easykan.server.exception.auth.InvalidTokenException;
 import dev.erpix.easykan.server.exception.user.UserNotFoundException;
 import dev.erpix.easykan.server.testsupport.Category;
+import dev.erpix.easykan.server.testsupport.annotation.WebMvcBundle;
 import dev.erpix.easykan.server.testsupport.annotation.WithMockUser;
 import jakarta.servlet.http.Cookie;
 import java.time.Duration;
@@ -30,16 +29,13 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.provider.Arguments;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @Tag(Category.INTEGRATION_TEST)
-@WebMvcTest(AuthController.class)
-@Import({ SecurityConfig.class, GlobalExceptionHandler.class })
+@WebMvcBundle(AuthController.class)
 public class AuthControllerIT extends AbstractControllerSecurityTest {
 
 	@Autowired
