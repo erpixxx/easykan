@@ -57,11 +57,11 @@ public class ProjectServiceTest {
 		UUID ownerId = UUID.randomUUID();
 
 		User owner = User.builder().id(ownerId).login("owner").build();
-		Project project = Project.builder().id(UUID.randomUUID()).name(dto.name()).owner(owner).build();
 
 		when(userService.getById(ownerId)).thenReturn(owner);
 		when(projectUserViewRepository.countByUserId(ownerId)).thenReturn(0L);
-		when(projectRepository.save(any(Project.class))).thenReturn(project);
+		when(projectRepository.save(any(Project.class)))
+				.thenAnswer(invocation -> invocation.getArgument(0));
 
 		ProjectSummaryDto resultDto = projectService.createProject(dto, ownerId);
 
@@ -89,12 +89,12 @@ public class ProjectServiceTest {
 		UUID ownerId = UUID.randomUUID();
 
 		User owner = User.builder().id(ownerId).login("owner").build();
-		Project project = Project.builder().id(UUID.randomUUID()).name(dto.name()).owner(owner).build();
 
 		when(userService.getById(ownerId)).thenReturn(owner);
 		long projectCount = 3L;
 		when(projectUserViewRepository.countByUserId(ownerId)).thenReturn(projectCount);
-		when(projectRepository.save(any(Project.class))).thenReturn(project);
+		when(projectRepository.save(any(Project.class)))
+				.thenAnswer(invocation -> invocation.getArgument(0));
 
 		ProjectSummaryDto resultDto = projectService.createProject(dto, ownerId);
 

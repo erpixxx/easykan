@@ -32,21 +32,23 @@ public class ProjectService {
 	@Transactional
 	public ProjectSummaryDto createProject(ProjectCreateDto dto, UUID ownerId) {
 		User owner = userService.getById(ownerId);
+
 		Project project = Project.builder().name(dto.name()).owner(owner).build();
-		ProjectMember member = ProjectMember.builder().project(project).user(owner).permissions(0L).build();
+		Project savedProject = projectRepository.save(project);
+
+		ProjectMember member = ProjectMember.builder().project(savedProject).user(owner).permissions(0L).build();
 
 		int nextPosition = (int) projectUserViewRepository.countByUserId(ownerId);
 		ProjectUserView userView = ProjectUserView.builder()
-			.project(project)
+			.project(savedProject)
 			.user(owner)
 			.position(nextPosition)
 			.build();
 
-		project.getMembers().add(member);
-		project.getUserViews().add(userView);
+		savedProject.getMembers().add(member);
+		savedProject.getUserViews().add(userView);
 
-		Project createdProject = projectRepository.save(project);
-		return ProjectSummaryDto.fromProject(createdProject, nextPosition);
+		return ProjectSummaryDto.fromProject(savedProject, nextPosition);
 	}
 
 	public List<ProjectSummaryDto> getProjectsForUser(UUID userId) {

@@ -45,19 +45,19 @@ public class Project {
 	@Column(name = "created_at", nullable = false)
 	private Instant createdAt;
 
-    @Builder.Default
+	@Builder.Default
 	@OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<ProjectMember> members = new LinkedHashSet<>();
 
-    @Builder.Default
+	@Builder.Default
 	@OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<Board> boards = new LinkedHashSet<>();
 
-    @Builder.Default
+	@Builder.Default
 	@OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<Label> labels = new LinkedHashSet<>();
 
-    @Builder.Default
+	@Builder.Default
 	@OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<ProjectUserView> userViews = new LinkedHashSet<>();
 
