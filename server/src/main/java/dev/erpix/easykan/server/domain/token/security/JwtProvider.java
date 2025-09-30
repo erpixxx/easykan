@@ -1,4 +1,4 @@
-package dev.erpix.easykan.server.domain.token.service;
+package dev.erpix.easykan.server.domain.token.security;
 
 import dev.erpix.easykan.server.config.EasyKanConfig;
 import dev.erpix.easykan.server.exception.auth.InvalidTokenException;
