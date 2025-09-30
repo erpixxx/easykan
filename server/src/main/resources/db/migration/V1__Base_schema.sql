@@ -122,6 +122,8 @@ CREATE TABLE "comments" (
 
 CREATE UNIQUE INDEX ON "user_oauth_accounts" ("provider_name", "provider_id");
 
+CREATE UNIQUE INDEX ON "user_project_views" ("user_id", "position");
+
 CREATE UNIQUE INDEX ON "columns" ("board_id", "position");
 
 CREATE UNIQUE INDEX ON "cards" ("column_id", "position");

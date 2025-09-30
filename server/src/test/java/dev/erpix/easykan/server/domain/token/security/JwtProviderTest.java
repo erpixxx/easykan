@@ -1,4 +1,4 @@
-package dev.erpix.easykan.server.security;
+package dev.erpix.easykan.server.domain.token.security;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -6,7 +6,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import dev.erpix.easykan.server.config.EasyKanConfig;
-import dev.erpix.easykan.server.domain.token.service.JwtProvider;
 import dev.erpix.easykan.server.exception.auth.InvalidTokenException;
 import dev.erpix.easykan.server.testsupport.Category;
 import java.util.UUID;

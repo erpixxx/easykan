@@ -1,4 +1,4 @@
-package dev.erpix.easykan.server.service;
+package dev.erpix.easykan.server.domain.auth.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -6,10 +6,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import dev.erpix.easykan.server.config.EasyKanConfig;
 import dev.erpix.easykan.server.domain.auth.dto.AuthLoginRequestDto;
 import dev.erpix.easykan.server.domain.auth.dto.UserAndTokenPairResponseDto;
-import dev.erpix.easykan.server.domain.auth.service.AuthService;
 import dev.erpix.easykan.server.domain.token.model.RefreshToken;
 import dev.erpix.easykan.server.domain.token.repository.TokenRepository;
-import dev.erpix.easykan.server.domain.token.service.JwtProvider;
+import dev.erpix.easykan.server.domain.token.security.JwtProvider;
 import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.repository.UserRepository;
 import dev.erpix.easykan.server.exception.auth.UnsupportedAuthenticationMethodException;

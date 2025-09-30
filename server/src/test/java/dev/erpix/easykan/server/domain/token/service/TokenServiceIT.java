@@ -1,4 +1,4 @@
-package dev.erpix.easykan.server.service;
+package dev.erpix.easykan.server.domain.token.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -6,9 +6,8 @@ import static org.mockito.Mockito.when;
 import dev.erpix.easykan.server.config.EasyKanConfig;
 import dev.erpix.easykan.server.domain.token.model.RefreshToken;
 import dev.erpix.easykan.server.domain.token.repository.TokenRepository;
-import dev.erpix.easykan.server.domain.token.security.TokenGenerator;
-import dev.erpix.easykan.server.domain.token.security.TokenParts;
-import dev.erpix.easykan.server.domain.token.service.TokenService;
+import dev.erpix.easykan.server.domain.token.security.RefreshTokenGenerator;
+import dev.erpix.easykan.server.domain.token.security.RefreshTokenParts;
 import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
 import dev.erpix.easykan.server.domain.user.service.UserService;
 import dev.erpix.easykan.server.testsupport.Category;
@@ -41,7 +40,7 @@ public class TokenServiceIT {
 	private PasswordEncoder passwordEncoder;
 
 	@MockitoBean
-	private TokenGenerator tokenGenerator;
+	private RefreshTokenGenerator refreshTokenGenerator;
 
 	private static final String SAMPLE_SELECTOR = "selector";
 
@@ -52,7 +51,7 @@ public class TokenServiceIT {
 	void createRefreshToken_shouldSaveRefreshTokenAndReturnDto() {
 		var user = userService.getByLogin(WithPersistedUser.Default.LOGIN);
 
-		when(tokenGenerator.generate()).thenReturn(new TokenParts(SAMPLE_SELECTOR, SAMPLE_VALIDATOR));
+		when(refreshTokenGenerator.generate()).thenReturn(new RefreshTokenParts(SAMPLE_SELECTOR, SAMPLE_VALIDATOR));
 
 		var tokenDto = tokenService.createRefreshToken(user.getId());
 		var savedToken = tokenRepository.findBySelector(SAMPLE_SELECTOR)
@@ -70,7 +69,7 @@ public class TokenServiceIT {
 	void logout_shouldRevokeCurrentUserToken() {
 		var user = userService.getByLogin(WithPersistedUser.Default.LOGIN);
 
-		when(tokenGenerator.generate()).thenReturn(new TokenParts(SAMPLE_SELECTOR, SAMPLE_VALIDATOR));
+		when(refreshTokenGenerator.generate()).thenReturn(new RefreshTokenParts(SAMPLE_SELECTOR, SAMPLE_VALIDATOR));
 
 		var tokenDto = tokenService.createRefreshToken(user.getId());
 		var tokenBeforeLogout = tokenRepository.findBySelector(SAMPLE_SELECTOR)
@@ -91,7 +90,7 @@ public class TokenServiceIT {
 	void logout_shouldDoNothing_whenValidatorIsIncorrect() {
 		var user = userService.getByLogin(WithPersistedUser.Default.LOGIN);
 
-		when(tokenGenerator.generate()).thenReturn(new TokenParts(SAMPLE_SELECTOR, SAMPLE_VALIDATOR));
+		when(refreshTokenGenerator.generate()).thenReturn(new RefreshTokenParts(SAMPLE_SELECTOR, SAMPLE_VALIDATOR));
 
 		tokenService.createRefreshToken(user.getId());
 		String tokenWithInvalidValidator = SAMPLE_SELECTOR + ":wrong-validator";
@@ -108,7 +107,7 @@ public class TokenServiceIT {
 	void logout_shouldDoNothing_whenTokenIsAlreadyRevoked() {
 		var user = userService.getByLogin(WithPersistedUser.Default.LOGIN);
 
-		when(tokenGenerator.generate()).thenReturn(new TokenParts(SAMPLE_SELECTOR, SAMPLE_VALIDATOR));
+		when(refreshTokenGenerator.generate()).thenReturn(new RefreshTokenParts(SAMPLE_SELECTOR, SAMPLE_VALIDATOR));
 
 		var tokenDto = tokenService.createRefreshToken(user.getId());
 
@@ -153,7 +152,7 @@ public class TokenServiceIT {
 	void rotateRefreshToken_shouldRevokeOldTokenAndCreateNewOne() {
 		var user = userService.getByLogin(WithPersistedUser.Default.LOGIN);
 
-		when(tokenGenerator.generate()).thenReturn(new TokenParts(SAMPLE_SELECTOR, SAMPLE_VALIDATOR));
+		when(refreshTokenGenerator.generate()).thenReturn(new RefreshTokenParts(SAMPLE_SELECTOR, SAMPLE_VALIDATOR));
 
 		var oldTokenDto = tokenService.createRefreshToken(user.getId());
 		var oldToken = tokenRepository.findBySelector(SAMPLE_SELECTOR)
@@ -164,7 +163,7 @@ public class TokenServiceIT {
 		assertThat(oldToken.getExpiresAt()).isAfter(Instant.now());
 		assertThat(passwordEncoder.matches(SAMPLE_VALIDATOR, oldToken.getValidator())).isTrue();
 
-		when(tokenGenerator.generate()).thenReturn(new TokenParts("newSelector", "newValidator"));
+		when(refreshTokenGenerator.generate()).thenReturn(new RefreshTokenParts("newSelector", "newValidator"));
 
 		var newTokenPair = tokenService.rotateRefreshToken(oldTokenDto.combine());
 

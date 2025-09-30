@@ -1,13 +1,14 @@
-package dev.erpix.easykan.server.service;
+package dev.erpix.easykan.server.domain.project.service;
 
+import dev.erpix.easykan.server.domain.project.dto.PositionedProjectDto;
 import dev.erpix.easykan.server.domain.project.dto.ProjectCreateDto;
 import dev.erpix.easykan.server.domain.project.dto.ProjectSummaryDto;
+import dev.erpix.easykan.server.domain.project.factory.ProjectFactory;
 import dev.erpix.easykan.server.domain.project.model.Project;
 import dev.erpix.easykan.server.domain.project.model.ProjectUserView;
 import dev.erpix.easykan.server.domain.project.repository.ProjectMemberRepository;
 import dev.erpix.easykan.server.domain.project.repository.ProjectRepository;
 import dev.erpix.easykan.server.domain.project.repository.ProjectUserViewRepository;
-import dev.erpix.easykan.server.domain.project.service.ProjectService;
 import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.service.UserService;
 import dev.erpix.easykan.server.exception.user.UserNotFoundException;
@@ -37,6 +38,9 @@ public class ProjectServiceTest {
 	private ProjectService projectService;
 
 	@Mock
+	private ProjectFactory projectFactory;
+
+	@Mock
 	private ProjectMemberRepository projectMemberRepository;
 
 	@Mock
@@ -51,73 +55,62 @@ public class ProjectServiceTest {
 	ArgumentCaptor<Project> projectCaptor = ArgumentCaptor.forClass(Project.class);
 
 	@Test
-	void createProject_shouldCreateProjectAndSetOwnerAsFirstMember() {
+	void createProject_shouldCreateProjectAndReturnDto() {
+		UUID ownerId = UUID.randomUUID();
+		User owner = User.builder().id(ownerId).build();
+
 		String projectName = "New Project";
-		ProjectCreateDto dto = new ProjectCreateDto(projectName);
-		UUID ownerId = UUID.randomUUID();
+		Project project = Project.builder().name(projectName).owner(owner).build();
 
-		User owner = User.builder().id(ownerId).login("owner").build();
-
-		when(userService.getById(ownerId)).thenReturn(owner);
-		when(projectUserViewRepository.countByUserId(ownerId)).thenReturn(0L);
-		when(projectRepository.save(any(Project.class)))
-				.thenAnswer(invocation -> invocation.getArgument(0));
-
-		ProjectSummaryDto resultDto = projectService.createProject(dto, ownerId);
-
-		verify(projectRepository).save(projectCaptor.capture());
-		Project savedProject = projectCaptor.getValue();
-
-		assertThat(savedProject.getName()).isEqualTo(projectName);
-		assertThat(savedProject.getOwner()).isEqualTo(owner);
-
-		assertThat(savedProject.getMembers()).hasSize(1);
-		assertThat(savedProject.getMembers().iterator().next().getUser()).isEqualTo(owner);
-
-		assertThat(savedProject.getUserViews()).hasSize(1);
-		assertThat(savedProject.getUserViews().iterator().next().getUser()).isEqualTo(owner);
-		assertThat(savedProject.getUserViews().iterator().next().getPosition()).isZero();
-
-		assertThat(resultDto.name()).isEqualTo(projectName);
-		assertThat(resultDto.position()).isZero();
-	}
-
-	@Test
-	void createProject_shouldSetCorrectPosition_whenUserHasExistingProjects() {
-		String projectName = "Another Project";
-		ProjectCreateDto dto = new ProjectCreateDto(projectName);
-		UUID ownerId = UUID.randomUUID();
-
-		User owner = User.builder().id(ownerId).login("owner").build();
+		ProjectCreateDto createDto = new ProjectCreateDto(projectName);
+		int expectedNextPosition = 3;
 
 		when(userService.getById(ownerId)).thenReturn(owner);
-		long projectCount = 3L;
-		when(projectUserViewRepository.countByUserId(ownerId)).thenReturn(projectCount);
-		when(projectRepository.save(any(Project.class)))
-				.thenAnswer(invocation -> invocation.getArgument(0));
+		when(projectUserViewRepository.findNextPositionByUserId(ownerId)).thenReturn(expectedNextPosition);
+		when(projectFactory.create(createDto.name(), owner, expectedNextPosition)).thenReturn(project);
+		when(projectRepository.save(project)).thenReturn(project);
 
-		ProjectSummaryDto resultDto = projectService.createProject(dto, ownerId);
+		PositionedProjectDto resultDto = projectService.createProject(createDto, ownerId);
 
-		verify(projectRepository).save(projectCaptor.capture());
-		Project savedProject = projectCaptor.getValue();
+		verify(userService).getById(ownerId);
+		verify(projectUserViewRepository).findNextPositionByUserId(ownerId);
+		verify(projectFactory).create(projectName, owner, 3);
+		verify(projectRepository).save(project);
 
-		assertThat(savedProject.getUserViews()).hasSize(1);
-		assertThat(savedProject.getUserViews().iterator().next().getUser()).isEqualTo(owner);
-		assertThat(savedProject.getUserViews().iterator().next().getPosition()).isEqualTo(3);
-
+		assertThat(resultDto).isNotNull();
 		assertThat(resultDto.name()).isEqualTo(projectName);
-		assertThat(resultDto.position()).isEqualTo(projectCount);
 	}
 
 	@Test
 	void createProject_shouldThrowException_whenUserDoesNotExist() {
-		ProjectCreateDto dto = new ProjectCreateDto("New Project");
+		UUID nonExistentUserId = UUID.randomUUID();
+		ProjectCreateDto createDto = new ProjectCreateDto("Test Project");
+
+		when(userService.getById(nonExistentUserId)).thenThrow(UserNotFoundException.byId(nonExistentUserId));
+
+		assertThrows(UserNotFoundException.class, () -> projectService.createProject(createDto, nonExistentUserId));
+
+		verify(projectUserViewRepository, never()).findNextPositionByUserId(any());
+		verify(projectFactory, never()).create(any(), any(), anyInt());
+		verify(projectRepository, never()).save(any());
+	}
+
+	@Test
+	void createProject_shouldSetPositionToZero_whenUserHasNoProjects() {
 		UUID ownerId = UUID.randomUUID();
+		User owner = User.builder().id(ownerId).build();
 
-		when(userService.getById(ownerId)).thenThrow(UserNotFoundException.class);
+		ProjectCreateDto createDto = new ProjectCreateDto("First Project");
+		Project mockProject = Project.builder().build();
 
-		assertThrows(UserNotFoundException.class, () -> projectService.createProject(dto, ownerId));
-		verify(projectRepository, never()).save(any(Project.class));
+		when(projectUserViewRepository.findNextPositionByUserId(ownerId)).thenReturn(0);
+		when(userService.getById(ownerId)).thenReturn(owner);
+		when(projectFactory.create(anyString(), any(User.class), eq(0))).thenReturn(mockProject);
+		when(projectRepository.save(any(Project.class))).thenReturn(mockProject);
+
+		projectService.createProject(createDto, ownerId);
+
+		verify(projectFactory).create(createDto.name(), owner, 0);
 	}
 
 	@Test

@@ -13,7 +13,7 @@ import dev.erpix.easykan.server.domain.auth.dto.UserAndTokenPairResponseDto;
 import dev.erpix.easykan.server.domain.auth.service.AuthService;
 import dev.erpix.easykan.server.domain.token.dto.CreateTokenDto;
 import dev.erpix.easykan.server.domain.token.dto.TokenPairDto;
-import dev.erpix.easykan.server.domain.token.service.JwtProvider;
+import dev.erpix.easykan.server.domain.token.security.JwtProvider;
 import dev.erpix.easykan.server.domain.token.service.TokenService;
 import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
 import dev.erpix.easykan.server.domain.user.service.JpaUserDetailsService;

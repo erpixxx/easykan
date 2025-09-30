@@ -13,15 +13,20 @@ import java.util.UUID;
 @Repository
 public interface ProjectUserViewRepository extends JpaRepository<ProjectUserView, ProjectUserViewId> {
 
-	long countByUserId(UUID userId);
-
 	@Query("""
-			SELECT puv FROM ProjectUserView puv
-			    JOIN FETCH puv.project p
-			    JOIN FETCH p.owner
-			    WHERE puv.id.userId = :userId
-			    ORDER BY puv.position
+				SELECT puv FROM ProjectUserView puv
+					JOIN FETCH puv.project p
+					JOIN FETCH p.owner
+					WHERE puv.id.userId = :userId
+					ORDER BY puv.position
 			""")
 	List<ProjectUserView> findAllByUserWithDetails(@Param("userId") UUID userId);
+
+	@Query("""
+				SELECT COALESCE(MAX(puv.position + 1), 0)
+					FROM ProjectUserView puv
+					WHERE puv.user.id = :userId
+			""")
+	Integer findNextPositionByUserId(@Param("userId") UUID userId);
 
 }

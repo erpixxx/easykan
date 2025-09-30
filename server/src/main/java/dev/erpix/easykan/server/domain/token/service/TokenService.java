@@ -6,8 +6,9 @@ import dev.erpix.easykan.server.domain.token.RawRefreshToken;
 import dev.erpix.easykan.server.domain.token.dto.TokenPairDto;
 import dev.erpix.easykan.server.domain.token.model.RefreshToken;
 import dev.erpix.easykan.server.domain.token.repository.TokenRepository;
-import dev.erpix.easykan.server.domain.token.security.TokenGenerator;
-import dev.erpix.easykan.server.domain.token.security.TokenParts;
+import dev.erpix.easykan.server.domain.token.security.JwtProvider;
+import dev.erpix.easykan.server.domain.token.security.RefreshTokenGenerator;
+import dev.erpix.easykan.server.domain.token.security.RefreshTokenParts;
 import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
 import dev.erpix.easykan.server.domain.user.service.UserService;
@@ -37,7 +38,7 @@ public class TokenService {
 
 	private final PasswordEncoder passwordEncoder;
 
-	private final TokenGenerator tokenGenerator;
+	private final RefreshTokenGenerator refreshTokenGenerator;
 
 	private final JwtProvider jwtProvider;
 
@@ -50,7 +51,7 @@ public class TokenService {
 	public RawRefreshToken createRefreshToken(UUID userId) {
 		User user = userService.getById(userId);
 
-		TokenParts tokenParts = tokenGenerator.generate();
+		RefreshTokenParts tokenParts = refreshTokenGenerator.generate();
 		String validatorHash = passwordEncoder.encode(tokenParts.validator());
 
 		Duration duration = Duration.ofSeconds(config.jwt().refreshTokenExpire());

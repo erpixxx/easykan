@@ -4,8 +4,14 @@ import java.security.SecureRandom;
 import java.util.Base64;
 import org.springframework.stereotype.Component;
 
+/**
+ * Generates secure, opaque refresh tokens based on the selector-validator pattern.
+ * <p>
+ * The selector is used to look up the token in the database, while the validator serves
+ * as a one-time secret to verify the token's authenticity.
+ */
 @Component
-public class TokenGenerator {
+public class RefreshTokenGenerator {
 
 	private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
@@ -17,12 +23,12 @@ public class TokenGenerator {
 
 	/**
 	 * Generates a new token consisting of a selector and a validator.
-	 * @return {@link TokenParts} containing the selector and validator.
+	 * @return {@link RefreshTokenParts} containing the selector and validator.
 	 */
-	public TokenParts generate() {
+	public RefreshTokenParts generate() {
 		String selector = generateRandomString(SELECTOR_LENGTH_BYTES);
 		String validator = generateRandomString(VALIDATOR_LENGTH_BYTES);
-		return new TokenParts(selector, validator);
+		return new RefreshTokenParts(selector, validator);
 	}
 
 	private String generateRandomString(int bytes) {

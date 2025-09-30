@@ -15,11 +15,15 @@ import org.hibernate.annotations.OnDeleteAction;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "user_project_views", schema = "public")
+@Table(name = "user_project_views", schema = "public",
+		uniqueConstraints = @UniqueConstraint(columnNames = { "user_id", "position" }))
 public class ProjectUserView {
 
+	@Builder.Default
+	@EqualsAndHashCode.Include
+	@ToString.Include
 	@EmbeddedId
-	private ProjectUserViewId id;
+	private ProjectUserViewId id = new ProjectUserViewId();
 
 	@MapsId("userId")
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)

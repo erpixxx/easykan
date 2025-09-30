@@ -18,10 +18,11 @@ import org.hibernate.annotations.OnDeleteAction;
 @Table(name = "project_members", schema = "public")
 public class ProjectMember {
 
+	@Builder.Default
 	@EqualsAndHashCode.Include
 	@ToString.Include
 	@EmbeddedId
-	private ProjectMemberId id;
+	private ProjectMemberId id = new ProjectMemberId();
 
 	@MapsId("projectId")
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)

@@ -1,4 +1,4 @@
-package dev.erpix.easykan.server.service;
+package dev.erpix.easykan.server.domain.token.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -9,10 +9,9 @@ import dev.erpix.easykan.server.config.EasyKanConfig;
 import dev.erpix.easykan.server.domain.token.dto.TokenPairDto;
 import dev.erpix.easykan.server.domain.token.model.RefreshToken;
 import dev.erpix.easykan.server.domain.token.repository.TokenRepository;
-import dev.erpix.easykan.server.domain.token.security.TokenGenerator;
-import dev.erpix.easykan.server.domain.token.security.TokenParts;
-import dev.erpix.easykan.server.domain.token.service.JwtProvider;
-import dev.erpix.easykan.server.domain.token.service.TokenService;
+import dev.erpix.easykan.server.domain.token.security.JwtProvider;
+import dev.erpix.easykan.server.domain.token.security.RefreshTokenGenerator;
+import dev.erpix.easykan.server.domain.token.security.RefreshTokenParts;
 import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
 import dev.erpix.easykan.server.domain.user.service.UserService;
@@ -53,7 +52,7 @@ public class TokenServiceTest {
 	private PasswordEncoder passwordEncoder;
 
 	@Mock
-	private TokenGenerator tokenGenerator;
+	private RefreshTokenGenerator tokenGenerator;
 
 	@Mock
 	private JwtProvider jwtProvider;
@@ -92,7 +91,7 @@ public class TokenServiceTest {
 		User user = User.builder().id(userId).build();
 		String selector = "selector";
 		String validator = "validator";
-		TokenParts parts = new TokenParts(selector, validator);
+		RefreshTokenParts parts = new RefreshTokenParts(selector, validator);
 
 		when(userService.getById(userId)).thenReturn(user);
 		when(tokenGenerator.generate()).thenReturn(parts);
@@ -163,7 +162,7 @@ public class TokenServiceTest {
 			.thenReturn(Optional.of(oldToken));
 		when(passwordEncoder.matches("validator", "hashedValidator")).thenReturn(true);
 		when(userService.getById(user.getId())).thenReturn(user);
-		when(tokenGenerator.generate()).thenReturn(new TokenParts("newSelector", "newValidator"));
+		when(tokenGenerator.generate()).thenReturn(new RefreshTokenParts("newSelector", "newValidator"));
 
 		TokenPairDto tokenPairDto = tokenService.rotateRefreshToken(rawRefreshToken);
 

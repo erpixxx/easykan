@@ -3,7 +3,7 @@ package dev.erpix.easykan.server.config.filter;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-import dev.erpix.easykan.server.domain.token.service.JwtProvider;
+import dev.erpix.easykan.server.domain.token.security.JwtProvider;
 import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
 import dev.erpix.easykan.server.domain.user.service.JpaUserDetailsService;
 import dev.erpix.easykan.server.exception.auth.InvalidTokenException;

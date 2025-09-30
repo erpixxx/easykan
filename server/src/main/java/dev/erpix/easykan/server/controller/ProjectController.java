@@ -1,5 +1,6 @@
 package dev.erpix.easykan.server.controller;
 
+import dev.erpix.easykan.server.domain.project.dto.PositionedProjectDto;
 import dev.erpix.easykan.server.domain.project.dto.ProjectCreateDto;
 import dev.erpix.easykan.server.domain.project.dto.ProjectSummaryDto;
 import dev.erpix.easykan.server.domain.project.service.ProjectService;
@@ -22,7 +23,7 @@ public class ProjectController {
 	private final ProjectService projectService;
 
 	@PostMapping
-	public ResponseEntity<ProjectSummaryDto> createProject(@AuthenticationPrincipal JpaUserDetails userDetails,
+	public ResponseEntity<PositionedProjectDto> createProject(@AuthenticationPrincipal JpaUserDetails userDetails,
 			@RequestBody @Valid ProjectCreateDto projectCreateDto) {
 		return ResponseEntity.status(201)
 			.body(projectService.createProject(projectCreateDto, userDetails.user().getId()));

@@ -1,4 +1,4 @@
-package dev.erpix.easykan.server.service;
+package dev.erpix.easykan.server.domain.auth.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -6,10 +6,9 @@ import static org.mockito.Mockito.when;
 
 import dev.erpix.easykan.server.domain.auth.dto.AuthLoginRequestDto;
 import dev.erpix.easykan.server.domain.auth.dto.UserAndTokenPairResponseDto;
-import dev.erpix.easykan.server.domain.auth.service.AuthService;
 import dev.erpix.easykan.server.domain.token.AccessToken;
 import dev.erpix.easykan.server.domain.token.RawRefreshToken;
-import dev.erpix.easykan.server.domain.token.security.TokenParts;
+import dev.erpix.easykan.server.domain.token.security.RefreshTokenParts;
 import dev.erpix.easykan.server.domain.token.service.TokenService;
 import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.model.UserPermission;
@@ -65,7 +64,7 @@ public class AuthServiceTest {
 		when(tokenService.createAccessToken(user.getId()))
 			.thenReturn(new AccessToken(accessToken, accessTokenDuration));
 		when(tokenService.createRefreshToken(user.getId()))
-			.thenReturn(new RawRefreshToken(new TokenParts("refresh", "token"), refreshTokenDuration));
+			.thenReturn(new RawRefreshToken(new RefreshTokenParts("refresh", "token"), refreshTokenDuration));
 
 		UserAndTokenPairResponseDto responseDto = authService.loginWithPassword(request);
 		assertEquals(accessToken, responseDto.tokenPair().newAccessToken());
