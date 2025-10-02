@@ -61,6 +61,7 @@ public class RefreshToken {
 	@Column(name = "expires_at", nullable = false)
 	private Instant expiresAt;
 
+	@Builder.Default
 	@ToString.Include
 	@NotNull
 	@ColumnDefault("false")

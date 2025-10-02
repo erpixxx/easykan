@@ -75,36 +75,47 @@ public class User {
 	@Column(name = "permissions", nullable = false)
 	private Long permissions;
 
+	@Builder.Default
 	@OneToMany(mappedBy = "user")
 	private Set<OAuthAccount> OAuthAccounts = new LinkedHashSet<>();
 
+	@Builder.Default
 	@OneToMany(mappedBy = "user")
 	private Set<RefreshToken> refreshTokens = new LinkedHashSet<>();
 
+	@Builder.Default
 	@OneToMany(mappedBy = "owner")
 	private Set<Project> ownedProjects = new LinkedHashSet<>();
 
+	@Builder.Default
 	@OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
 	private Set<ProjectMember> projectMembers = new LinkedHashSet<>();
 
+	@Builder.Default
 	@OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
 	private Set<ProjectUserView> projectViews = new LinkedHashSet<>();
 
+	@Builder.Default
 	@OneToMany(mappedBy = "owner")
 	private Set<Board> ownedBoards = new LinkedHashSet<>();
 
+	@Builder.Default
 	@OneToMany(mappedBy = "user")
 	private Set<CardAssignee> assignments = new LinkedHashSet<>();
 
+	@Builder.Default
 	@OneToMany(mappedBy = "assignedByUser")
 	private Set<CardAssignee> createdAssignments = new LinkedHashSet<>();
 
+	@Builder.Default
 	@OneToMany(mappedBy = "author")
 	private Set<Comment> comments = new LinkedHashSet<>();
 
+	@Builder.Default
 	@OneToMany(mappedBy = "createdByUser")
 	private Set<Task> createdTasks = new LinkedHashSet<>();
 
+	@Builder.Default
 	@OneToMany(mappedBy = "completedByUser")
 	private Set<Task> completedTasks = new LinkedHashSet<>();
 

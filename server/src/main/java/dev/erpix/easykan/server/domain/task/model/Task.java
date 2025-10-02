@@ -58,6 +58,7 @@ public class Task {
 	@Column(name = "position", nullable = false)
 	private Integer position;
 
+	@Builder.Default
 	@NotNull
 	@ColumnDefault("false")
 	@Column(name = "is_completed", nullable = false)
@@ -79,6 +80,7 @@ public class Task {
 	@Column(name = "updated_at", nullable = false)
 	private Instant updatedAt;
 
+	@Builder.Default
 	@OneToMany(mappedBy = "parentTask", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<Task> subTasks = new LinkedHashSet<>();
 

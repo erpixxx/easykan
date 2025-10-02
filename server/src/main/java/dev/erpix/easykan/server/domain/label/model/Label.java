@@ -46,6 +46,7 @@ public class Label {
 	@Column(name = "color_hex", length = 6)
 	private String colorHex;
 
+	@Builder.Default
 	@OneToMany(mappedBy = "label", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<CardLabel> cardLinks = new LinkedHashSet<>();
 

@@ -63,15 +63,19 @@ public class Card {
 	@Column(name = "updated_at", nullable = false)
 	private Instant updatedAt;
 
+	@Builder.Default
 	@OneToMany(mappedBy = "card", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<CardAssignee> assignees = new LinkedHashSet<>();
 
+	@Builder.Default
 	@OneToMany(mappedBy = "card", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<CardLabel> labels = new LinkedHashSet<>();
 
+	@Builder.Default
 	@OneToMany(mappedBy = "card", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<Comment> comments = new LinkedHashSet<>();
 
+	@Builder.Default
 	@OneToMany(mappedBy = "card", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<Task> tasks = new LinkedHashSet<>();
 
