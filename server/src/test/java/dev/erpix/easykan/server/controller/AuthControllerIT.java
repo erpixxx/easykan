@@ -12,10 +12,8 @@ import dev.erpix.easykan.server.domain.auth.dto.UserAndTokenPairResponseDto;
 import dev.erpix.easykan.server.domain.auth.service.AuthService;
 import dev.erpix.easykan.server.domain.token.dto.CreateTokenDto;
 import dev.erpix.easykan.server.domain.token.dto.TokenPairDto;
-import dev.erpix.easykan.server.domain.token.security.JwtProvider;
 import dev.erpix.easykan.server.domain.token.service.TokenService;
 import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
-import dev.erpix.easykan.server.domain.user.service.JpaUserDetailsService;
 import dev.erpix.easykan.server.exception.auth.InvalidTokenException;
 import dev.erpix.easykan.server.exception.user.UserNotFoundException;
 import dev.erpix.easykan.server.testsupport.Category;
@@ -35,7 +33,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @Tag(Category.INTEGRATION_TEST)
 @WebMvcBundle(AuthController.class)
-public class AuthControllerIT extends AbstractControllerSecurityTest {
+public class AuthControllerIT extends AbstractControllerSecurityIT {
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -46,14 +44,6 @@ public class AuthControllerIT extends AbstractControllerSecurityTest {
 	@SuppressWarnings("unused")
 	@MockitoBean
 	private AuthService authService;
-
-	@SuppressWarnings("unused")
-	@MockitoBean
-	private JpaUserDetailsService jpaUserDetailsService;
-
-	@SuppressWarnings("unused")
-	@MockitoBean
-	private JwtProvider jwtProvider;
 
 	@SuppressWarnings("unused")
 	@MockitoBean

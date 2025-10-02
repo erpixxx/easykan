@@ -14,7 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public abstract class AbstractControllerSecurityTest {
+public abstract class AbstractControllerSecurityIT extends CommonControllerIT {
 
 	@Autowired
 	protected MockMvc mockMvc;
