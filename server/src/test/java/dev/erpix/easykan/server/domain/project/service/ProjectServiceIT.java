@@ -9,9 +9,11 @@ import dev.erpix.easykan.server.domain.project.model.ProjectUserView;
 import dev.erpix.easykan.server.domain.project.repository.ProjectMemberRepository;
 import dev.erpix.easykan.server.domain.project.repository.ProjectRepository;
 import dev.erpix.easykan.server.domain.project.repository.ProjectUserViewRepository;
+import dev.erpix.easykan.server.domain.user.dto.UserCreateRequestDto;
 import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.model.UserPermission;
 import dev.erpix.easykan.server.domain.user.service.UserService;
+import dev.erpix.easykan.server.exception.project.ProjectNotFoundException;
 import dev.erpix.easykan.server.exception.user.UserNotFoundException;
 import dev.erpix.easykan.server.testsupport.Category;
 import dev.erpix.easykan.server.testsupport.annotation.IntegrationTest;
@@ -63,7 +65,7 @@ public class ProjectServiceIT {
 		assertThat(projectRepository.countByOwner_Login(WithPersistedUser.Default.LOGIN)).isEqualTo(0L);
 
 		var dto = new ProjectCreateDto("New Project");
-		var createdProject = projectService.createProject(dto, this.user.getId());
+		projectService.createProject(dto, this.user.getId());
 
 		assertThat(projectRepository.count()).isEqualTo(1L);
 
@@ -125,6 +127,78 @@ public class ProjectServiceIT {
 	void getProjectsForUser_shouldReturnEmptyList_whenUserHasNoProjects() {
 		var projects = projectService.getProjectsForUser(this.user.getId());
 		assertThat(projects).isEmpty();
+	}
+
+	@Test
+	@WithPersistedUser(permissions = UserPermission.CREATE_PROJECTS)
+	void deleteProject_shouldDeleteProjectAndAllRelatedData_whenUserIsOwner() {
+		var createDto = new ProjectCreateDto("Project to Delete");
+		projectService.createProject(createDto, this.user.getId());
+
+		Project savedProject = projectRepository.findAll().getFirst();
+		UUID projectId = savedProject.getId();
+
+		assertThat(projectRepository.count()).isEqualTo(1L);
+		assertThat(projectMemberRepository.count()).isEqualTo(1L);
+		assertThat(projectUserViewRepository.count()).isEqualTo(1L);
+
+		projectService.deleteProject(projectId, this.user.getId());
+
+		assertThat(projectRepository.count()).isEqualTo(0L);
+		assertThat(projectMemberRepository.count()).isEqualTo(0L);
+		assertThat(projectUserViewRepository.count()).isEqualTo(0L);
+	}
+
+	@Test
+	@WithPersistedUser(permissions = {UserPermission.MANAGE_PROJECTS, UserPermission.CREATE_PROJECTS, UserPermission.MANAGE_USERS})
+	void deleteProject_shouldDeleteProject_whenUserHasPermission() {
+		UserCreateRequestDto requestDto = new UserCreateRequestDto("otheruser", "Other User", "password", "otheruser@easykan.dev");
+		User owner = userService.create(requestDto);
+		owner.setPermissions(UserPermission.CREATE_PROJECTS.getValue());
+
+		var createDto = new ProjectCreateDto("Another User's Project");
+		projectService.createProject(createDto, owner.getId());
+
+		Project savedProject = projectRepository.findAll().getFirst();
+		UUID projectId = savedProject.getId();
+
+		assertThat(projectRepository.count()).isEqualTo(1L);
+
+		projectService.deleteProject(projectId, this.user.getId());
+
+		assertThat(projectRepository.count()).isEqualTo(0L);
+	}
+
+	@Test
+	@WithPersistedUser(permissions = {UserPermission.MANAGE_USERS, UserPermission.CREATE_PROJECTS})
+	void deleteProject_shouldThrowAccessDeniedException_whenUserIsNotOwnerOrAdmin() {
+		UserCreateRequestDto requestDto = new UserCreateRequestDto("owner", "Owner User", "owner@easykan.dev", "password");
+		User owner = userService.create(requestDto);
+		owner.setPermissions(UserPermission.CREATE_PROJECTS.getValue());
+
+		var createDto = new ProjectCreateDto("Protected Project");
+		projectService.createProject(createDto, owner.getId());
+		Project savedProject = projectRepository.findAll().getFirst();
+		UUID projectId = savedProject.getId();
+
+		UserCreateRequestDto attackerDto = new UserCreateRequestDto("attacker", "Attacker User", "attacker@easykan.dev", "password");
+		User attacker = userService.create(attackerDto);
+
+		assertThat(projectRepository.count()).isEqualTo(1L);
+
+		assertThrows(AccessDeniedException.class,
+				() -> projectService.deleteProject(projectId, attacker.getId()));
+
+		assertThat(projectRepository.count()).isEqualTo(1L);
+	}
+
+	@Test
+	@WithPersistedUser
+	void deleteProject_shouldThrowProjectNotFoundException_whenProjectDoesNotExist() {
+		UUID nonExistentProjectId = UUID.randomUUID();
+
+		assertThrows(ProjectNotFoundException.class,
+				() -> projectService.deleteProject(nonExistentProjectId, this.user.getId()));
 	}
 
 	@Test

@@ -12,8 +12,10 @@ import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.model.UserPermission;
 import dev.erpix.easykan.server.domain.user.security.RequireUserPermission;
 import dev.erpix.easykan.server.domain.user.service.UserService;
+import dev.erpix.easykan.server.exception.project.ProjectNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -44,6 +46,21 @@ public class ProjectService {
 		Project savedProject = projectRepository.save(project);
 
 		return PositionedProjectDto.fromProjectFor(savedProject, owner);
+	}
+
+	public void deleteProject(UUID projectId, UUID userId) {
+		Project project = projectRepository.findById(projectId)
+				.orElseThrow(() -> ProjectNotFoundException.byId(projectId));
+		User user = userService.getById(userId);
+
+		boolean isAdmin = UserPermission.hasPermissionOrAdmin(user, UserPermission.MANAGE_PROJECTS);
+		boolean isOwner = project.getOwner().getId().equals(userId);
+
+        if (!isAdmin && !isOwner) {
+			throw new AccessDeniedException("You do not have permission to delete this project");
+        }
+
+		projectRepository.delete(project);
 	}
 
 	public List<ProjectSummaryDto> getProjectsForUser(UUID userId) {

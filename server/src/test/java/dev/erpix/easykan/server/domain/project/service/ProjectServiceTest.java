@@ -10,19 +10,22 @@ import dev.erpix.easykan.server.domain.project.repository.ProjectMemberRepositor
 import dev.erpix.easykan.server.domain.project.repository.ProjectRepository;
 import dev.erpix.easykan.server.domain.project.repository.ProjectUserViewRepository;
 import dev.erpix.easykan.server.domain.user.model.User;
+import dev.erpix.easykan.server.domain.user.model.UserPermission;
 import dev.erpix.easykan.server.domain.user.service.UserService;
+import dev.erpix.easykan.server.exception.project.ProjectNotFoundException;
 import dev.erpix.easykan.server.exception.user.UserNotFoundException;
 import dev.erpix.easykan.server.testsupport.Category;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -52,8 +55,6 @@ public class ProjectServiceTest {
 	@Mock
 	private UserService userService;
 
-	ArgumentCaptor<Project> projectCaptor = ArgumentCaptor.forClass(Project.class);
-
 	@Test
 	void createProject_shouldCreateProjectAndReturnDto() {
 		UUID ownerId = UUID.randomUUID();
@@ -82,7 +83,7 @@ public class ProjectServiceTest {
 	}
 
 	@Test
-	void createProject_shouldThrowException_whenUserDoesNotExist() {
+	void createProject_shouldThrowUserNotFoundException_whenUserDoesNotExist() {
 		UUID nonExistentUserId = UUID.randomUUID();
 		ProjectCreateDto createDto = new ProjectCreateDto("Test Project");
 
@@ -111,6 +112,102 @@ public class ProjectServiceTest {
 		projectService.createProject(createDto, ownerId);
 
 		verify(projectFactory).create(createDto.name(), owner, 0);
+	}
+
+	@Test
+	void deleteProject_shouldDeleteProject_whenUserIsOwner() {
+		UUID ownerId = UUID.randomUUID();
+		User owner = User.builder().id(ownerId).permissions(UserPermission.DEFAULT_PERMISSIONS.getValue()).build();
+
+		UUID projectId = UUID.randomUUID();
+		Project project = Project.builder().id(projectId).owner(owner).build();
+
+		when(projectRepository.findById(projectId)).thenReturn(java.util.Optional.of(project));
+		when(userService.getById(ownerId)).thenReturn(owner);
+
+		projectService.deleteProject(projectId, ownerId);
+
+		verify(projectRepository, times(1)).delete(project);
+	}
+
+	@Test
+	void deleteProject_shouldDeleteProject_whenUserHasManageProjectsPermission() {
+		UUID adminId = UUID.randomUUID();
+		User admin = User.builder().id(adminId).permissions(UserPermission.MANAGE_PROJECTS.getValue()).build();
+
+		UUID projectId = UUID.randomUUID();
+		User owner = User.builder().id(UUID.randomUUID()).build();
+		Project project = Project.builder().id(projectId).owner(owner).build();
+
+		when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+		when(userService.getById(adminId)).thenReturn(admin);
+
+		projectService.deleteProject(projectId, adminId);
+
+		verify(projectRepository, times(1)).delete(project);
+	}
+
+	@Test
+	void deleteProject_shouldDeleteProject_whenUserIsAdmin() {
+		UUID adminId = UUID.randomUUID();
+		User admin = User.builder().id(adminId).permissions(UserPermission.ADMIN.getValue()).build();
+
+		UUID projectId = UUID.randomUUID();
+		User owner = User.builder().id(UUID.randomUUID()).build();
+		Project project = Project.builder().id(projectId).owner(owner).build();
+
+		when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+		when(userService.getById(adminId)).thenReturn(admin);
+
+		projectService.deleteProject(projectId, adminId);
+
+		verify(projectRepository, times(1)).delete(project);
+	}
+
+	@Test
+	void deleteProject_shouldThrowAccessDeniedException_whenUserIsNotOwnerOrAdmin() {
+		UUID userId = UUID.randomUUID();
+		User user = User.builder().id(userId).permissions(UserPermission.DEFAULT_PERMISSIONS.getValue()).build();
+
+		UUID projectId = UUID.randomUUID();
+		User owner = User.builder().id(UUID.randomUUID()).build();
+		Project project = Project.builder().id(projectId).owner(owner).build();
+
+		when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+		when(userService.getById(userId)).thenReturn(user);
+
+		assertThrows(AccessDeniedException.class,
+				() -> projectService.deleteProject(projectId, userId));
+
+		verify(projectRepository, never()).delete(any());
+	}
+
+	@Test
+	void deleteProject_shouldThrowProjectNotFoundException_whenProjectDoesNotExist() {
+		UUID userId = UUID.randomUUID();
+		UUID nonExistentProjectId = UUID.randomUUID();
+
+		when(projectRepository.findById(nonExistentProjectId))
+				.thenReturn(Optional.empty());
+
+		assertThrows(ProjectNotFoundException.class,
+				() -> projectService.deleteProject(nonExistentProjectId, userId));
+		verify(projectRepository, never()).delete(any());
+	}
+
+	@Test
+	void deleteProject_shouldThrowUserNotFoundException_whenUserDoesNotExist() {
+		UUID nonExistentUserId = UUID.randomUUID();
+		UUID projectId = UUID.randomUUID();
+		User owner = User.builder().id(UUID.randomUUID()).build();
+		Project project = Project.builder().id(projectId).owner(owner).build();
+
+		when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+		when(userService.getById(nonExistentUserId)).thenThrow(UserNotFoundException.byId(nonExistentUserId));
+
+		assertThrows(UserNotFoundException.class,
+				() -> projectService.deleteProject(projectId, nonExistentUserId));
+		verify(projectRepository, never()).delete(any());
 	}
 
 	@Test
