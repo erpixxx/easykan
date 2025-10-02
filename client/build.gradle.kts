@@ -5,3 +5,9 @@ tasks.register<Exec>("build") {
 
     commandLine(npm, "run", "build")
 }
+
+tasks.register<Exec>("clean") {
+    workingDir(project.projectDir)
+
+    commandLine(npm, "run", "clean")
+}

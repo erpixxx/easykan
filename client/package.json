@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "clean": "rimraf dist",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
@@ -37,6 +38,7 @@
     "globals": "^16.2.0",
     "prettier": "^3.6.2",
     "react-router-dom": "^7.6.3",
+    "rimraf": "^6.0.1",
     "sass": "^1.89.2",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.34.1",
