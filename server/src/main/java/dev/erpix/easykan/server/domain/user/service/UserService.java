@@ -12,7 +12,6 @@ import dev.erpix.easykan.server.exception.user.UserNotFoundException;
 import jakarta.transaction.Transactional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -32,22 +31,22 @@ public class UserService {
 	private final PasswordEncoder passwordEncoder;
 
 	@RequireUserPermission(UserPermission.MANAGE_USERS)
-	public @NotNull Page<User> getAllUsers(Pageable pageable) {
+	public Page<User> getAllUsers(Pageable pageable) {
 		return userRepository.findAll(pageable);
 	}
 
 	@Cacheable(value = CacheKey.USERS_ID, key = "#userId")
-	public @NotNull User getById(@NotNull UUID userId) {
+	public User getById(UUID userId) {
 		return userRepository.findById(userId).orElseThrow(() -> UserNotFoundException.byId(userId));
 	}
 
 	@Cacheable(value = CacheKey.USERS_LOGIN, key = "#login")
-	public @NotNull User getByLogin(@NotNull String login) {
+	public User getByLogin(String login) {
 		return userRepository.findByLogin(login).orElseThrow(() -> UserNotFoundException.byLogin(login));
 	}
 
 	@RequireUserPermission(UserPermission.MANAGE_USERS)
-	public @NotNull User create(@NotNull UserCreateRequestDto dto) {
+	public User create(UserCreateRequestDto dto) {
 		User user = dto.toUser();
 		if (user.getPasswordHash() != null)
 			user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
@@ -58,7 +57,7 @@ public class UserService {
 			@CacheEvict(value = CacheKey.USERS_LOGIN, allEntries = true) })
 	@PreAuthorize("#userId != authentication.principal.getId()")
 	@RequireUserPermission(UserPermission.MANAGE_USERS)
-	public void deleteUser(@NotNull UUID userId) {
+	public void deleteUser(UUID userId) {
 		if (!userRepository.existsById(userId)) {
 			throw UserNotFoundException.byId(userId);
 		}
@@ -68,7 +67,7 @@ public class UserService {
 	@Transactional
 	@Caching(put = { @CachePut(value = CacheKey.USERS_ID, key = "#result.id"),
 			@CachePut(value = CacheKey.USERS_LOGIN, key = "#result.login") })
-	public User updateCurrentUserInfo(@NotNull UUID userId, @NotNull UserInfoUpdateRequestDto dto) {
+	public User updateCurrentUserInfo(UUID userId, UserInfoUpdateRequestDto dto) {
 		User user = userRepository.findById(userId).orElseThrow(() -> UserNotFoundException.byId(userId));
 		return updateUserInfoAndSave(user, dto);
 	}
@@ -77,7 +76,7 @@ public class UserService {
 	@Caching(put = { @CachePut(value = CacheKey.USERS_ID, key = "#result.id"),
 			@CachePut(value = CacheKey.USERS_LOGIN, key = "#result.login") })
 	@RequireUserPermission(UserPermission.MANAGE_USERS)
-	public User updateUserInfo(@NotNull UUID userId, @NotNull UserInfoUpdateRequestDto dto) {
+	public User updateUserInfo(UUID userId, UserInfoUpdateRequestDto dto) {
 		User user = userRepository.findById(userId).orElseThrow(() -> UserNotFoundException.byId(userId));
 		return updateUserInfoAndSave(user, dto);
 	}
@@ -87,14 +86,14 @@ public class UserService {
 			@CachePut(value = CacheKey.USERS_LOGIN, key = "#result.login") })
 	@PreAuthorize("#userId != authentication.principal.getId()")
 	@RequireUserPermission(UserPermission.ADMIN)
-	public User updateUserPermissions(@NotNull UUID userId, @NotNull UserPermissionsUpdateRequestDto dto) {
+	public User updateUserPermissions(UUID userId, UserPermissionsUpdateRequestDto dto) {
 		User user = userRepository.findById(userId).orElseThrow(() -> UserNotFoundException.byId(userId));
 
 		user.setPermissions(dto.permissions());
 		return userRepository.save(user);
 	}
 
-	protected @NotNull User updateUserInfoAndSave(@NotNull User user, @NotNull UserInfoUpdateRequestDto dto) {
+	protected User updateUserInfoAndSave(User user, UserInfoUpdateRequestDto dto) {
 		dto.login().ifPresent(user::setLogin);
 		dto.displayName().ifPresent(user::setDisplayName);
 		dto.email().ifPresent(user::setEmail);
