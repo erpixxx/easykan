@@ -1,9 +1,11 @@
-FROM node:24.3.0-slim
+FROM node:24.3.0-slim AS builder
 
 WORKDIR /app
 
-COPY client/package.json client/package-lock.json ./
+COPY client/ ./
 
 RUN npm install
 
-CMD ["npm", "run", "dev"]
+EXPOSE 5173
+
+CMD [ "npm", "run", "dev" ]

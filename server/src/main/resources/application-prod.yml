@@ -1,7 +1,11 @@
-easykan:
-  use-https: true
-  jwt:
-    secret: q+9vidZZd0Tq1tNj72NUykIaOZlLeKN9ix2PxU1Hg1Y=
-    access-token-expire: 900
-    refresh-token-expire: 604800
-  create-default-admin-account: false
+spring:
+  config:
+    activate:
+      on-profile: prod
+  jpa:
+    show-sql: false
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
