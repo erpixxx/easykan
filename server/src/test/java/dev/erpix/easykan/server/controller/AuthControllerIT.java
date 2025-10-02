@@ -7,7 +7,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.erpix.easykan.server.config.EasyKanConfig;
 import dev.erpix.easykan.server.domain.auth.dto.AuthLoginRequestDto;
 import dev.erpix.easykan.server.domain.auth.dto.UserAndTokenPairResponseDto;
 import dev.erpix.easykan.server.domain.auth.service.AuthService;
@@ -59,10 +58,6 @@ public class AuthControllerIT extends AbstractControllerSecurityTest {
 	@SuppressWarnings("unused")
 	@MockitoBean
 	private TokenService tokenService;
-
-	@SuppressWarnings("unused")
-	@MockitoBean
-	private EasyKanConfig config;
 
 	@Override
 	protected Stream<Arguments> provideProtectedEndpoints() {
