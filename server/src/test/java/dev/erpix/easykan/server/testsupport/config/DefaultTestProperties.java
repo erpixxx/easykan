@@ -16,4 +16,6 @@ import java.lang.annotation.Target;
 		"easykan.password.require-special-character=true", "easykan.client-url=http://localhost",
 		"easykan.server-url=http://localhost:8080", "easykan.create-default-admin-account=false",
 		"easykan.oidc.enabled=false" })
-public @interface DefaultTestProperties { }
+public @interface DefaultTestProperties {
+
+}

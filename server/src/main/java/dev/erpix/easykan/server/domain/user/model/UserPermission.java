@@ -10,7 +10,11 @@ import org.springframework.security.core.GrantedAuthority;
 @Getter
 public enum UserPermission implements GrantedAuthority {
 
-	DEFAULT_PERMISSIONS(0L), ADMIN(1L), CREATE_PROJECTS(1L << 1), MANAGE_PROJECTS(1L << 2), MANAGE_USERS(1L << 3);
+	DEFAULT_PERMISSIONS(0L), //
+	ADMIN(1L), //
+	MANAGE_PROJECTS(1L << 1), //
+	CREATE_PROJECTS(1L << 2), //
+	MANAGE_USERS(1L << 3); //
 
 	public static final long ALL_PERMISSIONS_MASK = Arrays.stream(values())
 		.mapToLong(UserPermission::getValue)
@@ -39,6 +43,10 @@ public enum UserPermission implements GrantedAuthority {
 
 	public static boolean hasPermission(User user, UserPermission permission) {
 		return (user.getPermissions() & permission.getValue()) == permission.getValue();
+	}
+
+	public static boolean hasPermissionOrAdmin(User user, UserPermission permission) {
+		return hasPermission(user, UserPermission.ADMIN) || hasPermission(user, permission);
 	}
 
 	public static void validate(long permissions) throws PermissionMaskValidationException {

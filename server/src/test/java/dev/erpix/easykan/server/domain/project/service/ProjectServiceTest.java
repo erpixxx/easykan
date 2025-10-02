@@ -176,8 +176,7 @@ public class ProjectServiceTest {
 		when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
 		when(userService.getById(userId)).thenReturn(user);
 
-		assertThrows(AccessDeniedException.class,
-				() -> projectService.deleteProject(projectId, userId));
+		assertThrows(AccessDeniedException.class, () -> projectService.deleteProject(projectId, userId));
 
 		verify(projectRepository, never()).delete(any());
 	}
@@ -187,11 +186,9 @@ public class ProjectServiceTest {
 		UUID userId = UUID.randomUUID();
 		UUID nonExistentProjectId = UUID.randomUUID();
 
-		when(projectRepository.findById(nonExistentProjectId))
-				.thenReturn(Optional.empty());
+		when(projectRepository.findById(nonExistentProjectId)).thenReturn(Optional.empty());
 
-		assertThrows(ProjectNotFoundException.class,
-				() -> projectService.deleteProject(nonExistentProjectId, userId));
+		assertThrows(ProjectNotFoundException.class, () -> projectService.deleteProject(nonExistentProjectId, userId));
 		verify(projectRepository, never()).delete(any());
 	}
 
@@ -205,8 +202,7 @@ public class ProjectServiceTest {
 		when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
 		when(userService.getById(nonExistentUserId)).thenThrow(UserNotFoundException.byId(nonExistentUserId));
 
-		assertThrows(UserNotFoundException.class,
-				() -> projectService.deleteProject(projectId, nonExistentUserId));
+		assertThrows(UserNotFoundException.class, () -> projectService.deleteProject(projectId, nonExistentUserId));
 		verify(projectRepository, never()).delete(any());
 	}
 

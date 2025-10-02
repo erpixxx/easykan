@@ -50,15 +50,15 @@ public class ProjectService {
 
 	public void deleteProject(UUID projectId, UUID userId) {
 		Project project = projectRepository.findById(projectId)
-				.orElseThrow(() -> ProjectNotFoundException.byId(projectId));
+			.orElseThrow(() -> ProjectNotFoundException.byId(projectId));
 		User user = userService.getById(userId);
 
 		boolean isAdmin = UserPermission.hasPermissionOrAdmin(user, UserPermission.MANAGE_PROJECTS);
 		boolean isOwner = project.getOwner().getId().equals(userId);
 
-        if (!isAdmin && !isOwner) {
+		if (!isAdmin && !isOwner) {
 			throw new AccessDeniedException("You do not have permission to delete this project");
-        }
+		}
 
 		projectRepository.delete(project);
 	}

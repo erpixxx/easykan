@@ -150,9 +150,11 @@ public class ProjectServiceIT {
 	}
 
 	@Test
-	@WithPersistedUser(permissions = {UserPermission.MANAGE_PROJECTS, UserPermission.CREATE_PROJECTS, UserPermission.MANAGE_USERS})
+	@WithPersistedUser(permissions = { UserPermission.MANAGE_PROJECTS, UserPermission.CREATE_PROJECTS,
+			UserPermission.MANAGE_USERS })
 	void deleteProject_shouldDeleteProject_whenUserHasPermission() {
-		UserCreateRequestDto requestDto = new UserCreateRequestDto("otheruser", "Other User", "password", "otheruser@easykan.dev");
+		UserCreateRequestDto requestDto = new UserCreateRequestDto("otheruser", "Other User", "password",
+				"otheruser@easykan.dev");
 		User owner = userService.create(requestDto);
 		owner.setPermissions(UserPermission.CREATE_PROJECTS.getValue());
 
@@ -170,9 +172,10 @@ public class ProjectServiceIT {
 	}
 
 	@Test
-	@WithPersistedUser(permissions = {UserPermission.MANAGE_USERS, UserPermission.CREATE_PROJECTS})
+	@WithPersistedUser(permissions = { UserPermission.MANAGE_USERS, UserPermission.CREATE_PROJECTS })
 	void deleteProject_shouldThrowAccessDeniedException_whenUserIsNotOwnerOrAdmin() {
-		UserCreateRequestDto requestDto = new UserCreateRequestDto("owner", "Owner User", "owner@easykan.dev", "password");
+		UserCreateRequestDto requestDto = new UserCreateRequestDto("owner", "Owner User", "owner@easykan.dev",
+				"password");
 		User owner = userService.create(requestDto);
 		owner.setPermissions(UserPermission.CREATE_PROJECTS.getValue());
 
@@ -181,13 +184,13 @@ public class ProjectServiceIT {
 		Project savedProject = projectRepository.findAll().getFirst();
 		UUID projectId = savedProject.getId();
 
-		UserCreateRequestDto attackerDto = new UserCreateRequestDto("attacker", "Attacker User", "attacker@easykan.dev", "password");
+		UserCreateRequestDto attackerDto = new UserCreateRequestDto("attacker", "Attacker User", "attacker@easykan.dev",
+				"password");
 		User attacker = userService.create(attackerDto);
 
 		assertThat(projectRepository.count()).isEqualTo(1L);
 
-		assertThrows(AccessDeniedException.class,
-				() -> projectService.deleteProject(projectId, attacker.getId()));
+		assertThrows(AccessDeniedException.class, () -> projectService.deleteProject(projectId, attacker.getId()));
 
 		assertThat(projectRepository.count()).isEqualTo(1L);
 	}

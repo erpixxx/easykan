@@ -13,6 +13,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/projects")
@@ -27,6 +28,13 @@ public class ProjectController {
 			@RequestBody @Valid ProjectCreateDto projectCreateDto) {
 		return ResponseEntity.status(201)
 			.body(projectService.createProject(projectCreateDto, userDetails.user().getId()));
+	}
+
+	@DeleteMapping
+	public ResponseEntity<Void> deleteProject(@AuthenticationPrincipal JpaUserDetails userDetails,
+			@RequestParam("projectId") String projectId) {
+		projectService.deleteProject(UUID.fromString(projectId), userDetails.user().getId());
+		return ResponseEntity.noContent().build();
 	}
 
 	@GetMapping
