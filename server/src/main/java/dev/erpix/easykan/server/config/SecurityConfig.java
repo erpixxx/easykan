@@ -20,9 +20,13 @@ import org.springframework.security.oauth2.client.registration.InMemoryClientReg
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.util.List;
 import java.util.Optional;
 
 @Configuration
@@ -89,12 +93,26 @@ public class SecurityConfig {
 			@Override
 			public void addCorsMappings(@NotNull CorsRegistry registry) {
 				registry.addMapping("/**")
-					.allowedOrigins("http://localhost:5173", "http://localhost:8080", "https://easykan.dev")
+					.allowedOrigins(config.clientUrl(), config.serverUrl())
 					.allowedMethods("*")
 					.allowCredentials(true)
 					.maxAge(3600);
 			}
 		};
+	}
+
+	@Bean
+	public CorsConfigurationSource corsConfigurationSource() {
+		CorsConfiguration cors = new CorsConfiguration();
+		cors.setAllowedOrigins(List.of(config.clientUrl(), config.serverUrl()));
+		cors.setAllowedMethods(List.of("*"));
+		cors.setAllowedHeaders(List.of("*"));
+		cors.setAllowCredentials(true);
+		cors.setMaxAge(3600L);
+
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", cors);
+		return source;
 	}
 
 }
