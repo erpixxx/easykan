@@ -14,6 +14,8 @@ import dev.erpix.easykan.server.domain.user.service.UserService;
 import dev.erpix.easykan.server.exception.project.ProjectNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
@@ -67,6 +69,11 @@ public class ProjectService {
 			.stream()
 			.map(puv -> ProjectSummaryDto.fromProject(puv.getProject()))
 			.toList();
+	}
+
+	@RequireUserPermission(UserPermission.MANAGE_PROJECTS)
+	public Page<ProjectSummaryDto> getAllProjects(Pageable pageable) {
+		return projectRepository.findAll(pageable).map(ProjectSummaryDto::fromProject);
 	}
 
 }

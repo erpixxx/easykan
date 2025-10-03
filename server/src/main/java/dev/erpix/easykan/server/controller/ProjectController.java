@@ -7,6 +7,9 @@ import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -41,6 +44,12 @@ public class ProjectController {
 	public ResponseEntity<List<ProjectSummaryDto>> getProjectsForCurrentUser(
 			@AuthenticationPrincipal JpaUserDetails userDetails) {
 		List<ProjectSummaryDto> projects = projectService.getProjectsForUser(userDetails.user().getId());
+		return ResponseEntity.ok(projects);
+	}
+
+	@GetMapping("/all")
+	public ResponseEntity<Page<ProjectSummaryDto>> getAllProjects(@ParameterObject Pageable pageable) {
+		Page<ProjectSummaryDto> projects = projectService.getAllProjects(pageable);
 		return ResponseEntity.ok(projects);
 	}
 
