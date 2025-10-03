@@ -1,6 +1,5 @@
 package dev.erpix.easykan.server.domain.project.service;
 
-import dev.erpix.easykan.server.domain.project.dto.PositionedProjectDto;
 import dev.erpix.easykan.server.domain.project.dto.ProjectCreateDto;
 import dev.erpix.easykan.server.domain.project.dto.ProjectSummaryDto;
 import dev.erpix.easykan.server.domain.project.factory.ProjectFactory;
@@ -71,7 +70,7 @@ public class ProjectServiceTest {
 		when(projectFactory.create(createDto.name(), owner, expectedNextPosition)).thenReturn(project);
 		when(projectRepository.save(project)).thenReturn(project);
 
-		PositionedProjectDto resultDto = projectService.createProject(createDto, ownerId);
+		ProjectSummaryDto resultDto = projectService.createProject(createDto, ownerId);
 
 		verify(userService).getById(ownerId);
 		verify(projectUserViewRepository).findNextPositionByUserId(ownerId);
@@ -231,10 +230,8 @@ public class ProjectServiceTest {
 		assertThat(result).hasSize(2);
 
 		assertThat(result.get(0).name()).isEqualTo(projectName1);
-		assertThat(result.get(0).position()).isZero();
 
 		assertThat(result.get(1).name()).isEqualTo(projectName2);
-		assertThat(result.get(1).position()).isEqualTo(1);
 	}
 
 	@Test

@@ -17,6 +17,8 @@ public interface ProjectUserViewRepository extends JpaRepository<ProjectUserView
 				SELECT puv FROM ProjectUserView puv
 					JOIN FETCH puv.project p
 					JOIN FETCH p.owner
+					LEFT JOIN FETCH p.members m
+					LEFT JOIN FETCH m.user
 					WHERE puv.id.userId = :userId
 					ORDER BY puv.position
 			""")

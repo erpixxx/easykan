@@ -1,6 +1,5 @@
 package dev.erpix.easykan.server.controller;
 
-import dev.erpix.easykan.server.domain.project.dto.PositionedProjectDto;
 import dev.erpix.easykan.server.domain.project.dto.ProjectCreateDto;
 import dev.erpix.easykan.server.domain.project.dto.ProjectSummaryDto;
 import dev.erpix.easykan.server.domain.project.service.ProjectService;
@@ -8,6 +7,7 @@ import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -24,9 +24,9 @@ public class ProjectController {
 	private final ProjectService projectService;
 
 	@PostMapping
-	public ResponseEntity<PositionedProjectDto> createProject(@AuthenticationPrincipal JpaUserDetails userDetails,
+	public ResponseEntity<ProjectSummaryDto> createProject(@AuthenticationPrincipal JpaUserDetails userDetails,
 			@RequestBody @Valid ProjectCreateDto projectCreateDto) {
-		return ResponseEntity.status(201)
+		return ResponseEntity.status(HttpStatus.CREATED)
 			.body(projectService.createProject(projectCreateDto, userDetails.user().getId()));
 	}
 

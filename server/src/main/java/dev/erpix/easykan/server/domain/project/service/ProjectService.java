@@ -1,6 +1,5 @@
 package dev.erpix.easykan.server.domain.project.service;
 
-import dev.erpix.easykan.server.domain.project.dto.PositionedProjectDto;
 import dev.erpix.easykan.server.domain.project.dto.ProjectCreateDto;
 import dev.erpix.easykan.server.domain.project.dto.ProjectSummaryDto;
 import dev.erpix.easykan.server.domain.project.factory.ProjectFactory;
@@ -37,7 +36,7 @@ public class ProjectService {
 
 	@Transactional
 	@RequireUserPermission(UserPermission.CREATE_PROJECTS)
-	public PositionedProjectDto createProject(ProjectCreateDto dto, UUID ownerId) {
+	public ProjectSummaryDto createProject(ProjectCreateDto dto, UUID ownerId) {
 		User owner = userService.getById(ownerId);
 
 		int nextPosition = projectUserViewRepository.findNextPositionByUserId(owner.getId());
@@ -45,7 +44,7 @@ public class ProjectService {
 
 		Project savedProject = projectRepository.save(project);
 
-		return PositionedProjectDto.fromProjectFor(savedProject, owner);
+		return ProjectSummaryDto.fromProject(savedProject);
 	}
 
 	public void deleteProject(UUID projectId, UUID userId) {
@@ -66,7 +65,7 @@ public class ProjectService {
 	public List<ProjectSummaryDto> getProjectsForUser(UUID userId) {
 		return projectUserViewRepository.findAllByUserWithDetails(userId)
 			.stream()
-			.map(puv -> ProjectSummaryDto.fromProject(puv.getProject(), puv.getPosition()))
+			.map(puv -> ProjectSummaryDto.fromProject(puv.getProject()))
 			.toList();
 	}
 

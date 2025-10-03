@@ -1,7 +1,6 @@
 package dev.erpix.easykan.server.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.erpix.easykan.server.domain.project.dto.PositionedProjectDto;
 import dev.erpix.easykan.server.domain.project.dto.ProjectCreateDto;
 import dev.erpix.easykan.server.domain.project.dto.ProjectSummaryDto;
 import dev.erpix.easykan.server.domain.project.service.ProjectService;
@@ -52,7 +51,7 @@ public class ProjectControllerIT extends AbstractControllerSecurityIT {
 	@WithMockUser
 	void createProject_shouldReturnCreated_whenDataIsValid() throws Exception {
 		var createDto = new ProjectCreateDto("Test Project");
-		var resultDto = new PositionedProjectDto("Test Project", Collections.emptySet(), 0);
+		var resultDto = new ProjectSummaryDto(UUID.randomUUID(), "Test Project", Collections.emptySet());
 		UUID currentUserId = UUID.fromString(WithMockUser.Default.ID);
 
 		when(projectService.createProject(any(ProjectCreateDto.class), eq(currentUserId))).thenReturn(resultDto);
@@ -61,8 +60,7 @@ public class ProjectControllerIT extends AbstractControllerSecurityIT {
 			.perform(post("/api/projects").contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(createDto)))
 			.andExpect(status().isCreated())
-			.andExpect(jsonPath("$.name").value("Test Project"))
-			.andExpect(jsonPath("$.position").value(0));
+			.andExpect(jsonPath("$.name").value("Test Project"));
 
 		verify(projectService).createProject(any(ProjectCreateDto.class), eq(currentUserId));
 	}
@@ -109,7 +107,7 @@ public class ProjectControllerIT extends AbstractControllerSecurityIT {
 	@WithMockUser
 	void getProjectsForCurrentUser_shouldReturnProjectList_whenUserIsAuthenticated() throws Exception {
 		UUID currentUserId = UUID.fromString(WithMockUser.Default.ID);
-		var projectSummary = new ProjectSummaryDto(UUID.randomUUID(), "My Project", 0);
+		var projectSummary = new ProjectSummaryDto(UUID.randomUUID(), "My Project", Collections.emptySet());
 
 		when(projectService.getProjectsForUser(eq(currentUserId))).thenReturn(List.of(projectSummary));
 

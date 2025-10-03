@@ -88,15 +88,17 @@ public class ProjectServiceIT {
 	@Test
 	@WithPersistedUser(permissions = UserPermission.CREATE_PROJECTS)
 	void createProject_shouldSetCorrectIncrementedPosition_whenUserHasExistingProjects() {
+		assertThat(projectUserViewRepository.findNextPositionByUserId(user.getId())).isEqualTo(0);
+
 		var firstDto = new ProjectCreateDto("First Project");
 		var firstProjectResult = projectService.createProject(firstDto, this.user.getId());
 
-		assertThat(firstProjectResult.position()).isEqualTo(0);
+		assertThat(projectUserViewRepository.findNextPositionByUserId(user.getId())).isEqualTo(1);
 
 		var secondDto = new ProjectCreateDto("Second Project");
 		var secondProjectResult = projectService.createProject(secondDto, this.user.getId());
 
-		assertThat(secondProjectResult.position()).isEqualTo(1);
+		assertThat(projectUserViewRepository.findNextPositionByUserId(user.getId())).isEqualTo(2);
 
 		List<ProjectUserView> userViews = projectUserViewRepository.findAllByUserWithDetails(this.user.getId());
 		assertThat(userViews).hasSize(2);
