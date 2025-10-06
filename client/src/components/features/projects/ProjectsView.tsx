@@ -1,116 +1,111 @@
 import "../../../scss/components/projects_view.scss";
 import {
-  Avatar,
   Box,
   Button,
   Card,
   Dialog,
   Flex,
   Grid,
-  Heading,
   IconButton,
+  Spinner,
   Text,
   TextField,
-  Tooltip
 } from "@radix-ui/themes";
-import {Cross1Icon, DotsHorizontalIcon, PlusIcon, RocketIcon} from "@radix-ui/react-icons";
+import { Cross1Icon, PlusIcon, RocketIcon } from "@radix-ui/react-icons";
+import { useEffect, useState } from "react";
+import { create, getProjectList } from "../../../api/projects.api.ts";
+import type { ProjectListItem } from "../../../types/dto/project/ProjectListItem.ts";
+import { ProjectCard } from "./ProjectCard.tsx";
 
 export function ProjectsView() {
+  const [projects, setProjects] = useState<ProjectListItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadProjects = async () => {
+      try {
+        setLoading(true);
+        // await new Promise((resolve) => setTimeout(resolve, 2000));
+        const res = await getProjectList();
+        setProjects(res);
+      } catch (err) {
+        setError("Failed to load projects.");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProjects();
+  }, []);
+
+  const handleProjectCreated = (newProject: ProjectListItem) => {
+    setProjects((prevProjects) => [newProject, ...prevProjects]);
+  };
+
+  if (loading) {
+    return (
+      <Box m="9">
+        <Spinner size="3" /> <Text>Loading projects...</Text>
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box m="9">
+        <Text color="red">{error}</Text>
+      </Box>
+    );
+  }
+
   return (
     <Box m="9" className="projects-view">
       <Grid
         className="projects-view-grid"
-        columns={{ initial: '1', sm: '2', md: '3', lg: '4', xl: '5' }}
+        columns={{ initial: "1", sm: "2", md: "3", lg: "4", xl: "5" }}
         gap="6"
       >
-        <Project id="prj0" name="Exvoid" members={["erpix", "Matou0014", "erpix", "Matou0014", "erpix", "Matou0014", "erpix", "Matou0014"]} />
-        <NewProjectButton />
+        {projects.map((project) => (
+          <ProjectCard
+            key={project.id}
+            id={project.id}
+            name={project.name}
+            members={project.members}
+          />
+        ))}
+        <NewProjectButton onProjectCreated={handleProjectCreated} />
       </Grid>
     </Box>
   );
 }
 
-export interface ProjectProps {
-  id: string;
-  name: string;
-  members: string[]
+interface NewProjectButtonProps {
+  onProjectCreated: (newProject: ProjectListItem) => void;
 }
 
-export function Project({ id, name, members }: ProjectProps) {
-  const maxMemberShow = 3;
+export function NewProjectButton({ onProjectCreated }: NewProjectButtonProps) {
+  const [projectName, setProjectName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
 
-  return (
-    <Box
-      className="single-project-container"
-      height="240px"
-      width="320px"
-      asChild
-    >
-      <Card className="projects-view-card">
-        <Flex
-          className="projects-view-card-content"
-          height="100%"
-          direction="column"
-          justify="between"
-        >
-          <Box className="projects-view-card-header">
-            <Flex justify="between">
-              <Heading className="projects-view-card-title" size="5">
-                {name}
-              </Heading>
-              <Tooltip content="Edit project">
-                <IconButton
-                  className="projects-view-card-edit-button"
-                  variant="ghost"
-                  radius="full"
-                >
-                  <DotsHorizontalIcon color="white"  />
-                </IconButton>
-              </Tooltip>
-            </Flex>
-          </Box>
-          <Flex
-            className="projects-view-card-members"
-            align="center"
-            gap="2"
-            justify="end"
-          >
-            {
-              members.slice(0, maxMemberShow).map( (member, index) => (
-                <Avatar
-                  key={`${id}-member-${index}`}
-                  className="projects-view-card-member"
-                  variant="solid"
-                  fallback={member.charAt(0).toUpperCase()}
-                  size="2"
-                  radius="full"
-                  style={{ boxShadow: "0 0 4px rgba(0, 0, 0, 0.8)" }}
-                />
-              ))
-            }
-            { members.length > maxMemberShow && (
-              <Tooltip content={members.slice(3).map(member => `${member}`).join(', ')}>
-                <a>
-                  <Avatar
-                    className="projects-view-card-member projects-view-card-member-more"
-                    color="gray"
-                    variant="solid"
-                    fallback={`+${members.length - maxMemberShow}`}
-                    size="2"
-                    radius="full"
-                    style={{ boxShadow: "0 0 4px rgba(0, 0, 0, 0.8)" }}
-                  />
-                </a>
-              </Tooltip>
-            )}
-          </Flex>
-        </Flex>
-      </Card>
-    </Box>
-  );
-}
+  const createProject = async () => {
+    if (!projectName.trim()) return;
 
-export function NewProjectButton() {
+    try {
+      setLoading(true);
+      const newProject = await create({ name: projectName });
+      onProjectCreated(newProject);
+      setProjectName("");
+      setOpen(false);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Card variant="ghost" className="projects-view-new-project">
       <Flex
@@ -120,7 +115,7 @@ export function NewProjectButton() {
         height="240px"
         p="3"
       >
-        <Dialog.Root>
+        <Dialog.Root open={open} onOpenChange={setOpen}>
           <Dialog.Trigger>
             <Button variant="surface" size="3">
               <PlusIcon />
@@ -143,15 +138,22 @@ export function NewProjectButton() {
             </Flex>
             <Flex direction="column" gap="4">
               <Dialog.Description>
-                Enter the name of your new project below. You can add more details later.
+                Enter the name of your new project below. You can add more
+                details later.
               </Dialog.Description>
               <Box>
                 <Box pb="1">
-                  <Text color="gray" size="2">Project name</Text>
+                  <Text color="gray" size="2">
+                    Project name
+                  </Text>
                 </Box>
-                <TextField.Root />
+                <TextField.Root
+                  value={projectName}
+                  onChange={(e) => setProjectName(e.target.value)}
+                  disabled={loading}
+                />
               </Box>
-              <Button>
+              <Button onClick={createProject} loading={loading}>
                 <RocketIcon />
                 <Text>Create</Text>
               </Button>

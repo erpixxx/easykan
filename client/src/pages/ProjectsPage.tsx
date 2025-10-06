@@ -1,5 +1,5 @@
 import "../scss/projects.scss"
-import {UserNav} from "../components/features/projects/UserNav.tsx";
+import {UserNav} from "../components/layouts/UserNav.tsx";
 import {ProjectsView} from "../components/features/projects/ProjectsView.tsx";
 import {PageTransition} from "../components/PageTransition.tsx";
 
