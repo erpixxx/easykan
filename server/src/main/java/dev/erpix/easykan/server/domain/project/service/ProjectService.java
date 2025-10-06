@@ -79,4 +79,11 @@ public class ProjectService {
 		return projectRepository.findAll(pageable).map(ProjectSummaryDto::fromProject);
 	}
 
+	public List<ProjectPermission> getPermissionsForUserInProject(UUID projectId, UUID userId) {
+		long permissionMask = projectMemberRepository.findPermissionByUserIdAndIdProjectId(userId, projectId)
+				.orElse(0L);
+
+		return ProjectPermission.fromValue(permissionMask);
+	}
+
 }
