@@ -12,6 +12,7 @@ import dev.erpix.easykan.server.domain.user.model.UserPermission;
 import dev.erpix.easykan.server.domain.user.security.RequireUserPermission;
 import dev.erpix.easykan.server.domain.user.service.UserService;
 import dev.erpix.easykan.server.exception.project.ProjectNotFoundException;
+import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -34,12 +35,14 @@ public class ProjectService {
 
 	private final ProjectUserViewRepository projectUserViewRepository;
 
+	private final EntityManager entityManager;
+
 	private final UserService userService;
 
 	@Transactional
 	@RequireUserPermission(UserPermission.CREATE_PROJECTS)
 	public ProjectSummaryDto createProject(ProjectCreateDto dto, UUID ownerId) {
-		User owner = userService.getById(ownerId);
+		User owner = entityManager.merge(userService.getById(ownerId));
 
 		int nextPosition = projectUserViewRepository.findNextPositionByUserId(owner.getId());
 		Project project = projectFactory.create(dto.name(), owner, nextPosition);
