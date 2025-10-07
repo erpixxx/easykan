@@ -15,21 +15,13 @@ import {
 } from "@radix-ui/themes";
 import { BellIcon, ExitIcon, GearIcon } from "@radix-ui/react-icons";
 import type { ReactNode } from "react";
-import { logout } from "../../api/auth.api.ts";
-import { useNavigate } from "react-router-dom";
-import { LOGIN_PAGE_PATH } from "../../routes/route.ts";
+import { useAuth } from "../../context/AuthContext.tsx";
 
 export function TopBar() {
-  const navigate = useNavigate();
+  const { logout } = useAuth();
 
-  async function handleLogout() {
-    try {
-      await logout();
-    } catch (error) {
-      console.error("Logout failed:", error);
-    } finally {
-      navigate(LOGIN_PAGE_PATH);
-    }
+  function handleLogout() {
+    logout();
   }
 
   return (
