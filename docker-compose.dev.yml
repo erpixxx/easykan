@@ -45,7 +45,7 @@ services:
       dockerfile: ./client/Dockerfile.dev
     container_name: easykan-client-dev
     ports:
-      - "80:80"
+      - "5173:5173"
     env_file:
       - ./.env
     environment:
