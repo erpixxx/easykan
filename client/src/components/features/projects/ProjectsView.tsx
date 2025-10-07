@@ -1,4 +1,3 @@
-import "../../../scss/components/projects_view.scss";
 import {
   Box,
   Button,
@@ -15,18 +14,40 @@ import { Cross1Icon, PlusIcon, RocketIcon } from "@radix-ui/react-icons";
 import { useEffect, useState } from "react";
 import { create, getProjectList } from "../../../api/projects.api.ts";
 import type { ProjectListItem } from "../../../types/dto/project/ProjectListItem.ts";
+import {
+  DndContext,
+  type DragEndEvent,
+  DragOverlay,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  rectSortingStrategy,
+  SortableContext,
+} from "@dnd-kit/sortable";
+import { SortableProjectCard } from "./SortableProjectCard.tsx";
 import { ProjectCard } from "./ProjectCard.tsx";
 
 export function ProjectsView() {
   const [projects, setProjects] = useState<ProjectListItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+  );
 
   useEffect(() => {
     const loadProjects = async () => {
       try {
         setLoading(true);
-        // await new Promise((resolve) => setTimeout(resolve, 2000));
         const res = await getProjectList();
         setProjects(res);
       } catch (err) {
@@ -41,8 +62,26 @@ export function ProjectsView() {
   }, []);
 
   const handleProjectCreated = (newProject: ProjectListItem) => {
-    setProjects((prevProjects) => [newProject, ...prevProjects]);
+    setProjects((prevProjects) => [...prevProjects, newProject]);
   };
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setProjects((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+
+    setActiveProjectId(null);
+    setDragging(false);
+  }
+
+  const activeProject = projects.find((p) => p.id === activeProjectId) || null;
 
   if (loading) {
     return (
@@ -62,21 +101,45 @@ export function ProjectsView() {
 
   return (
     <Box m="9" className="projects-view">
-      <Grid
-        className="projects-view-grid"
-        columns={{ initial: "1", sm: "2", md: "3", lg: "4", xl: "5" }}
-        gap="6"
-      >
-        {projects.map((project) => (
-          <ProjectCard
-            key={project.id}
-            id={project.id}
-            name={project.name}
-            members={project.members}
-          />
-        ))}
-        <NewProjectButton onProjectCreated={handleProjectCreated} />
-      </Grid>
+      <div>
+        <DndContext
+          onDragStart={(e) => {
+            setActiveProjectId(e.active.id as string);
+            setDragging(true);
+          }}
+          onDragEnd={handleDragEnd}
+          sensors={sensors}
+        >
+          <SortableContext
+            items={projects.map((p) => p.id)}
+            strategy={rectSortingStrategy}
+          >
+            <Grid
+              className="projects-view-grid"
+              columns={{ initial: "1", sm: "2", md: "3", lg: "4", xl: "5" }}
+              gap="6"
+            >
+              {projects.map((project) => (
+                <SortableProjectCard
+                  key={project.id}
+                  project={project}
+                  isDragging={dragging && activeProjectId === project.id}
+                />
+              ))}
+              <NewProjectButton onProjectCreated={handleProjectCreated} />
+            </Grid>
+          </SortableContext>
+          <DragOverlay>
+            {activeProject ? (
+              <ProjectCard
+                id={activeProject.id}
+                name={activeProject.name}
+                members={activeProject.members}
+              />
+            ) : null}
+          </DragOverlay>
+        </DndContext>
+      </div>
     </Box>
   );
 }

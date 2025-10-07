@@ -1,0 +1,42 @@
+@use "../mixins" as *;
+
+.projectCard {
+  border-radius: var(--radius-4);
+
+  &:hover {
+    cursor: pointer;
+    box-shadow: var(--white-a1) 0 0 10px;
+    transform: scale(1.02);
+    transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
+  }
+}
+
+.projectCardBackground {
+  @include theme(background-image,
+                  (linear-gradient(rgba(255, 255, 255, 0.0), rgba(255, 255, 255, 0.0)),
+                  url("https://picsum.photos/1920/1082")),
+                  (linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.2)),
+                  url("https://picsum.photos/1920/1082")));
+  border-radius: inherit;
+  width: inherit;
+  height: inherit;
+}
+
+.projectCardBackgroundGradient {
+  background: radial-gradient(transparent, rgba(0,0,0,0.5));
+  border-radius: inherit;
+  width: inherit;
+  height: inherit;
+
+  &:hover {
+    background: radial-gradient(transparent, rgba(0,0,0,0.3));
+  }
+}
+
+.projectCardContent {
+  padding: var(--space-3);
+}
+
+.projectCardTitle {
+    color: var(--accent-12);
+}
