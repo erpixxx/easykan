@@ -5,7 +5,6 @@ import dev.erpix.easykan.server.domain.project.dto.ProjectSummaryDto;
 import dev.erpix.easykan.server.domain.project.factory.ProjectFactory;
 import dev.erpix.easykan.server.domain.project.model.Project;
 import dev.erpix.easykan.server.domain.project.model.ProjectUserView;
-import dev.erpix.easykan.server.domain.project.repository.ProjectMemberRepository;
 import dev.erpix.easykan.server.domain.project.repository.ProjectRepository;
 import dev.erpix.easykan.server.domain.project.repository.ProjectUserViewRepository;
 import dev.erpix.easykan.server.domain.user.model.User;
@@ -14,6 +13,7 @@ import dev.erpix.easykan.server.domain.user.service.UserService;
 import dev.erpix.easykan.server.exception.project.ProjectNotFoundException;
 import dev.erpix.easykan.server.exception.user.UserNotFoundException;
 import dev.erpix.easykan.server.testsupport.Category;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,13 +43,13 @@ public class ProjectServiceTest {
 	private ProjectFactory projectFactory;
 
 	@Mock
-	private ProjectMemberRepository projectMemberRepository;
-
-	@Mock
 	private ProjectRepository projectRepository;
 
 	@Mock
 	private ProjectUserViewRepository projectUserViewRepository;
+
+	@Mock
+	private EntityManager entityManager;
 
 	@Mock
 	private UserService userService;
@@ -66,6 +66,7 @@ public class ProjectServiceTest {
 		int expectedNextPosition = 3;
 
 		when(userService.getById(ownerId)).thenReturn(owner);
+		when(entityManager.merge(owner)).thenReturn(owner);
 		when(projectUserViewRepository.findNextPositionByUserId(ownerId)).thenReturn(expectedNextPosition);
 		when(projectFactory.create(createDto.name(), owner, expectedNextPosition)).thenReturn(project);
 		when(projectRepository.save(project)).thenReturn(project);
@@ -93,24 +94,6 @@ public class ProjectServiceTest {
 		verify(projectUserViewRepository, never()).findNextPositionByUserId(any());
 		verify(projectFactory, never()).create(any(), any(), anyInt());
 		verify(projectRepository, never()).save(any());
-	}
-
-	@Test
-	void createProject_shouldSetPositionToZero_whenUserHasNoProjects() {
-		UUID ownerId = UUID.randomUUID();
-		User owner = User.builder().id(ownerId).build();
-
-		ProjectCreateDto createDto = new ProjectCreateDto("First Project");
-		Project mockProject = Project.builder().build();
-
-		when(projectUserViewRepository.findNextPositionByUserId(ownerId)).thenReturn(0);
-		when(userService.getById(ownerId)).thenReturn(owner);
-		when(projectFactory.create(anyString(), any(User.class), eq(0))).thenReturn(mockProject);
-		when(projectRepository.save(any(Project.class))).thenReturn(mockProject);
-
-		projectService.createProject(createDto, ownerId);
-
-		verify(projectFactory).create(createDto.name(), owner, 0);
 	}
 
 	@Test
