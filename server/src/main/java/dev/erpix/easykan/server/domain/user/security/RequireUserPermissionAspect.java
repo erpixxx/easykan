@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @Aspect
 @Component
 @RequiredArgsConstructor
-public class RequirePermissionAspect {
+public class RequireUserPermissionAspect {
 
 	private final UserDetailsProvider userDetailsProvider;
 
