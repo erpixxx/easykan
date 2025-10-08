@@ -1,5 +1,6 @@
 package dev.erpix.easykan.server.domain.project.service;
 
+import dev.erpix.easykan.server.constant.CacheKey;
 import dev.erpix.easykan.server.domain.project.dto.ProjectCreateDto;
 import dev.erpix.easykan.server.domain.project.dto.ProjectSummaryDto;
 import dev.erpix.easykan.server.domain.project.factory.ProjectFactory;
@@ -15,6 +16,10 @@ import dev.erpix.easykan.server.exception.project.ProjectNotFoundException;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
@@ -35,11 +40,14 @@ public class ProjectService {
 
 	private final ProjectUserViewRepository projectUserViewRepository;
 
+	private final CacheManager cacheManager;
+
 	private final EntityManager entityManager;
 
 	private final UserService userService;
 
 	@Transactional
+	@CacheEvict(cacheNames = CacheKey.PROJECTS_FOR_USER_ID, key = "#ownerId")
 	@RequireUserPermission(UserPermission.CREATE_PROJECTS)
 	public ProjectSummaryDto createProject(ProjectCreateDto dto, UUID ownerId) {
 		User owner = entityManager.merge(userService.getById(ownerId));
@@ -64,9 +72,26 @@ public class ProjectService {
 			throw new AccessDeniedException("You do not have permission to delete this project");
 		}
 
+		// Evict caches
+		Cache projectCache = cacheManager.getCache(CacheKey.PROJECTS_ID);
+		if (projectCache != null) {
+			projectCache.evict(projectId);
+		}
+
+		Cache userProjectsCache = cacheManager.getCache(CacheKey.PROJECTS_FOR_USER_ID);
+		if (userProjectsCache != null) {
+			userProjectsCache.evict(project.getOwner().getId());
+		}
+
 		projectRepository.delete(project);
 	}
 
+	@Cacheable(cacheNames = CacheKey.PROJECTS_ID, key = "#projectId")
+	public Project getProjectById(UUID projectId) {
+		return projectRepository.findById(projectId).orElseThrow(() -> ProjectNotFoundException.byId(projectId));
+	}
+
+	@Cacheable(cacheNames = CacheKey.PROJECTS_FOR_USER_ID, key = "#userId")
 	public List<ProjectSummaryDto> getProjectsForUser(UUID userId) {
 		return projectUserViewRepository.findAllByUserWithDetails(userId)
 			.stream()
@@ -81,7 +106,7 @@ public class ProjectService {
 
 	public List<ProjectPermission> getPermissionsForUserInProject(UUID projectId, UUID userId) {
 		long permissionMask = projectMemberRepository.findPermissionByUserIdAndIdProjectId(userId, projectId)
-				.orElse(0L);
+			.orElse(0L);
 
 		return ProjectPermission.fromValue(permissionMask);
 	}

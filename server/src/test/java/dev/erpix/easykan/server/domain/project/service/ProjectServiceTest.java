@@ -20,6 +20,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.cache.CacheManager;
 import org.springframework.security.access.AccessDeniedException;
 
 import java.util.Collections;
@@ -47,6 +48,9 @@ public class ProjectServiceTest {
 
 	@Mock
 	private ProjectUserViewRepository projectUserViewRepository;
+
+	@Mock
+	private CacheManager cacheManager;
 
 	@Mock
 	private EntityManager entityManager;
