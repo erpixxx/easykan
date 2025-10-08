@@ -305,7 +305,8 @@ public class ProjectServiceIT {
 		assertThat(firstCallProject).isNotNull();
 		assertThat(firstCallProject.getId()).isEqualTo(projectId);
 
-		// Clear the persistence context to ensure we are not getting a cached entity from Hibernate
+		// Clear the persistence context to ensure we are not getting a cached entity from
+		// Hibernate
 		entityManager.clear();
 
 		// Second call - should use the cache
@@ -357,7 +358,8 @@ public class ProjectServiceIT {
 		var firstCallProjects = projectService.getProjectsForUser(this.user.getId());
 		assertThat(firstCallProjects).hasSize(1);
 
-		// Clear the persistence context to ensure we are not getting cached entities from Hibernate
+		// Clear the persistence context to ensure we are not getting cached entities from
+		// Hibernate
 		entityManager.clear();
 
 		// Second call - should use the cache

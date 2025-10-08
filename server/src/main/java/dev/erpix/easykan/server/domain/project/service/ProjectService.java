@@ -1,11 +1,11 @@
 package dev.erpix.easykan.server.domain.project.service;
 
 import dev.erpix.easykan.server.constant.CacheKey;
+import dev.erpix.easykan.server.domain.PermissionUtils;
 import dev.erpix.easykan.server.domain.project.dto.ProjectCreateDto;
 import dev.erpix.easykan.server.domain.project.dto.ProjectSummaryDto;
 import dev.erpix.easykan.server.domain.project.factory.ProjectFactory;
 import dev.erpix.easykan.server.domain.project.model.*;
-import dev.erpix.easykan.server.domain.project.repository.ProjectMemberRepository;
 import dev.erpix.easykan.server.domain.project.repository.ProjectRepository;
 import dev.erpix.easykan.server.domain.project.repository.ProjectUserViewRepository;
 import dev.erpix.easykan.server.domain.user.model.User;
@@ -33,8 +33,6 @@ import java.util.UUID;
 public class ProjectService {
 
 	private final ProjectFactory projectFactory;
-
-	private final ProjectMemberRepository projectMemberRepository;
 
 	private final ProjectRepository projectRepository;
 
@@ -65,7 +63,8 @@ public class ProjectService {
 			.orElseThrow(() -> ProjectNotFoundException.byId(projectId));
 		User user = userService.getById(userId);
 
-		boolean isAdmin = UserPermission.hasPermissionOrAdmin(user, UserPermission.MANAGE_PROJECTS);
+		boolean isAdmin = PermissionUtils.hasAnyPermission(user.getPermissions(), UserPermission.ADMIN,
+				UserPermission.MANAGE_PROJECTS);
 		boolean isOwner = project.getOwner().getId().equals(userId);
 
 		if (!isAdmin && !isOwner) {
@@ -102,13 +101,6 @@ public class ProjectService {
 	@RequireUserPermission(UserPermission.MANAGE_PROJECTS)
 	public Page<ProjectSummaryDto> getAllProjects(Pageable pageable) {
 		return projectRepository.findAll(pageable).map(ProjectSummaryDto::fromProject);
-	}
-
-	public List<ProjectPermission> getPermissionsForUserInProject(UUID projectId, UUID userId) {
-		long permissionMask = projectMemberRepository.findPermissionByUserIdAndIdProjectId(userId, projectId)
-			.orElse(0L);
-
-		return ProjectPermission.fromValue(permissionMask);
 	}
 
 }

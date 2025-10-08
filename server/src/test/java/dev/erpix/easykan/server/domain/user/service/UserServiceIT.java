@@ -3,6 +3,7 @@ package dev.erpix.easykan.server.domain.user.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import dev.erpix.easykan.server.domain.PermissionUtils;
 import dev.erpix.easykan.server.domain.user.dto.UserCreateRequestDto;
 import dev.erpix.easykan.server.domain.user.dto.UserInfoUpdateRequestDto;
 import dev.erpix.easykan.server.domain.user.dto.UserPermissionsUpdateRequestDto;
@@ -238,10 +239,11 @@ public class UserServiceIT {
 	void updateUserPermissions_shouldUpdateUserPermissions_whenUserHasAdminPermission() {
 		User userToUpdate = userRepository.findByLogin("usertoupdate")
 			.orElseThrow(() -> new AssertionError("User to update not found"));
+		Long userPermissions = userToUpdate.getPermissions();
 
-		assertThat(UserPermission.hasPermission(userToUpdate, UserPermission.MANAGE_USERS)).isFalse();
+		assertThat(PermissionUtils.hasPermission(userPermissions, UserPermission.MANAGE_USERS)).isFalse();
 
-		long newPermission = UserPermission.toValue(UserPermission.MANAGE_USERS);
+		long newPermission = PermissionUtils.toValue(UserPermission.MANAGE_USERS);
 		var requestDto = new UserPermissionsUpdateRequestDto(newPermission);
 
 		userService.updateUserPermissions(userToUpdate.getId(), requestDto);
@@ -249,7 +251,7 @@ public class UserServiceIT {
 		User updatedUser = userRepository.findById(userToUpdate.getId())
 			.orElseThrow(() -> new AssertionError("Updated user not found in repository"));
 
-		assertThat(UserPermission.hasPermission(updatedUser, UserPermission.MANAGE_USERS)).isTrue();
+		assertThat(PermissionUtils.hasPermission(updatedUser.getPermissions(), UserPermission.MANAGE_USERS)).isTrue();
 	}
 
 	@Test
@@ -259,7 +261,7 @@ public class UserServiceIT {
 		User userToUpdate = userRepository.findByLogin("usertoupdate")
 			.orElseThrow(() -> new AssertionError("User to update not found"));
 
-		long newPermission = UserPermission.toValue(UserPermission.MANAGE_USERS);
+		long newPermission = PermissionUtils.toValue(UserPermission.MANAGE_USERS);
 		var requestDto = new UserPermissionsUpdateRequestDto(newPermission);
 
 		assertThrows(AccessDeniedException.class,

@@ -1,7 +1,7 @@
 package dev.erpix.easykan.server.testsupport.extension;
 
+import dev.erpix.easykan.server.domain.PermissionUtils;
 import dev.erpix.easykan.server.domain.user.model.User;
-import dev.erpix.easykan.server.domain.user.model.UserPermission;
 import dev.erpix.easykan.server.domain.user.repository.UserRepository;
 import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
 import dev.erpix.easykan.server.testsupport.annotation.WithPersistedUser;
@@ -57,7 +57,7 @@ public class PersistUserExtension implements AfterEachCallback, BeforeEachCallba
 			.displayName(ann.displayName())
 			.email(ann.email())
 			.passwordHash(passwordEncoder.encode(ann.password()))
-			.permissions(UserPermission.toValue(ann.permissions()))
+			.permissions(PermissionUtils.toValue(ann.permissions()))
 			.build();
 
 		return userRepository.save(user);

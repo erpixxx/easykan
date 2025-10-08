@@ -1,5 +1,6 @@
 package dev.erpix.easykan.server.domain.user.constraint.validator;
 
+import dev.erpix.easykan.server.domain.PermissionUtils;
 import dev.erpix.easykan.server.domain.user.constraint.annotation.UserPermissionMask;
 import dev.erpix.easykan.server.domain.user.model.UserPermission;
 import dev.erpix.easykan.server.exception.user.PermissionMaskValidationException;
@@ -16,7 +17,7 @@ public class UserPermissionConstraintValidator implements ConstraintValidator<Us
 			return true;
 		}
 		try {
-			UserPermission.validate(value);
+			PermissionUtils.validate(value, UserPermission.class);
 			return true;
 		}
 		catch (PermissionMaskValidationException e) {

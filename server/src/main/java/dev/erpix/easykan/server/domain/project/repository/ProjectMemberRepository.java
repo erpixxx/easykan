@@ -17,7 +17,6 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Pr
 				SELECT pm.permissions FROM ProjectMember pm
 					WHERE pm.user.id = :userId AND pm.project.id = :projectId
 			""")
-	Optional<Long> findPermissionByUserIdAndIdProjectId(@Param("userId") UUID userId,
-														@Param("projectId") UUID projectId);
+	Optional<Long> findPermissionByUserIdAndProjectId(@Param("userId") UUID userId, @Param("projectId") UUID projectId);
 
 }

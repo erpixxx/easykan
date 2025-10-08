@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.erpix.easykan.server.domain.PermissionUtils;
 import dev.erpix.easykan.server.domain.user.dto.UserCreateRequestDto;
 import dev.erpix.easykan.server.domain.user.dto.UserInfoUpdateRequestDto;
 import dev.erpix.easykan.server.domain.user.dto.UserPermissionsUpdateRequestDto;
@@ -15,6 +16,7 @@ import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
 import dev.erpix.easykan.server.domain.user.service.UserService;
 import dev.erpix.easykan.server.exception.user.UserNotFoundException;
 import dev.erpix.easykan.server.testsupport.Category;
+import dev.erpix.easykan.server.testsupport.PermissionMaskSupport;
 import dev.erpix.easykan.server.testsupport.annotation.WebMvcBundle;
 import dev.erpix.easykan.server.testsupport.annotation.WithMockUser;
 import java.util.List;
@@ -68,7 +70,7 @@ public class UserControllerIT extends AbstractControllerSecurityIT {
 			.andExpect(jsonPath("$.id").value(WithMockUser.Default.ID))
 			.andExpect(jsonPath("$.login").value(WithMockUser.Default.LOGIN))
 			.andExpect(jsonPath("$.displayName").value(WithMockUser.Default.DISPLAY_NAME))
-			.andExpect(jsonPath("$.permissions").value(UserPermission.toValue(WithMockUser.Default.PERMISSIONS)));
+			.andExpect(jsonPath("$.permissions").value(PermissionUtils.toValue(WithMockUser.Default.PERMISSIONS)));
 	}
 
 	@Test
@@ -82,7 +84,7 @@ public class UserControllerIT extends AbstractControllerSecurityIT {
 		UUID otherUserId = UUID.randomUUID();
 		String otherUserLogin = "otheruser";
 		String otherUserDisplayName = "Other User";
-		long otherUserPermissions = UserPermission.toValue(UserPermission.DEFAULT_PERMISSIONS);
+		long otherUserPermissions = PermissionUtils.toValue(UserPermission.DEFAULT_PERMISSIONS);
 		User otherUser = User.builder()
 			.id(otherUserId)
 			.login(otherUserLogin)
@@ -133,7 +135,7 @@ public class UserControllerIT extends AbstractControllerSecurityIT {
 			.displayName(newUserDisplayName)
 			.email(newUserEmail)
 			.passwordHash(newUserPermission)
-			.permissions(UserPermission.toValue(UserPermission.DEFAULT_PERMISSIONS))
+			.permissions(PermissionUtils.toValue(UserPermission.DEFAULT_PERMISSIONS))
 			.build();
 
 		UserCreateRequestDto request = new UserCreateRequestDto(newUserLogin, newUserDisplayName, newUserEmail,
@@ -234,7 +236,7 @@ public class UserControllerIT extends AbstractControllerSecurityIT {
 		UserInfoUpdateRequestDto requestDto = new UserInfoUpdateRequestDto(Optional.of(newLogin),
 				Optional.of(newDisplayName), Optional.empty());
 
-		long permissions = UserPermission.toValue(WithMockUser.Default.PERMISSIONS);
+		long permissions = PermissionUtils.toValue(WithMockUser.Default.PERMISSIONS);
 		User updatedUser = User.builder()
 			.id(UUID.fromString(WithMockUser.Default.ID))
 			.login(newLogin)
@@ -295,7 +297,7 @@ public class UserControllerIT extends AbstractControllerSecurityIT {
 	@WithMockUser
 	void updateUserPermissions_shouldReturnUpdatedUser_whenValidRequest() throws Exception {
 		UUID userId = UUID.randomUUID();
-		var requestDto = new UserPermissionsUpdateRequestDto(UserPermission.toValue(UserPermission.MANAGE_PROJECTS));
+		var requestDto = new UserPermissionsUpdateRequestDto(PermissionUtils.toValue(UserPermission.MANAGE_PROJECTS));
 
 		var updatedUser = new User();
 		updatedUser.setId(userId);
@@ -317,7 +319,7 @@ public class UserControllerIT extends AbstractControllerSecurityIT {
 	@WithMockUser
 	void updateUserPermissions_shouldReturnNotFound_whenUserDoesNotExist() throws Exception {
 		UUID userId = UUID.randomUUID();
-		var requestDto = new UserPermissionsUpdateRequestDto(UserPermission.toValue(UserPermission.MANAGE_PROJECTS));
+		var requestDto = new UserPermissionsUpdateRequestDto(PermissionUtils.toValue(UserPermission.MANAGE_PROJECTS));
 
 		doThrow(UserNotFoundException.byId(userId)).when(userService).updateUserPermissions(eq(userId), any());
 
@@ -348,7 +350,7 @@ public class UserControllerIT extends AbstractControllerSecurityIT {
 	@WithMockUser
 	void updateUserPermissions_shouldReturnForbidden_whenUserDoesNotHaveAdminPermission() throws Exception {
 		UUID userId = UUID.randomUUID();
-		var requestDto = new UserPermissionsUpdateRequestDto(UserPermission.toValue(UserPermission.MANAGE_PROJECTS));
+		var requestDto = new UserPermissionsUpdateRequestDto(PermissionUtils.toValue(UserPermission.MANAGE_PROJECTS));
 
 		doThrow(new AccessDeniedException("Insufficient permissions.")).when(userService)
 			.updateUserPermissions(eq(userId), any());
@@ -362,10 +364,7 @@ public class UserControllerIT extends AbstractControllerSecurityIT {
 	// Helper methods
 
 	static Stream<Long> provideInvalidPermissions() {
-		long allValidBits = UserPermission.ALL_PERMISSIONS_MASK;
-		long invalidBit = Long.highestOneBit(allValidBits) << 1;
-
-		return Stream.of(-1L, invalidBit, allValidBits | invalidBit);
+		return PermissionMaskSupport.generateInvalidPermissions(UserPermission.class);
 	}
 
 }

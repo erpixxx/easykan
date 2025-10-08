@@ -1,5 +1,6 @@
 package dev.erpix.easykan.server.domain.user.security;
 
+import dev.erpix.easykan.server.domain.PermissionUtils;
 import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.model.UserPermission;
 import dev.erpix.easykan.server.domain.user.util.UserDetailsProvider;
@@ -24,14 +25,15 @@ public class RequireUserPermissionAspect {
 			.orElseThrow(() -> new AccessDeniedException("User not authenticated"));
 
 		User user = userDetails.user();
+		Long userPermissions = user.getPermissions();
 
-		if (UserPermission.hasPermission(user, UserPermission.ADMIN)) {
-			// Admins bypass permission checks
+		// Admins bypass permission checks
+		if (PermissionUtils.hasPermission(userPermissions, UserPermission.ADMIN)) {
 			return;
 		}
 
 		for (UserPermission permission : required) {
-			if (!UserPermission.hasPermission(user, permission)) {
+			if (!PermissionUtils.hasPermission(userPermissions, permission)) {
 				throw new AccessDeniedException("User does not have required permission: " + permission);
 			}
 		}
