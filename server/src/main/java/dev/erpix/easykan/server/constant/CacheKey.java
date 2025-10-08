@@ -4,7 +4,9 @@ import java.util.Arrays;
 
 public interface CacheKey {
 
-	String PROJECTS = "projects";
+	String PROJECTS_ID = "projects_id";
+
+	String PROJECTS_FOR_USER_ID = "projects_for_user_id";
 
 	String USERS_ID = "users_id";
 
