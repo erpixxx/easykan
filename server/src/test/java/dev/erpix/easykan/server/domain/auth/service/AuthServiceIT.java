@@ -15,8 +15,9 @@ import dev.erpix.easykan.server.exception.auth.UnsupportedAuthenticationMethodEx
 import dev.erpix.easykan.server.exception.user.UserNotFoundException;
 import dev.erpix.easykan.server.testsupport.Category;
 import dev.erpix.easykan.server.testsupport.annotation.IntegrationTest;
-import dev.erpix.easykan.server.testsupport.annotation.WithPersistedUser;
+import dev.erpix.easykan.server.testsupport.annotation.WithUser;
 import java.time.Instant;
+
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,12 +47,11 @@ public class AuthServiceIT {
 	private JwtProvider jwtProvider;
 
 	@Test
-	@WithPersistedUser
+	@WithUser
 	void loginWithPassword_shouldReturnTokens_whenCredentialsAreValid() {
-		User testUser = userRepository.findByLogin(WithPersistedUser.Default.LOGIN).orElseThrow();
+		User testUser = userRepository.findByLogin(WithUser.Default.LOGIN).orElseThrow();
 
-		AuthLoginRequestDto requestDto = new AuthLoginRequestDto(WithPersistedUser.Default.LOGIN,
-				WithPersistedUser.Default.PASSWORD);
+		AuthLoginRequestDto requestDto = new AuthLoginRequestDto(WithUser.Default.LOGIN, WithUser.Default.PASSWORD);
 
 		UserAndTokenPairResponseDto result = authService.loginWithPassword(requestDto);
 
@@ -79,22 +79,21 @@ public class AuthServiceIT {
 	}
 
 	@Test
-	@WithPersistedUser
+	@WithUser
 	void loginWithPassword_shouldThrowBadCredentialsException_whenCredentialsAreInvalid() {
-		AuthLoginRequestDto requestDto = new AuthLoginRequestDto(WithPersistedUser.Default.LOGIN, "wrongpassword");
+		AuthLoginRequestDto requestDto = new AuthLoginRequestDto(WithUser.Default.LOGIN, "wrongpassword");
 
 		assertThatThrownBy(() -> authService.loginWithPassword(requestDto)).isInstanceOf(BadCredentialsException.class);
 	}
 
 	@Test
-	@WithPersistedUser
+	@WithUser
 	void loginWithPassword_shouldThrowUnsupportedAuthenticationMethodException_whenUserHasNoPassword() {
-		User testUser = userRepository.findByLogin(WithPersistedUser.Default.LOGIN).orElseThrow();
+		User testUser = userRepository.findByLogin(WithUser.Default.LOGIN).orElseThrow();
 		testUser.setPasswordHash(null);
 		userRepository.save(testUser);
 
-		AuthLoginRequestDto requestDto = new AuthLoginRequestDto(WithPersistedUser.Default.LOGIN,
-				WithPersistedUser.Default.PASSWORD);
+		AuthLoginRequestDto requestDto = new AuthLoginRequestDto(WithUser.Default.LOGIN, WithUser.Default.PASSWORD);
 
 		assertThatThrownBy(() -> authService.loginWithPassword(requestDto))
 			.isInstanceOf(UnsupportedAuthenticationMethodException.class);
@@ -102,8 +101,7 @@ public class AuthServiceIT {
 
 	@Test
 	void loginWithPassword_shouldThrowUserNotFoundException_whenUserDoesNotExist() {
-		AuthLoginRequestDto requestDto = new AuthLoginRequestDto(WithPersistedUser.Default.LOGIN,
-				WithPersistedUser.Default.PASSWORD);
+		AuthLoginRequestDto requestDto = new AuthLoginRequestDto(WithUser.Default.LOGIN, WithUser.Default.PASSWORD);
 
 		assertThatThrownBy(() -> authService.loginWithPassword(requestDto)).isInstanceOf(UserNotFoundException.class);
 	}

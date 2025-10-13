@@ -18,7 +18,7 @@ import dev.erpix.easykan.server.exception.project.ProjectNotFoundException;
 import dev.erpix.easykan.server.exception.user.UserNotFoundException;
 import dev.erpix.easykan.server.testsupport.Category;
 import dev.erpix.easykan.server.testsupport.annotation.IntegrationTest;
-import dev.erpix.easykan.server.testsupport.annotation.WithPersistedUser;
+import dev.erpix.easykan.server.testsupport.annotation.WithUser;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -71,13 +71,13 @@ public class ProjectServiceIT {
 	void setUp() {
 		Objects.requireNonNull(cacheManager.getCache(CacheKey.PROJECTS_ID)).clear();
 		Objects.requireNonNull(cacheManager.getCache(CacheKey.PROJECTS_FOR_USER_ID)).clear();
-		user = userService.getByLogin(WithPersistedUser.Default.LOGIN);
+		user = userService.getByLogin(WithUser.Default.LOGIN);
 	}
 
 	@Test
-	@WithPersistedUser(permissions = UserPermission.CREATE_PROJECTS)
+	@WithUser(permissions = UserPermission.CREATE_PROJECTS)
 	void createProject_shouldCreateProjectAndSetOwnerAsFirstMember_whenUserHasPermission() {
-		assertThat(projectRepository.countByOwner_Login(WithPersistedUser.Default.LOGIN)).isEqualTo(0L);
+		assertThat(projectRepository.countByOwner_Login(WithUser.Default.LOGIN)).isEqualTo(0L);
 
 		var dto = new ProjectCreateDto("New Project");
 		projectService.createProject(dto, this.user.getId());
@@ -101,7 +101,7 @@ public class ProjectServiceIT {
 	}
 
 	@Test
-	@WithPersistedUser(permissions = UserPermission.CREATE_PROJECTS)
+	@WithUser(permissions = UserPermission.CREATE_PROJECTS)
 	void createProject_shouldSetCorrectIncrementedPosition_whenUserHasExistingProjects() {
 		assertThat(projectUserViewRepository.findNextPositionByUserId(user.getId())).isEqualTo(0);
 
@@ -127,25 +127,25 @@ public class ProjectServiceIT {
 	}
 
 	@Test
-	@WithPersistedUser
+	@WithUser
 	void createProject_shouldThrowAccessDenied_whenUserDoesNotHavePermission() {
-		assertThat(projectRepository.countByOwner_Login(WithPersistedUser.Default.LOGIN)).isEqualTo(0L);
+		assertThat(projectRepository.countByOwner_Login(WithUser.Default.LOGIN)).isEqualTo(0L);
 
 		var dto = new ProjectCreateDto("New Project");
 		assertThrows(AccessDeniedException.class, () -> projectService.createProject(dto, this.user.getId()));
 
-		assertThat(projectRepository.countByOwner_Login(WithPersistedUser.Default.LOGIN)).isEqualTo(0L);
+		assertThat(projectRepository.countByOwner_Login(WithUser.Default.LOGIN)).isEqualTo(0L);
 	}
 
 	@Test
-	@WithPersistedUser(permissions = UserPermission.CREATE_PROJECTS)
+	@WithUser(permissions = UserPermission.CREATE_PROJECTS)
 	void createProject_shouldThrowUserNotFound_whenUserDoesNotExist() {
 		var dto = new ProjectCreateDto("New Project");
 		assertThrows(UserNotFoundException.class, () -> projectService.createProject(dto, UUID.randomUUID()));
 	}
 
 	@Test
-	@WithPersistedUser(permissions = UserPermission.CREATE_PROJECTS)
+	@WithUser(permissions = UserPermission.CREATE_PROJECTS)
 	void createProject_shouldEvictCache_whenProjectIsCreated() {
 		var dto = new ProjectCreateDto("Cached Project");
 
@@ -163,7 +163,7 @@ public class ProjectServiceIT {
 	}
 
 	@Test
-	@WithPersistedUser(permissions = UserPermission.CREATE_PROJECTS)
+	@WithUser(permissions = UserPermission.CREATE_PROJECTS)
 	void deleteProject_shouldDeleteProjectAndAllRelatedData_whenUserIsOwner() {
 		var createDto = new ProjectCreateDto("Project to Delete");
 		projectService.createProject(createDto, this.user.getId());
@@ -183,7 +183,7 @@ public class ProjectServiceIT {
 	}
 
 	@Test
-	@WithPersistedUser(permissions = { UserPermission.MANAGE_PROJECTS, UserPermission.CREATE_PROJECTS,
+	@WithUser(permissions = { UserPermission.MANAGE_PROJECTS, UserPermission.CREATE_PROJECTS,
 			UserPermission.MANAGE_USERS })
 	void deleteProject_shouldDeleteProject_whenUserHasPermission() {
 		UserCreateRequestDto requestDto = new UserCreateRequestDto("otheruser", "Other User", "password",
@@ -205,7 +205,7 @@ public class ProjectServiceIT {
 	}
 
 	@Test
-	@WithPersistedUser(permissions = { UserPermission.MANAGE_USERS, UserPermission.CREATE_PROJECTS })
+	@WithUser(permissions = { UserPermission.MANAGE_USERS, UserPermission.CREATE_PROJECTS })
 	void deleteProject_shouldThrowAccessDeniedException_whenUserIsNotOwnerOrAdmin() {
 		UserCreateRequestDto requestDto = new UserCreateRequestDto("owner", "Owner User", "owner@easykan.dev",
 				"password");
@@ -229,7 +229,7 @@ public class ProjectServiceIT {
 	}
 
 	@Test
-	@WithPersistedUser
+	@WithUser
 	void deleteProject_shouldThrowProjectNotFoundException_whenProjectDoesNotExist() {
 		UUID nonExistentProjectId = UUID.randomUUID();
 
@@ -238,7 +238,7 @@ public class ProjectServiceIT {
 	}
 
 	@Test
-	@WithPersistedUser(permissions = UserPermission.CREATE_PROJECTS)
+	@WithUser(permissions = UserPermission.CREATE_PROJECTS)
 	void deleteProject_shouldEvictCache_whenProjectIsDeleted() {
 		var createDto = new ProjectCreateDto("Project to Cache");
 		projectService.createProject(createDto, this.user.getId());
@@ -269,7 +269,7 @@ public class ProjectServiceIT {
 	}
 
 	@Test
-	@WithPersistedUser(permissions = UserPermission.CREATE_PROJECTS)
+	@WithUser(permissions = UserPermission.CREATE_PROJECTS)
 	void getProjectById_shouldReturnProject_whenProjectExists() {
 		var createDto = new ProjectCreateDto("Existing Project");
 		projectService.createProject(createDto, this.user.getId());
@@ -285,14 +285,14 @@ public class ProjectServiceIT {
 	}
 
 	@Test
-	@WithPersistedUser
+	@WithUser
 	void getProjectById_shouldThrowProjectNotFoundException_whenProjectDoesNotExist() {
 		UUID nonExistentProjectId = UUID.randomUUID();
 		assertThrows(ProjectNotFoundException.class, () -> projectService.getProjectById(nonExistentProjectId));
 	}
 
 	@Test
-	@WithPersistedUser(permissions = UserPermission.CREATE_PROJECTS)
+	@WithUser(permissions = UserPermission.CREATE_PROJECTS)
 	void getProjectById_shouldUseCache_whenCalledSecondTime() {
 		var createDto = new ProjectCreateDto("Cached Project");
 		projectService.createProject(createDto, this.user.getId());
@@ -319,7 +319,7 @@ public class ProjectServiceIT {
 	}
 
 	@Test
-	@WithPersistedUser(permissions = UserPermission.CREATE_PROJECTS)
+	@WithUser(permissions = UserPermission.CREATE_PROJECTS)
 	void getProjectsForUser_shouldReturnListOfProjects_whenUserHasProjects() {
 		String projectName1 = "Project 1";
 		String projectName2 = "Project 2";
@@ -335,21 +335,21 @@ public class ProjectServiceIT {
 	}
 
 	@Test
-	@WithPersistedUser
+	@WithUser
 	void getProjectsForUser_shouldReturnEmptyList_whenUserDoesNotExist() {
 		var projects = projectService.getProjectsForUser(UUID.randomUUID());
 		assertThat(projects).isEmpty();
 	}
 
 	@Test
-	@WithPersistedUser
+	@WithUser
 	void getProjectsForUser_shouldReturnEmptyList_whenUserHasNoProjects() {
 		var projects = projectService.getProjectsForUser(this.user.getId());
 		assertThat(projects).isEmpty();
 	}
 
 	@Test
-	@WithPersistedUser(permissions = UserPermission.CREATE_PROJECTS)
+	@WithUser(permissions = UserPermission.CREATE_PROJECTS)
 	void getProjectsForUser_shouldUseCache_whenCalledSecondTime() {
 		var createDto = new ProjectCreateDto("Cached User Projects");
 		projectService.createProject(createDto, this.user.getId());

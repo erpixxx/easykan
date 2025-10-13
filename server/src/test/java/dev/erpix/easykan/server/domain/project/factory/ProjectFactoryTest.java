@@ -2,6 +2,7 @@ package dev.erpix.easykan.server.domain.project.factory;
 
 import dev.erpix.easykan.server.domain.project.model.Project;
 import dev.erpix.easykan.server.domain.project.model.ProjectMember;
+import dev.erpix.easykan.server.domain.project.model.ProjectPermission;
 import dev.erpix.easykan.server.domain.project.model.ProjectUserView;
 import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.testsupport.Category;
@@ -33,7 +34,7 @@ public class ProjectFactoryTest {
 		ProjectMember member = createdProject.getMembers().iterator().next();
 		assertThat(member.getUser()).isEqualTo(owner);
 		assertThat(member.getProject()).isEqualTo(createdProject);
-		assertThat(member.getPermissions()).isEqualTo(0L);
+		assertThat(member.getPermissions()).isEqualTo(ProjectPermission.OWNER.getValue());
 
 		// Verify the project user view
 		assertThat(createdProject.getUserViews()).hasSize(1);

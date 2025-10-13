@@ -18,11 +18,6 @@ public final class PermissionUtils {
 	}
 
 	@SafeVarargs
-	public static <T extends PermissionMask> long toValue(T... permissions) {
-		return Arrays.stream(permissions).mapToLong(PermissionMask::getValue).reduce(0, (a, b) -> a | b);
-	}
-
-	@SafeVarargs
 	public static <T extends PermissionMask> boolean hasPermission(long permissionsMask, T... requiredPermissions) {
 		long requiredMask = toValue(requiredPermissions);
 		return (permissionsMask & requiredMask) == requiredMask;
@@ -32,6 +27,11 @@ public final class PermissionUtils {
 	public static <T extends PermissionMask> boolean hasAnyPermission(long permissionsMask, T... requiredPermissions) {
 		long requiredMask = toValue(requiredPermissions);
 		return (permissionsMask & requiredMask) != 0;
+	}
+
+	@SafeVarargs
+	public static <T extends PermissionMask> long toValue(T... permissions) {
+		return Arrays.stream(permissions).mapToLong(PermissionMask::getValue).reduce(0, (a, b) -> a | b);
 	}
 
 	public static <T extends Enum<T> & PermissionMask> void validate(long permissions, Class<T> enumType)

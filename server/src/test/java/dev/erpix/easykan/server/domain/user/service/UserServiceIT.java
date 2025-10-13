@@ -14,10 +14,11 @@ import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
 import dev.erpix.easykan.server.exception.user.UserNotFoundException;
 import dev.erpix.easykan.server.testsupport.Category;
 import dev.erpix.easykan.server.testsupport.annotation.IntegrationTest;
-import dev.erpix.easykan.server.testsupport.annotation.WithPersistedUser;
-import dev.erpix.easykan.server.testsupport.annotation.WithPersistedUsers;
+import dev.erpix.easykan.server.testsupport.annotation.WithUser;
+import dev.erpix.easykan.server.testsupport.annotation.WithUsers;
 import java.util.Optional;
 import java.util.UUID;
+
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,12 +41,12 @@ public class UserServiceIT {
 	private PasswordEncoder passwordEncoder;
 
 	@Test
-	@WithPersistedUsers(
-			principal = @WithPersistedUser(login = "admin", email = "admin@easykan.dev",
+	@WithUsers(
+			principal = @WithUser(login = "admin", email = "admin@easykan.dev",
 					permissions = UserPermission.MANAGE_USERS),
-			others = { @WithPersistedUser(login = "user1", email = "user1@easykan.dev"),
-					@WithPersistedUser(login = "user2", email = "user2@easykan.dev"),
-					@WithPersistedUser(login = "user3", email = "user3@easykan.dev"), })
+			others = { @WithUser(login = "user1", email = "user1@easykan.dev"),
+					@WithUser(login = "user2", email = "user2@easykan.dev"),
+					@WithUser(login = "user3", email = "user3@easykan.dev"), })
 	void getAllUsers_shouldReturnAllUsers() {
 		var pageRequest = PageRequest.of(0, 5);
 		var users = userService.getAllUsers(pageRequest);
@@ -54,7 +55,7 @@ public class UserServiceIT {
 	}
 
 	@Test
-	@WithPersistedUser
+	@WithUser
 	void getAllUsers_shouldThrowAccessDenied_whenUserDoesNotHavePermission() {
 		var pageRequest = PageRequest.of(0, 5);
 
@@ -62,7 +63,7 @@ public class UserServiceIT {
 	}
 
 	@Test
-	@WithPersistedUser
+	@WithUser
 	void getById_shouldReturnUser_whenUserExists() {
 		JpaUserDetails principal = (JpaUserDetails) SecurityContextHolder.getContext()
 			.getAuthentication()
@@ -78,7 +79,7 @@ public class UserServiceIT {
 	}
 
 	@Test
-	@WithPersistedUser
+	@WithUser
 	void getByLogin_shouldReturnUser_whenUserExists() {
 		JpaUserDetails principal = (JpaUserDetails) SecurityContextHolder.getContext()
 			.getAuthentication()
@@ -94,7 +95,7 @@ public class UserServiceIT {
 	}
 
 	@Test
-	@WithPersistedUser(permissions = UserPermission.MANAGE_USERS)
+	@WithUser(permissions = UserPermission.MANAGE_USERS)
 	void createUser_shouldCreateNewUser_whenUserHasPermission() {
 		var requestDto = new UserCreateRequestDto("newuser", "New User", "new.user@easykan.dev", "passwd123");
 
@@ -110,7 +111,7 @@ public class UserServiceIT {
 	}
 
 	@Test
-	@WithPersistedUser
+	@WithUser
 	void createUser_shouldThrowAccessDenied_whenUserDoesNotHavePermission() {
 		var requestDto = new UserCreateRequestDto("newuser", "New User", "new.user@easykan.dev", "passwd123");
 
@@ -119,10 +120,10 @@ public class UserServiceIT {
 	}
 
 	@Test
-	@WithPersistedUsers(
-			principal = @WithPersistedUser(login = "admin", email = "admin@easykan.dev",
+	@WithUsers(
+			principal = @WithUser(login = "admin", email = "admin@easykan.dev",
 					permissions = UserPermission.MANAGE_USERS),
-			others = @WithPersistedUser(login = "usertodelete", email = "usertodelete@easykan.dev"))
+			others = @WithUser(login = "usertodelete", email = "usertodelete@easykan.dev"))
 	void deleteUser_shouldDeleteUser_whenUserExistsAndHasPermission() {
 		User userToDelete = userRepository.findByLogin("usertodelete")
 			.orElseThrow(() -> new AssertionError("User to delete not found"));
@@ -136,7 +137,7 @@ public class UserServiceIT {
 	}
 
 	@Test
-	@WithPersistedUser(permissions = UserPermission.MANAGE_USERS)
+	@WithUser(permissions = UserPermission.MANAGE_USERS)
 	void deleteUser_shouldThrowUserNotFound_whenGivenUserDoesNotExists() {
 		assertThat(userRepository.count()).isEqualTo(1);
 		assertThrows(UserNotFoundException.class, () -> userService.deleteUser(UUID.randomUUID()));
@@ -144,8 +145,8 @@ public class UserServiceIT {
 	}
 
 	@Test
-	@WithPersistedUsers(principal = @WithPersistedUser(login = "admin", email = "admin@easykan.dev"),
-			others = @WithPersistedUser(login = "usertodelete", email = "usertodelete@easykan.dev"))
+	@WithUsers(principal = @WithUser(login = "admin", email = "admin@easykan.dev"),
+			others = @WithUser(login = "usertodelete", email = "usertodelete@easykan.dev"))
 	void deleteUser_shouldThrowAccessDenied_whenUserDoesNotHavePermission() {
 		User userToDelete = userRepository.findByLogin("usertodelete")
 			.orElseThrow(() -> new AssertionError("User to delete not found"));
@@ -156,7 +157,7 @@ public class UserServiceIT {
 	}
 
 	@Test
-	@WithPersistedUser(permissions = UserPermission.MANAGE_USERS)
+	@WithUser(permissions = UserPermission.MANAGE_USERS)
 	void deleteUser_shouldThrowAccessDenied_whenTryingToDeleteSelf() {
 		var principal = (JpaUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
@@ -164,7 +165,7 @@ public class UserServiceIT {
 	}
 
 	@Test
-	@WithPersistedUser
+	@WithUser
 	void updateCurrentUserInfo_shouldUpdateUserInfo_whenRequestIsValid() {
 		var principal = (JpaUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
@@ -194,10 +195,10 @@ public class UserServiceIT {
 	}
 
 	@Test
-	@WithPersistedUsers(
-			principal = @WithPersistedUser(login = "admin", email = "admin@easykan.dev",
+	@WithUsers(
+			principal = @WithUser(login = "admin", email = "admin@easykan.dev",
 					permissions = UserPermission.MANAGE_USERS),
-			others = @WithPersistedUser(login = "usertoupdate", email = "usertoupdate@easykan.dev"))
+			others = @WithUser(login = "usertoupdate", email = "usertoupdate@easykan.dev"))
 	void updateUserInfo_shouldUpdateUserInfo_whenRequestIsValidAndUserHasPermissions() {
 		User userToUpdate = userRepository.findByLogin("usertoupdate")
 			.orElseThrow(() -> new AssertionError("User to update not found"));
@@ -219,8 +220,8 @@ public class UserServiceIT {
 	}
 
 	@Test
-	@WithPersistedUsers(principal = @WithPersistedUser(login = "admin", email = "admin@easykan.dev"),
-			others = @WithPersistedUser(login = "usertoupdate", email = "usertoupdate@easykan.dev"))
+	@WithUsers(principal = @WithUser(login = "admin", email = "admin@easykan.dev"),
+			others = @WithUser(login = "usertoupdate", email = "usertoupdate@easykan.dev"))
 	void updateUserInfo_shouldThrowAccessDenied_whenUserDoesNotHavePermission() {
 		User userToUpdate = userRepository.findByLogin("usertoupdate")
 			.orElseThrow(() -> new AssertionError("User to update not found"));
@@ -232,10 +233,8 @@ public class UserServiceIT {
 	}
 
 	@Test
-	@WithPersistedUsers(
-			principal = @WithPersistedUser(login = "admin", email = "admin@easykan.dev",
-					permissions = UserPermission.ADMIN),
-			others = @WithPersistedUser(login = "usertoupdate", email = "usertoupdate@easykan.dev"))
+	@WithUsers(principal = @WithUser(login = "admin", email = "admin@easykan.dev", permissions = UserPermission.ADMIN),
+			others = @WithUser(login = "usertoupdate", email = "usertoupdate@easykan.dev"))
 	void updateUserPermissions_shouldUpdateUserPermissions_whenUserHasAdminPermission() {
 		User userToUpdate = userRepository.findByLogin("usertoupdate")
 			.orElseThrow(() -> new AssertionError("User to update not found"));
@@ -255,8 +254,8 @@ public class UserServiceIT {
 	}
 
 	@Test
-	@WithPersistedUsers(principal = @WithPersistedUser(login = "admin", email = "admin@easykan.dev"),
-			others = @WithPersistedUser(login = "usertoupdate", email = "usertoupdate@easykan.dev"))
+	@WithUsers(principal = @WithUser(login = "admin", email = "admin@easykan.dev"),
+			others = @WithUser(login = "usertoupdate", email = "usertoupdate@easykan.dev"))
 	void updateUserPermissions_shouldThrowAccessDenied_whenUserDoesNotHavePermission() {
 		User userToUpdate = userRepository.findByLogin("usertoupdate")
 			.orElseThrow(() -> new AssertionError("User to update not found"));

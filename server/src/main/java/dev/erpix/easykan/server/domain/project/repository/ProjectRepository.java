@@ -7,11 +7,13 @@ import java.util.UUID;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+@Primary
 @Repository
 public interface ProjectRepository extends JpaRepository<Project, UUID> {
 

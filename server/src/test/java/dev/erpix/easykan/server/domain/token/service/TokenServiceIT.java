@@ -12,8 +12,9 @@ import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
 import dev.erpix.easykan.server.domain.user.service.UserService;
 import dev.erpix.easykan.server.testsupport.Category;
 import dev.erpix.easykan.server.testsupport.annotation.IntegrationTest;
-import dev.erpix.easykan.server.testsupport.annotation.WithPersistedUser;
+import dev.erpix.easykan.server.testsupport.annotation.WithUser;
 import java.time.Instant;
+
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,9 +48,9 @@ public class TokenServiceIT {
 	private static final String SAMPLE_VALIDATOR = "validator";
 
 	@Test
-	@WithPersistedUser
+	@WithUser
 	void createRefreshToken_shouldSaveRefreshTokenAndReturnDto() {
-		var user = userService.getByLogin(WithPersistedUser.Default.LOGIN);
+		var user = userService.getByLogin(WithUser.Default.LOGIN);
 
 		when(refreshTokenGenerator.generate()).thenReturn(new RefreshTokenParts(SAMPLE_SELECTOR, SAMPLE_VALIDATOR));
 
@@ -65,9 +66,9 @@ public class TokenServiceIT {
 	}
 
 	@Test
-	@WithPersistedUser
+	@WithUser
 	void logout_shouldRevokeCurrentUserToken() {
-		var user = userService.getByLogin(WithPersistedUser.Default.LOGIN);
+		var user = userService.getByLogin(WithUser.Default.LOGIN);
 
 		when(refreshTokenGenerator.generate()).thenReturn(new RefreshTokenParts(SAMPLE_SELECTOR, SAMPLE_VALIDATOR));
 
@@ -86,9 +87,9 @@ public class TokenServiceIT {
 	}
 
 	@Test
-	@WithPersistedUser
+	@WithUser
 	void logout_shouldDoNothing_whenValidatorIsIncorrect() {
-		var user = userService.getByLogin(WithPersistedUser.Default.LOGIN);
+		var user = userService.getByLogin(WithUser.Default.LOGIN);
 
 		when(refreshTokenGenerator.generate()).thenReturn(new RefreshTokenParts(SAMPLE_SELECTOR, SAMPLE_VALIDATOR));
 
@@ -103,9 +104,9 @@ public class TokenServiceIT {
 	}
 
 	@Test
-	@WithPersistedUser
+	@WithUser
 	void logout_shouldDoNothing_whenTokenIsAlreadyRevoked() {
-		var user = userService.getByLogin(WithPersistedUser.Default.LOGIN);
+		var user = userService.getByLogin(WithUser.Default.LOGIN);
 
 		when(refreshTokenGenerator.generate()).thenReturn(new RefreshTokenParts(SAMPLE_SELECTOR, SAMPLE_VALIDATOR));
 
@@ -122,9 +123,9 @@ public class TokenServiceIT {
 	}
 
 	@Test
-	@WithPersistedUser
+	@WithUser
 	void logoutAll_shouldRevokeAllTokensForUser() {
-		var user = userService.getByLogin(WithPersistedUser.Default.LOGIN);
+		var user = userService.getByLogin(WithUser.Default.LOGIN);
 		int numberOfTokens = 3;
 
 		for (int i = 0; i < numberOfTokens; i++) {
@@ -148,9 +149,9 @@ public class TokenServiceIT {
 	}
 
 	@Test
-	@WithPersistedUser
+	@WithUser
 	void rotateRefreshToken_shouldRevokeOldTokenAndCreateNewOne() {
-		var user = userService.getByLogin(WithPersistedUser.Default.LOGIN);
+		var user = userService.getByLogin(WithUser.Default.LOGIN);
 
 		when(refreshTokenGenerator.generate()).thenReturn(new RefreshTokenParts(SAMPLE_SELECTOR, SAMPLE_VALIDATOR));
 

@@ -2,6 +2,7 @@ package dev.erpix.easykan.server.domain.project.repository;
 
 import dev.erpix.easykan.server.domain.project.model.ProjectMember;
 import dev.erpix.easykan.server.domain.project.model.ProjectMemberId;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 import java.util.UUID;
 
+@Primary
 @Repository
 public interface ProjectMemberRepository extends JpaRepository<ProjectMember, ProjectMemberId> {
 
