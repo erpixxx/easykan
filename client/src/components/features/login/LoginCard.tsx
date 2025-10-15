@@ -1,8 +1,7 @@
-import {Box, Callout, Card, Flex, Heading} from "@radix-ui/themes";
-import {ExclamationTriangleIcon} from "@radix-ui/react-icons";
-import {useState} from "react";
-import {LoginForm} from "./LoginForm.tsx";
-import {ThirdPartyLogin} from "./ThirdPartyLogin.tsx";
+import { Box, Callout, Card, Flex, Heading } from "@radix-ui/themes";
+import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
+import { useState } from "react";
+import { LoginForm } from "./LoginForm.tsx";
 
 export interface LoginCardProps {
   enableLogin?: boolean;
@@ -11,24 +10,15 @@ export interface LoginCardProps {
   enableDiscord?: boolean;
 }
 
-export function LoginCard({enableLogin = true, enableGithub = true, enableGitlab = true, enableDiscord = true}: LoginCardProps) {
+export function LoginCard({ enableLogin = true }: LoginCardProps) {
   const [error, setError] = useState<string | null>(null);
   return (
-    <Box
-      className="login-card-container"
-      width="400px"
-    >
+    <Box className="login-card-container" width="400px">
       <Card className="login-card">
         <Flex pb="5" align="center" justify="between">
           <Heading size="5">Log in to EasyKan</Heading>
         </Flex>
         <LoginForm enableLogin={enableLogin} setError={setError} />
-        <ThirdPartyLogin
-          enableLogin={enableLogin}
-          enableGithub={enableGithub}
-          enableGitlab={enableGitlab}
-          enableDiscord={enableDiscord}
-        />
       </Card>
       <Box
         className="login-error-message"
@@ -39,9 +29,7 @@ export function LoginCard({enableLogin = true, enableGithub = true, enableGitlab
           <Callout.Icon>
             <ExclamationTriangleIcon />
           </Callout.Icon>
-          <Callout.Text>
-            {error}
-          </Callout.Text>
+          <Callout.Text>{error}</Callout.Text>
         </Callout.Root>
       </Box>
     </Box>
