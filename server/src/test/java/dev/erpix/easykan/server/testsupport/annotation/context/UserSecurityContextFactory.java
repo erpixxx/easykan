@@ -3,17 +3,17 @@ package dev.erpix.easykan.server.testsupport.annotation.context;
 import dev.erpix.easykan.server.domain.PermissionUtils;
 import dev.erpix.easykan.server.domain.user.model.User;
 import dev.erpix.easykan.server.domain.user.security.JpaUserDetails;
-import dev.erpix.easykan.server.testsupport.annotation.WithMockUser;
+import dev.erpix.easykan.server.testsupport.annotation.WithSecurityContextUser;
 import java.util.UUID;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithSecurityContextFactory;
 
-public class UserSecurityContextFactory implements WithSecurityContextFactory<WithMockUser> {
+public class UserSecurityContextFactory implements WithSecurityContextFactory<WithSecurityContextUser> {
 
 	@Override
-	public SecurityContext createSecurityContext(WithMockUser annotation) {
+	public SecurityContext createSecurityContext(WithSecurityContextUser annotation) {
 		SecurityContext context = SecurityContextHolder.createEmptyContext();
 
 		User user = User.builder()
