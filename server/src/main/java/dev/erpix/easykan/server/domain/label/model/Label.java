@@ -23,12 +23,12 @@ import org.hibernate.annotations.OnDeleteAction;
 @Table(name = "labels", schema = "public")
 public class Label {
 
+	@Builder.Default
 	@EqualsAndHashCode.Include
 	@ToString.Include
 	@Id
-	@GeneratedValue(strategy = GenerationType.UUID)
 	@Column(name = "id", nullable = false)
-	private UUID id;
+	private UUID id = UUID.randomUUID();
 
 	@NotNull
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)

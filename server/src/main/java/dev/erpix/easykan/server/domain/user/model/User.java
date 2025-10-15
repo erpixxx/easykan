@@ -34,12 +34,12 @@ import lombok.*;
 				@UniqueConstraint(name = "users_email_key", columnNames = { "email" }) })
 public class User {
 
-	@ToString.Include
+	@Builder.Default
 	@EqualsAndHashCode.Include
+	@ToString.Include
 	@Id
-	@GeneratedValue(strategy = GenerationType.UUID)
 	@Column(name = "id", nullable = false)
-	private UUID id;
+	private UUID id = UUID.randomUUID();
 
 	@ToString.Include
 	@Size(max = 64)

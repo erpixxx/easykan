@@ -26,12 +26,12 @@ import org.hibernate.annotations.OnDeleteAction;
 		indexes = { @Index(name = "cards_column_id_position_idx", columnList = "column_id, position", unique = true) })
 public class Card {
 
+	@Builder.Default
 	@EqualsAndHashCode.Include
 	@ToString.Include
 	@Id
-	@GeneratedValue(strategy = GenerationType.UUID)
 	@Column(name = "id", nullable = false)
-	private UUID id;
+	private UUID id = UUID.randomUUID();
 
 	@NotNull
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)

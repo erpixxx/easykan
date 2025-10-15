@@ -17,10 +17,11 @@ import org.hibernate.annotations.OnDeleteAction;
 @Table(name = "card_assignees", schema = "public")
 public class CardAssignee {
 
+	@Builder.Default
 	@EqualsAndHashCode.Include
 	@ToString.Include
 	@EmbeddedId
-	private CardAssigneeId id;
+	private CardAssigneeId id = new CardAssigneeId();
 
 	@MapsId("cardId")
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
