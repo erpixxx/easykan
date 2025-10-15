@@ -6,7 +6,7 @@ import dev.erpix.easykan.server.domain.project.dto.ProjectSummaryDto;
 import dev.erpix.easykan.server.domain.project.service.ProjectService;
 import dev.erpix.easykan.server.testsupport.Category;
 import dev.erpix.easykan.server.testsupport.annotation.WebMvcBundle;
-import dev.erpix.easykan.server.testsupport.annotation.WithMockUser;
+import dev.erpix.easykan.server.testsupport.annotation.WithSecurityContextUser;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.provider.Arguments;
@@ -48,11 +48,11 @@ public class ProjectControllerIT extends AbstractControllerSecurityIT {
 	}
 
 	@Test
-	@WithMockUser
+	@WithSecurityContextUser
 	void createProject_shouldReturnCreated_whenDataIsValid() throws Exception {
 		var createDto = new ProjectCreateDto("Test Project");
 		var resultDto = new ProjectSummaryDto(UUID.randomUUID(), "Test Project", Collections.emptySet());
-		UUID currentUserId = UUID.fromString(WithMockUser.Default.ID);
+		UUID currentUserId = UUID.fromString(WithSecurityContextUser.Default.ID);
 
 		when(projectService.createProject(any(ProjectCreateDto.class), eq(currentUserId))).thenReturn(resultDto);
 
@@ -66,7 +66,7 @@ public class ProjectControllerIT extends AbstractControllerSecurityIT {
 	}
 
 	@Test
-	@WithMockUser
+	@WithSecurityContextUser
 	void createProject_shouldReturnBadRequest_whenDataIsInvalid() throws Exception {
 		var createDto = new ProjectCreateDto("");
 
@@ -79,10 +79,10 @@ public class ProjectControllerIT extends AbstractControllerSecurityIT {
 	}
 
 	@Test
-	@WithMockUser
+	@WithSecurityContextUser
 	void deleteProject_shouldReturnNoContent_whenSuccessful() throws Exception {
 		UUID projectId = UUID.randomUUID();
-		UUID currentUserId = UUID.fromString(WithMockUser.Default.ID);
+		UUID currentUserId = UUID.fromString(WithSecurityContextUser.Default.ID);
 
 		mockMvc.perform(delete("/api/projects").param("projectId", projectId.toString()))
 			.andExpect(status().isNoContent());
@@ -91,10 +91,10 @@ public class ProjectControllerIT extends AbstractControllerSecurityIT {
 	}
 
 	@Test
-	@WithMockUser
+	@WithSecurityContextUser
 	void deleteProject_shouldReturnForbidden_whenUserLacksPermission() throws Exception {
 		UUID projectId = UUID.randomUUID();
-		UUID currentUserId = UUID.fromString(WithMockUser.Default.ID);
+		UUID currentUserId = UUID.fromString(WithSecurityContextUser.Default.ID);
 
 		doThrow(new AccessDeniedException("Access Denied")).when(projectService)
 			.deleteProject(eq(projectId), eq(currentUserId));
@@ -104,9 +104,9 @@ public class ProjectControllerIT extends AbstractControllerSecurityIT {
 	}
 
 	@Test
-	@WithMockUser
+	@WithSecurityContextUser
 	void getProjectsForCurrentUser_shouldReturnProjectList_whenUserIsAuthenticated() throws Exception {
-		UUID currentUserId = UUID.fromString(WithMockUser.Default.ID);
+		UUID currentUserId = UUID.fromString(WithSecurityContextUser.Default.ID);
 		var projectSummary = new ProjectSummaryDto(UUID.randomUUID(), "My Project", Collections.emptySet());
 
 		when(projectService.getProjectsForUser(eq(currentUserId))).thenReturn(List.of(projectSummary));

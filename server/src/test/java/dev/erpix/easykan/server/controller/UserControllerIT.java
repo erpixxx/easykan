@@ -18,11 +18,12 @@ import dev.erpix.easykan.server.exception.user.UserNotFoundException;
 import dev.erpix.easykan.server.testsupport.Category;
 import dev.erpix.easykan.server.testsupport.PermissionMaskSupport;
 import dev.erpix.easykan.server.testsupport.annotation.WebMvcBundle;
-import dev.erpix.easykan.server.testsupport.annotation.WithMockUser;
+import dev.erpix.easykan.server.testsupport.annotation.WithSecurityContextUser;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
+
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -56,21 +57,24 @@ public class UserControllerIT extends AbstractControllerSecurityIT {
 	@Override
 	protected Stream<Arguments> provideProtectedEndpoints() {
 		return Stream.of(Arguments.of("GET", "/api/users/@me"), Arguments.of("GET", "/api/users"),
-				Arguments.of("POST", "/api/users"), Arguments.of("DELETE", "/api/users/" + WithMockUser.Default.ID),
-				Arguments.of("PATCH", "/api/users/@me"), Arguments.of("PATCH", "/api/users/" + WithMockUser.Default.ID),
-				Arguments.of("PUT", "/api/users/" + WithMockUser.Default.ID + "/permissions"));
+				Arguments.of("POST", "/api/users"),
+				Arguments.of("DELETE", "/api/users/" + WithSecurityContextUser.Default.ID),
+				Arguments.of("PATCH", "/api/users/@me"),
+				Arguments.of("PATCH", "/api/users/" + WithSecurityContextUser.Default.ID),
+				Arguments.of("PUT", "/api/users/" + WithSecurityContextUser.Default.ID + "/permissions"));
 	}
 
 	@Test
-	@WithMockUser
+	@WithSecurityContextUser
 	void getCurrentUser_shouldReturnCurrentUser_whenUserIsAuthenticated() throws Exception {
 		mockMvc.perform(get("/api/users/@me"))
 			.andExpect(status().isOk())
 			.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-			.andExpect(jsonPath("$.id").value(WithMockUser.Default.ID))
-			.andExpect(jsonPath("$.login").value(WithMockUser.Default.LOGIN))
-			.andExpect(jsonPath("$.displayName").value(WithMockUser.Default.DISPLAY_NAME))
-			.andExpect(jsonPath("$.permissions").value(PermissionUtils.toValue(WithMockUser.Default.PERMISSIONS)));
+			.andExpect(jsonPath("$.id").value(WithSecurityContextUser.Default.ID))
+			.andExpect(jsonPath("$.login").value(WithSecurityContextUser.Default.LOGIN))
+			.andExpect(jsonPath("$.displayName").value(WithSecurityContextUser.Default.DISPLAY_NAME))
+			.andExpect(jsonPath("$.permissions")
+				.value(PermissionUtils.toValue(WithSecurityContextUser.Default.PERMISSIONS)));
 	}
 
 	@Test
@@ -79,7 +83,7 @@ public class UserControllerIT extends AbstractControllerSecurityIT {
 	}
 
 	@Test
-	@WithMockUser
+	@WithSecurityContextUser
 	void getAllUsers_shouldReturnAllUsers_whenUserHasManageUsersPermission() throws Exception {
 		UUID otherUserId = UUID.randomUUID();
 		String otherUserLogin = "otheruser";
@@ -114,7 +118,7 @@ public class UserControllerIT extends AbstractControllerSecurityIT {
 	}
 
 	@Test
-	@WithMockUser
+	@WithSecurityContextUser
 	void getAllUsers_shouldReturnForbidden_whenUserDoesNotHaveManageUsersPermission() throws Exception {
 		when(userService.getAllUsers(any(Pageable.class)))
 			.thenThrow(new AccessDeniedException("Insufficient permissions."));
@@ -123,7 +127,7 @@ public class UserControllerIT extends AbstractControllerSecurityIT {
 	}
 
 	@Test
-	@WithMockUser
+	@WithSecurityContextUser
 	void createUser_shouldCreateUser_whenUserHasManageUsersPermission() throws Exception {
 		String newUserLogin = "newuser";
 		String newUserDisplayName = "New User";
@@ -155,7 +159,7 @@ public class UserControllerIT extends AbstractControllerSecurityIT {
 	}
 
 	@Test
-	@WithMockUser
+	@WithSecurityContextUser
 	void createUser_shouldReturnForbidden_whenUserDoesNotHaveManageUsersPermission() throws Exception {
 		UserCreateRequestDto request = new UserCreateRequestDto("newuser", "New User", "new.user@easykan.dev",
 				"Pa$$w0rd");
@@ -175,7 +179,7 @@ public class UserControllerIT extends AbstractControllerSecurityIT {
 			"'newuser', '',         'user@test.dev', 'Pa$$w0rd'", "'newuser', '  ',       'user@test.dev', 'Pa$$w0rd'",
 			"'newuser', 'New User', 'not-an-email',  'Pa$$w0rd'", "'newuser', 'New User', 'user@test.dev', ''",
 			"'newuser', 'New User', 'user@test.dev', '1234'" })
-	@WithMockUser
+	@WithSecurityContextUser
 	void createUser_shouldReturnBadRequest_whenInvalidDataProvided(String login, String displayName, String email,
 			String password) throws Exception {
 
@@ -190,7 +194,7 @@ public class UserControllerIT extends AbstractControllerSecurityIT {
 	}
 
 	@Test
-	@WithMockUser
+	@WithSecurityContextUser
 	void deleteUser_shouldDeleteUser_whenUserHasManageUsersPermission() throws Exception {
 		UUID userIdToDelete = UUID.randomUUID();
 
@@ -200,7 +204,7 @@ public class UserControllerIT extends AbstractControllerSecurityIT {
 	}
 
 	@Test
-	@WithMockUser
+	@WithSecurityContextUser
 	void deleteUser_shouldReturnForbidden_whenUserDoesNotHaveManageUsersPermission() throws Exception {
 		UUID userIdToDelete = UUID.randomUUID();
 
@@ -210,7 +214,7 @@ public class UserControllerIT extends AbstractControllerSecurityIT {
 	}
 
 	@Test
-	@WithMockUser
+	@WithSecurityContextUser
 	void deleteUser_shouldReturnNotFound_whenUserDoesNotExist() throws Exception {
 		UUID userIdToDelete = UUID.randomUUID();
 
@@ -220,28 +224,29 @@ public class UserControllerIT extends AbstractControllerSecurityIT {
 	}
 
 	@Test
-	@WithMockUser
+	@WithSecurityContextUser
 	void deleteUser_shouldReturnForbidden_whenTryingToDeleteSelf() throws Exception {
 		doThrow(new AccessDeniedException("Users cannot delete themselves")).when(userService)
-			.deleteUser(UUID.fromString(WithMockUser.Default.ID));
+			.deleteUser(UUID.fromString(WithSecurityContextUser.Default.ID));
 
-		mockMvc.perform(delete("/api/users/{userId}", WithMockUser.Default.ID)).andExpect(status().isForbidden());
+		mockMvc.perform(delete("/api/users/{userId}", WithSecurityContextUser.Default.ID))
+			.andExpect(status().isForbidden());
 	}
 
 	@Test
-	@WithMockUser
+	@WithSecurityContextUser
 	void updateCurrentUser_shouldReturnUpdatedUser_whenValidDataProvided() throws Exception {
 		String newLogin = "updateduser";
 		String newDisplayName = "Updated User";
 		UserInfoUpdateRequestDto requestDto = new UserInfoUpdateRequestDto(Optional.of(newLogin),
 				Optional.of(newDisplayName), Optional.empty());
 
-		long permissions = PermissionUtils.toValue(WithMockUser.Default.PERMISSIONS);
+		long permissions = PermissionUtils.toValue(WithSecurityContextUser.Default.PERMISSIONS);
 		User updatedUser = User.builder()
-			.id(UUID.fromString(WithMockUser.Default.ID))
+			.id(UUID.fromString(WithSecurityContextUser.Default.ID))
 			.login(newLogin)
 			.displayName(newDisplayName)
-			.passwordHash(WithMockUser.Default.PASSWORD)
+			.passwordHash(WithSecurityContextUser.Default.PASSWORD)
 			.permissions(permissions)
 			.build();
 
@@ -253,7 +258,7 @@ public class UserControllerIT extends AbstractControllerSecurityIT {
 				.content(objectMapper.writeValueAsBytes(requestDto)))
 			.andExpect(status().isOk())
 			.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-			.andExpect(jsonPath("$.id").value(WithMockUser.Default.ID))
+			.andExpect(jsonPath("$.id").value(WithSecurityContextUser.Default.ID))
 			.andExpect(jsonPath("$.login").value(newLogin))
 			.andExpect(jsonPath("$.displayName").value(newDisplayName))
 			.andExpect(jsonPath("$.permissions").value(permissions));
@@ -266,7 +271,7 @@ public class UserControllerIT extends AbstractControllerSecurityIT {
 			"'updateduser', '',             'updated.user@easykan.dev'",
 			"'updateduser', '  ',           'updated.user@easykan.dev'",
 			"'updateduser', 'Updated User', 'bademailformat'" })
-	@WithMockUser
+	@WithSecurityContextUser
 	void updateCurrentUser_shouldReturnBadRequest_whenInvalidDataProvided(String login, String displayName,
 			String email) throws Exception {
 		UserInfoUpdateRequestDto requestDto = new UserInfoUpdateRequestDto(Optional.ofNullable(login),
@@ -279,13 +284,13 @@ public class UserControllerIT extends AbstractControllerSecurityIT {
 	}
 
 	@Test
-	@WithMockUser
+	@WithSecurityContextUser
 	void updateCurrentUser_shouldReturnNotFound_whenUserDoesNotExist() throws Exception {
 		UserInfoUpdateRequestDto requestDto = new UserInfoUpdateRequestDto(Optional.of("updateduser"),
 				Optional.of("Updated User"), Optional.empty());
 
 		when(userService.updateCurrentUserInfo(any(UUID.class), any(UserInfoUpdateRequestDto.class)))
-			.thenThrow(UserNotFoundException.byId(UUID.fromString(WithMockUser.Default.ID)));
+			.thenThrow(UserNotFoundException.byId(UUID.fromString(WithSecurityContextUser.Default.ID)));
 
 		mockMvc
 			.perform(patch("/api/users/@me").contentType(MediaType.APPLICATION_JSON)
@@ -294,7 +299,7 @@ public class UserControllerIT extends AbstractControllerSecurityIT {
 	}
 
 	@Test
-	@WithMockUser
+	@WithSecurityContextUser
 	void updateUserPermissions_shouldReturnUpdatedUser_whenValidRequest() throws Exception {
 		UUID userId = UUID.randomUUID();
 		var requestDto = new UserPermissionsUpdateRequestDto(PermissionUtils.toValue(UserPermission.MANAGE_PROJECTS));
@@ -316,7 +321,7 @@ public class UserControllerIT extends AbstractControllerSecurityIT {
 	}
 
 	@Test
-	@WithMockUser
+	@WithSecurityContextUser
 	void updateUserPermissions_shouldReturnNotFound_whenUserDoesNotExist() throws Exception {
 		UUID userId = UUID.randomUUID();
 		var requestDto = new UserPermissionsUpdateRequestDto(PermissionUtils.toValue(UserPermission.MANAGE_PROJECTS));
@@ -331,7 +336,7 @@ public class UserControllerIT extends AbstractControllerSecurityIT {
 
 	@ParameterizedTest
 	@MethodSource("provideInvalidPermissions")
-	@WithMockUser
+	@WithSecurityContextUser
 	void updateUserPermissions_shouldReturnBadRequest_whenInvalidPermissionsProvided(long invalidPermissions)
 			throws Exception {
 		UUID userId = UUID.randomUUID();
@@ -347,7 +352,7 @@ public class UserControllerIT extends AbstractControllerSecurityIT {
 	}
 
 	@Test
-	@WithMockUser
+	@WithSecurityContextUser
 	void updateUserPermissions_shouldReturnForbidden_whenUserDoesNotHaveAdminPermission() throws Exception {
 		UUID userId = UUID.randomUUID();
 		var requestDto = new UserPermissionsUpdateRequestDto(PermissionUtils.toValue(UserPermission.MANAGE_PROJECTS));
