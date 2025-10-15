@@ -10,10 +10,7 @@ import dev.erpix.easykan.server.testsupport.annotation.WithProject;
 import dev.erpix.easykan.server.testsupport.annotation.WithUser;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -25,6 +22,8 @@ import java.util.stream.Collectors;
  * with the current transaction state.
  * </p>
  */
+@SuppressWarnings("unused") // Some methods might not be used for now, but could be useful
+							// later
 @Component
 public class PersistedDataProvider {
 
@@ -99,6 +98,15 @@ public class PersistedDataProvider {
 	}
 
 	/**
+	 * Finds a user by their ID.
+	 * @param id the ID of the user to find
+	 * @return an {@link Optional} containing the user if found, or empty if not found
+	 */
+	public Optional<User> getUserById(UUID id) {
+		return userRepository.findById(id);
+	}
+
+	/**
 	 * Finds a user by their login.
 	 * @param login the login of the user to find
 	 * @return an {@link Optional} containing the user if found, or empty if not found
@@ -131,6 +139,15 @@ public class PersistedDataProvider {
 	 */
 	public Optional<Project> getLastCreatedProject() {
 		return projectRepository.findLastCreated();
+	}
+
+	/**
+	 * Finds a project by its ID.
+	 * @param id the ID of the project to find
+	 * @return an {@link Optional} containing the project if found, or empty if not found
+	 */
+	public Optional<Project> getProjectById(UUID id) {
+		return projectRepository.findById(id);
 	}
 
 	/**

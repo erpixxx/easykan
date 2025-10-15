@@ -11,6 +11,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
  * Annotation to be used on test methods to indicate that a user should be created and
  * persisted before the test runs.
  * <p>
+ * The specified user will be the currently authenticated user for the duration of the
+ * test. If you need multiple users, use {@link WithUsers} instead.
+ * </p>
+ * <p>
  * The user will be created according to the specified parameters, and can be accessed in
  * the test using {@link PersistedDataProvider}.
  * </p>
@@ -19,6 +23,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @Target({ ElementType.METHOD, ElementType.TYPE })
 @ExtendWith(TestFixtureExtension.class)
 public @interface WithUser {
+
+	/**
+	 * The ID of the user to be created.
+	 * @return the user ID.
+	 */
+	String id() default Default.ID;
 
 	/**
 	 * The login of the user to be created.
@@ -51,6 +61,8 @@ public @interface WithUser {
 	UserPermission[] permissions() default { UserPermission.DEFAULT_PERMISSIONS };
 
 	interface Default {
+
+		String ID = "00000000-0000-0000-0000-000000000000";
 
 		String LOGIN = "testuser";
 

@@ -18,6 +18,10 @@ import java.lang.annotation.Target;
  * in the test using {@link PersistedDataProvider}.
  * </p>
  * <p>
+ * By default, the project will be owned by the currently authenticated user, without any
+ * additional members. The default ID and name will be used unless specified otherwise.
+ * </p>
+ * <p>
  * This annotation is typically used in conjunction with {@link WithUser} to ensure that
  * there is a user context.
  * </p>
@@ -28,10 +32,16 @@ import java.lang.annotation.Target;
 public @interface WithProject {
 
 	/**
+	 * The ID of the project to be created.
+	 * @return the project ID.
+	 */
+	String id() default Default.ID;
+
+	/**
 	 * The name of the project to be created.
 	 * @return the project name.
 	 */
-	String name() default "Test Project";
+	String name() default Default.NAME;
 
 	/**
 	 * The owner of the project. Can be either the currently authenticated user or a newly
@@ -76,5 +86,16 @@ public @interface WithProject {
 	 * @return array of {@link BoardSpec} defining the boards to be created.
 	 */
 	BoardSpec[] boards() default {};
+
+	/**
+	 * Default values for the annotation attributes.
+	 */
+	interface Default {
+
+		String ID = "00000000-0000-0000-0000-000000000001";
+
+		String NAME = "Test Project";
+
+	}
 
 }

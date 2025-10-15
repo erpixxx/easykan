@@ -9,8 +9,8 @@ import dev.erpix.easykan.server.testsupport.extension.TestFixtureExtension;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
- * Container annotation for {@link WithUser} to allow multiple annotations on a single
- * test method.
+ * Container annotation for multiple {@link WithUser} annotations to create principal and
+ * additional users for a test.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD, ElementType.TYPE })

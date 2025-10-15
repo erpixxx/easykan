@@ -2,7 +2,6 @@ package dev.erpix.easykan.server.testsupport.extension;
 
 import dev.erpix.easykan.server.domain.PermissionUtils;
 import dev.erpix.easykan.server.domain.board.model.Board;
-import dev.erpix.easykan.server.domain.board.repository.BoardRepository;
 import dev.erpix.easykan.server.domain.project.model.Project;
 import dev.erpix.easykan.server.domain.project.model.ProjectMember;
 import dev.erpix.easykan.server.domain.project.model.ProjectPermission;
@@ -19,6 +18,8 @@ import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.platform.commons.support.AnnotationSupport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationContext;
@@ -32,6 +33,15 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.util.*;
 
 public class TestFixtureExtension implements AfterEachCallback, BeforeEachCallback {
+
+	private static final ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace
+		.create(TestFixtureExtension.class);
+
+	private static final String USER_COUNTER_KEY = "USER_COUNTER";
+
+	private static final String PROJECT_COUNTER_KEY = "PROJECT_COUNTER";
+
+	private static final Logger logger = LoggerFactory.getLogger(TestFixtureExtension.class);
 
 	@Override
 	public void afterEach(ExtensionContext context) {
@@ -57,17 +67,11 @@ public class TestFixtureExtension implements AfterEachCallback, BeforeEachCallba
 			setAuthentication(user);
 		});
 
-		AnnotationSupport.findAnnotation(context.getElement(), WithProjects.class).ifPresent(ann -> {
-			Arrays.stream(ann.value()).forEach(proj -> createPersistedProject(context, proj));
-		});
-		AnnotationSupport.findAnnotation(context.getElement(), WithProject.class).ifPresent(ann -> {
-			createPersistedProject(context, ann);
-		});
+		AnnotationSupport.findAnnotation(context.getElement(), WithProjects.class)
+			.ifPresent(ann -> Arrays.stream(ann.value()).forEach(proj -> createPersistedProject(context, proj)));
+		AnnotationSupport.findAnnotation(context.getElement(), WithProject.class)
+			.ifPresent(ann -> createPersistedProject(context, ann));
 
-	}
-
-	private static void log(String message) {
-		System.out.println("[" + TestFixtureExtension.class.getName() + "] " + message);
 	}
 
 	private User createPersistedUser(ExtensionContext context, WithUser ann) {
@@ -75,19 +79,31 @@ public class TestFixtureExtension implements AfterEachCallback, BeforeEachCallba
 		UserRepository userRepository = appCtx.getBean(UserRepository.class);
 		PasswordEncoder passwordEncoder = appCtx.getBean(PasswordEncoder.class);
 
+		String id = ann.id();
 		String login = ann.login();
 		String displayName = ann.displayName();
 		String email = ann.email();
 		String password = ann.password();
 		UserPermission[] permissions = ann.permissions();
 
-		log("Creating user:");
-		log("|-login: " + login);
-		log("|-displayName: " + displayName);
-		log("|-email: " + email);
-		log("|-password: " + password);
-		log("|-permissions: " + Arrays.toString(permissions));
+		if (WithUser.Default.ID.equals(id)) {
+			ExtensionContext.Store store = context.getStore(NAMESPACE);
+			int counter = store.getOrComputeIfAbsent(USER_COUNTER_KEY, k -> 1, int.class);
+
+			id = String.format("00000000-0000-0000-0000-%012d", counter);
+
+			store.put(USER_COUNTER_KEY, counter + 1);
+		}
+
+		logger.info("Creating user:");
+		logger.info("|-id: {}", id);
+		logger.info("|-login: {}", login);
+		logger.info("|-displayName: {}", displayName);
+		logger.info("|-email: {}", email);
+		logger.info("|-password: {}", password);
+		logger.info("|-permissions: {}", Arrays.toString(permissions));
 		User user = User.builder()
+			.id(UUID.fromString(id))
 			.login(login)
 			.displayName(displayName)
 			.email(email)
@@ -107,7 +123,7 @@ public class TestFixtureExtension implements AfterEachCallback, BeforeEachCallba
 		securityContext.setAuthentication(authentication);
 		SecurityContextHolder.setContext(securityContext);
 
-		log("Set authenticated user to: " + user);
+		logger.info("Set authenticated user to: {}", user);
 	}
 
 	private void createPersistedProject(ExtensionContext context, WithProject ann) {
@@ -115,7 +131,6 @@ public class TestFixtureExtension implements AfterEachCallback, BeforeEachCallba
 		UserRepository userRepository = appCtx.getBean(UserRepository.class);
 		ProjectRepository projectRepository = appCtx.getBean(ProjectRepository.class);
 		ProjectUserViewRepository projectUserViewRepository = appCtx.getBean(ProjectUserViewRepository.class);
-		BoardRepository boardRepository = appCtx.getBean(BoardRepository.class);
 
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		if (authentication == null || !(authentication.getPrincipal() instanceof JpaUserDetails userDetails)) {
@@ -126,12 +141,22 @@ public class TestFixtureExtension implements AfterEachCallback, BeforeEachCallba
 			.orElseThrow(() -> new TestPrepareException(
 					"Authenticated user with id " + userDetails.getId() + " not found in the database."));
 
+		UUID projectId = UUID.fromString(ann.id());
+		if (WithProject.Default.ID.equals(ann.id())) {
+			ExtensionContext.Store store = context.getStore(NAMESPACE);
+			int counter = store.getOrComputeIfAbsent(PROJECT_COUNTER_KEY, k -> 1, int.class);
+
+			projectId = UUID.fromString(String.format("10000000-0000-0000-0000-%012d", counter));
+
+			store.put(PROJECT_COUNTER_KEY, counter + 1);
+		}
+
 		String projectName = ann.name();
-		Project project = Project.builder().name(projectName).build();
+		Project project = Project.builder().id(projectId).name(projectName).build();
 		Set<ProjectMember> members = new HashSet<>();
 		Set<ProjectUserView> userViews = new HashSet<>();
 
-		log("Creating project with name '" + projectName + "'");
+		logger.info("Creating project with name '{}'", projectName);
 
 		// Determine position for current user if they will be added as member
 		int currentUserPosition = ann.position() == -1
@@ -142,15 +167,15 @@ public class TestFixtureExtension implements AfterEachCallback, BeforeEachCallba
 		boolean isCurrentUserOwner = ownerType == OwnerType.CURRENT_USER;
 		User owner;
 		if (ownerType == OwnerType.CURRENT_USER) {
-			log("  Setting current user as project owner");
+			logger.info("  Setting current user as project owner");
 			owner = currentUser;
 		}
 		else if (ownerType == OwnerType.NEW_USER) {
 			owner = createDummyUser(userRepository);
-			log("  Creating new user as project owner: " + owner);
+			logger.info("  Creating new user as project owner: {}", owner);
 		}
 		else {
-			throw new IllegalStateException("Unknown PersistedOwner type: " + ownerType);
+			throw new TestPrepareException("Unknown owner type: " + ownerType);
 		}
 		project.setOwner(owner);
 
@@ -173,11 +198,11 @@ public class TestFixtureExtension implements AfterEachCallback, BeforeEachCallba
 		// Create dummy members if specified
 		int memberCount = ann.memberCount();
 		if (memberCount > 0) {
-			log("  Adding " + memberCount + " dummy members to project");
+			logger.info("  Adding {} dummy members to project", memberCount);
 		}
 		for (int i = 0; i < memberCount; i++) {
 			User dummyMember = createDummyUser(userRepository);
-			log("  " + (i + 1) + ") " + dummyMember);
+			logger.info("  {}) {}", i + 1, dummyMember);
 			ProjectMember member = ProjectMember.builder()
 				.user(dummyMember)
 				.project(project)
@@ -192,10 +217,10 @@ public class TestFixtureExtension implements AfterEachCallback, BeforeEachCallba
 		// Create view and member for current user if specified
 		// This is skipped if the current user is already the owner
 		if (ann.setCurrentUserAsMember() && !isCurrentUserOwner) {
-			log("  Adding current user as member to project '" + projectName + "'");
+			logger.info("  Adding current user as member to project '{}'", projectName);
 
 			long perm = PermissionUtils.toValue(ann.permissions());
-			log("  |-permissions: " + Arrays.toString(ann.permissions()));
+			logger.info("  |-permissions: {}", Arrays.toString(ann.permissions()));
 			ProjectMember currentUserMember = ProjectMember.builder()
 				.user(currentUser)
 				.project(project)
@@ -203,7 +228,7 @@ public class TestFixtureExtension implements AfterEachCallback, BeforeEachCallba
 				.build();
 			members.add(currentUserMember);
 
-			log("  |-position: " + currentUserPosition);
+			logger.info("  |-position: {}", currentUserPosition);
 			ProjectUserView currentUserView = ProjectUserView.builder()
 				.user(currentUser)
 				.project(project)
@@ -216,28 +241,27 @@ public class TestFixtureExtension implements AfterEachCallback, BeforeEachCallba
 		BoardSpec[] boardSpecs = ann.boards();
 		Set<Board> boards = new HashSet<>();
 		if (boardSpecs.length > 0) {
-			log("  Creating " + boardSpecs.length + " boards:");
+			logger.info("  Creating {} boards:", boardSpecs.length);
 		}
 		for (BoardSpec boardSpec : boardSpecs) {
 			String boardName = boardSpec.name();
-			log("    Creating board with name '" + boardName + "'");
+			logger.info("    Creating board with name '{}'", boardName);
 
 			User boardOwner;
 			if (boardSpec.owner() == OwnerType.CURRENT_USER) {
 				boardOwner = currentUser;
-				log("      Setting current user as board owner" );
+				logger.info("      Setting current user as board owner");
 			}
 			else if (boardSpec.owner() == OwnerType.NEW_USER) {
 				boardOwner = createDummyUser(userRepository);
-				log("      Creating new user as board owner: " + boardOwner);
+				logger.info("      Creating new user as board owner: {}", boardOwner);
 			}
 			else {
-				throw new TestPrepareException("Unknown PersistedOwner type: " + boardSpec.owner());
+				throw new TestPrepareException("Unknown owner type: " + boardSpec.owner());
 			}
 
-			int boardPosition = boardSpec.position() == -1
-					? boards.size() : boardSpec.position();
-			log("	    Setting board position to " + boardPosition);
+			int boardPosition = boardSpec.position() == -1 ? boards.size() : boardSpec.position();
+			logger.info("	    Setting board position to {}", boardPosition);
 
 			Board board = Board.builder()
 				.name(boardName)
@@ -255,11 +279,13 @@ public class TestFixtureExtension implements AfterEachCallback, BeforeEachCallba
 	}
 
 	private User createDummyUser(UserRepository userRepository) {
-		String rnd = UUID.randomUUID().toString().substring(0, 8);
+		UUID id = UUID.randomUUID();
+		String suffix = id.toString().substring(0, 8);
 		User newUser = User.builder()
-			.login(rnd)
-			.displayName(rnd)
-			.email(rnd + "@easykan.dev")
+			.id(id)
+			.login(suffix)
+			.displayName(suffix)
+			.email(suffix + "@easykan.dev")
 			.passwordHash("hashedPassword")
 			.build();
 		return userRepository.save(newUser);
