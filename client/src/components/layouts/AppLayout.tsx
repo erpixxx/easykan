@@ -1,8 +1,10 @@
 import { AuthProvider } from "../../context/AuthProvider.tsx";
-import { Theme, Box } from "@radix-ui/themes";
+import { Theme } from "@radix-ui/themes";
 import { Toast } from "radix-ui";
 import { Outlet } from "react-router-dom";
 import { Loader } from "./Loader.tsx";
+import { BackgroundProvider } from "../../context/BackgroundProvider.tsx";
+import { Background } from "./Background.tsx";
 
 export function AppLayout() {
   return (
@@ -13,13 +15,15 @@ export function AppLayout() {
       scaling="100%"
     >
       <AuthProvider>
-        <Loader>
-          <Box className="background" height="100%" width="100%">
-            <Toast.Provider swipeDirection="right">
-              <Outlet />
-            </Toast.Provider>
-          </Box>
-        </Loader>
+        <BackgroundProvider>
+          <Background>
+            <Loader>
+              <Toast.Provider swipeDirection="right">
+                <Outlet />
+              </Toast.Provider>
+            </Loader>
+          </Background>
+        </BackgroundProvider>
       </AuthProvider>
     </Theme>
   );

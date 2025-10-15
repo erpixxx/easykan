@@ -1,0 +1,8 @@
+@use "../../mixins" as *;
+
+.background {
+  //background-image: url("https://picsum.photos/1920/1080");
+  background-image: radial-gradient(circle at center bottom, var(--accent-3) 0%, var(--color-background) 100%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
