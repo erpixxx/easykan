@@ -18,7 +18,7 @@ import dev.erpix.easykan.server.exception.auth.InvalidTokenException;
 import dev.erpix.easykan.server.exception.user.UserNotFoundException;
 import dev.erpix.easykan.server.testsupport.Category;
 import dev.erpix.easykan.server.testsupport.annotation.WebMvcBundle;
-import dev.erpix.easykan.server.testsupport.annotation.WithMockUser;
+import dev.erpix.easykan.server.testsupport.annotation.WithSecurityContextUser;
 import jakarta.servlet.http.Cookie;
 import java.time.Duration;
 import java.util.stream.Stream;
@@ -137,7 +137,7 @@ public class AuthControllerIT extends AbstractControllerSecurityIT {
 	}
 
 	@Test
-	@WithMockUser
+	@WithSecurityContextUser
 	void logoutAll_shouldClearCookies_whenTokenIsPresent() throws Exception {
 		String refreshToken = "some-refresh-token";
 
