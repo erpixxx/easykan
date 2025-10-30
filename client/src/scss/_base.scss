@@ -6,15 +6,8 @@
   --color-secondary: #{vars.$color-secondary};
   --color-success: #{vars.$color-success};
   --color-warning: #{vars.$color-warning};
-  --color-danger: #{vars.$color-danger};
+  --color-error: #{vars.$color-danger};
   --color-info: #{vars.$color-info};
-  --color-light: #{vars.$color-light};
-  --color-gray: #{vars.$color-gray};
-  --color-dark-gray: #{vars.$color-dark-gray};
-  --color-dark: #{vars.$color-dark};
-  --color-bg: #{vars.$color-bg};
-  --color-text: #{vars.$color-text};
-  --color-transparent: #{vars.$color-transparent};
   --font-base: #{vars.$font-base};
 }
 
@@ -22,11 +15,6 @@
 .App,
 .App > div {
   height: 100%;
-}
-
-.background {
-  background-attachment: fixed;
-  background-repeat: no-repeat;
 }
 
 .dark,

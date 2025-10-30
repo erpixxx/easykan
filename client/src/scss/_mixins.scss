@@ -2,7 +2,9 @@
 @use "variables" as vars;
 
 @mixin theme($property, $light-value, $dark-value) {
-  #{$property}: #{$light-value};
+  html.light & {
+    #{$property}: #{$dark-value};
+  }
 
   html.dark & {
     #{$property}: #{$dark-value};
